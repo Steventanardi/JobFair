@@ -12,10 +12,16 @@ const connectionString =
   process.env.STORAGE_URL ||
   'postgresql://postgres:postgres@localhost:5432/jobfair';
 
-console.log('DB connecting to:', connectionString ? connectionString.substring(0, 30) + '...' : 'NO URL FOUND');
+console.log('DB init at:', new Date().toISOString());
+console.log('DB connecting to:', connectionString ? connectionString.substring(0, 40) + '...' : 'NO URL FOUND');
 
 // Always use SSL for remote databases (Supabase, Neon, etc.)
 const isRemote = !connectionString.includes('localhost');
+
+// Workaround for Supabase self-signed certificate
+if (isRemote) {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+}
 
 const db = new Pool({
   connectionString,
