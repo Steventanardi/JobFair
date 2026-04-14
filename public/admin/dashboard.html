@@ -27,6 +27,9 @@
         <li><a class="sidebar-link" data-tab="tab-announcements" onclick="switchTab(this)">
           <span class="sidebar-link__icon">📢</span> <span data-i18n="adm.announcements">Announcements</span>
         </a></li>
+        <li><a class="sidebar-link" data-tab="tab-mapping" onclick="switchTab(this)">
+          <span class="sidebar-link__icon">🗺️</span> <span data-i18n="adm.mapping">Booth Mapping</span>
+        </a></li>
       </ul>
 
       <div class="sidebar-logout">
@@ -151,6 +154,32 @@
         </div>
       </div>
 
+      <!-- ═══ TAB: BOOTH MAPPING ═══ -->
+      <div class="tab-panel" id="tab-mapping">
+        <div class="dashboard__header">
+          <h1 class="dashboard__title" data-i18n="adm.mappingTitle">Floor Plan Builder</h1>
+          <button class="btn btn--primary" onclick="saveFloorPlan()" data-i18n="adm.mappingSave">Save Floor Plan</button>
+        </div>
+
+        <div class="card" style="padding:var(--space-6); margin-bottom:var(--space-6);">
+          <p class="text-sm text-muted" style="margin-bottom:var(--space-4);" data-i18n="adm.mappingDesc">Configure the dimensions of the venue grid. Click on squares to toggle them into active booths.</p>
+          <div style="display:flex; gap:var(--space-4); align-items:flex-end;">
+            <div class="form-group" style="margin:0; width:120px;">
+              <label class="form-label" data-i18n="adm.mappingRows">Rows</label>
+              <input class="form-input" type="number" id="mapRows" value="4" min="1" max="20">
+            </div>
+            <div class="form-group" style="margin:0; width:120px;">
+              <label class="form-label" data-i18n="adm.mappingCols">Columns</label>
+              <input class="form-input" type="number" id="mapCols" value="6" min="1" max="20">
+            </div>
+            <button class="btn btn--secondary" onclick="generateGrid()" data-i18n="adm.mappingGen">Generate Grid</button>
+          </div>
+        </div>
+
+        <div id="floorPlanCanvas" style="display:grid; gap:var(--space-2); background:var(--color-surface-alt); padding:var(--space-6); border-radius:var(--radius-xl); border:1px solid var(--color-border); overflow-x:auto;">
+          <!-- Grid injected here -->
+        </div>
+      </div>
 
     </main>
   </div>
@@ -265,7 +294,7 @@
       loadSubmissions();
       loadEmployers();
       loadAnnouncements();
-
+      loadFloorPlan();
     }
 
     function switchTab(el) {
@@ -607,7 +636,80 @@
         });
     }
 
+    // ── Floor Plan Builder ─────────────────────────────────────
+    let mapData = { rows: 4, cols: 6, cells: {} };
 
+    async function loadFloorPlan() {
+      try {
+        const s = await API.get('/api/settings');
+        if (s.booth_layout) {
+          mapData = JSON.parse(s.booth_layout);
+          document.getElementById('mapRows').value = mapData.rows;
+          document.getElementById('mapCols').value = mapData.cols;
+        }
+        renderGrid();
+      } catch (err) { console.error('Failed to load map data', err); }
+    }
+
+    function generateGrid() {
+      const rows = parseInt(document.getElementById('mapRows').value) || 4;
+      const cols = parseInt(document.getElementById('mapCols').value) || 6;
+      mapData.rows = rows;
+      mapData.cols = cols;
+      renderGrid();
+    }
+
+    function renderGrid() {
+      const canvas = document.getElementById('floorPlanCanvas');
+      canvas.style.gridTemplateColumns = \`repeat(\${mapData.cols}, minmax(130px, 1fr))\`;
+      canvas.innerHTML = '';
+
+      for (let r = 0; r < mapData.rows; r++) {
+        for (let c = 0; c < mapData.cols; c++) {
+          const cellId = \`\${r}-\${c}\`;
+          const cellContent = mapData.cells[cellId] || { type: 'empty', name: '' };
+          
+          const box = document.createElement('div');
+          box.className = 'map-cell ' + (cellContent.type === 'booth' ? 'map-cell--booth' : 'map-cell--empty');
+          
+          if (cellContent.type === 'booth') {
+            box.innerHTML = \`
+              <div class="map-cell-header" style="display:flex; justify-content:space-between; align-items:center;">
+                <input type="text" class="map-cell-input" placeholder="Booth Name" value="\${App.escapeHtml(cellContent.name || '')}" onchange="updateCellName('\${cellId}', this.value)" onclick="event.stopPropagation()">
+                <button class="map-cell-del" onclick="event.stopPropagation(); toggleCell('\${cellId}')">&times;</button>
+              </div>
+              <div class="text-xs text-muted mt-2" style="text-align:center;">Assigned to company via Submissions</div>
+            \`;
+          } else {
+            box.innerHTML = \`<div class="text-muted text-xs">Empty Space</div>\`;
+            box.onclick = () => toggleCell(cellId);
+          }
+          canvas.appendChild(box);
+        }
+      }
+    }
+
+    function toggleCell(cellId) {
+      if (!mapData.cells[cellId] || mapData.cells[cellId].type === 'empty') {
+        mapData.cells[cellId] = { type: 'booth', name: '' };
+      } else {
+        mapData.cells[cellId] = { type: 'empty', name: '' };
+      }
+      renderGrid();
+    }
+
+    function updateCellName(cellId, val) {
+      if (mapData.cells[cellId]) {
+        mapData.cells[cellId].name = val.trim();
+      }
+    }
+
+    async function saveFloorPlan() {
+      try {
+        await API.put('/api/settings', { booth_layout: JSON.stringify(mapData) });
+        App.toast('Floor plan saved successfully!', 'success');
+      } catch (err) { App.toast(err.message, 'error'); }
+    }
 
     init();
   </script>

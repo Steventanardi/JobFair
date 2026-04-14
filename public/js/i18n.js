@@ -43,6 +43,16 @@ const I18N = {
     'ann.emptyText': { en: 'Check back later for updates.', zh: '請稍後再查看更新。' },
     'ann.pinned': { en: 'Pinned', zh: '置頂' },
 
+    // ── Booth Map ─────────────────────────────────────────
+    'booth.title': { en: 'Participating Companies', zh: '參展企業' },
+    'booth.subtitle': { en: 'Explore the leading companies joining our career fair.', zh: '探索參與本次博覽會的優質企業。' },
+    'booth.empty': { en: 'No companies assigned to booths yet.', zh: '目前尚無企業攤位資訊。' },
+    'booth.boothNum': { en: 'Booth', zh: '攤位' },
+    'booth.industry': { en: 'Industry', zh: '產業類別' },
+    'booth.req': { en: 'Requirements', zh: '應徵條件' },
+    'booth.ben': { en: 'Benefits', zh: '員工福利' },
+    'booth.jobs': { en: 'Open Positions', zh: '開放職位' },
+
     // ── How It Works ──────────────────────────────────────
     'how.title': { en: 'How It Works', zh: '參加流程' },
     'how.step1': { en: 'Register', zh: '註冊帳號' },
@@ -151,9 +161,18 @@ const I18N = {
     'adm.panelLabel': { en: 'Admin Panel', zh: '管理面板' },
     'adm.submissions': { en: 'Submissions', zh: '報名管理' },
     'adm.employers': { en: 'Employers', zh: '企業帳號' },
-    'adm.announcements': { en: 'Announcements', zh: '公告' },
+    'adm.announcements': { en: 'News', zh: '最新公告' },
+    'adm.mapping': { en: 'Booth Map', zh: '攤位配置' },
+    'adm.settings': { en: 'Settings', zh: '系統設定' },
     'adm.logout': { en: 'Logout', zh: '登出' },
-    'adm.home': { en: 'Home', zh: '首頁' },
+
+    // ── Admin: Mapping Builder ────────────────────────────
+    'adm.mappingTitle': { en: 'Floor Plan Builder', zh: '展場平面圖配置' },
+    'adm.mappingSave': { en: 'Save Floor Plan', zh: '儲存配置' },
+    'adm.mappingDesc': { en: 'Configure the dimensions of the venue grid. Click on squares to toggle them into active booths.', zh: '設定場地網格尺寸。點擊方格可將其切換為企業攤位。' },
+    'adm.mappingRows': { en: 'Rows', zh: '列數 (Rows)' },
+    'adm.mappingCols': { en: 'Columns', zh: '行數 (Cols)' },
+    'adm.mappingGen': { en: 'Generate Canvas', zh: '生成畫布' },
     'adm.statTotal': { en: 'Total', zh: '總計' },
     'adm.statPending': { en: 'Pending', zh: '待審核' },
     'adm.statApproved': { en: 'Approved', zh: '已通過' },

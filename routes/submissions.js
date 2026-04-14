@@ -63,6 +63,17 @@ router.post('/', requireEmployer, upload.single('logo'), (req, res) => {
   });
 });
 
+// GET /api/submissions/public/booths — get approved companies with booths
+router.get('/public/booths', (req, res) => {
+  const booths = db.prepare(`
+    SELECT company_name, logo_path, industry, company_intro, job_positions, requirements, benefits, booth_number
+    FROM submissions 
+    WHERE status = 'approved' AND booth_number IS NOT NULL AND booth_number != ''
+    ORDER BY booth_number ASC
+  `).all();
+  res.json(booths);
+});
+
 // GET /api/submissions/mine — get employer's own submissions
 router.get('/mine', requireEmployer, (req, res) => {
   const submissions = db.prepare(

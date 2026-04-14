@@ -66,6 +66,60 @@
       </div>
     </section>
 
+    <!-- Booth Map (Participating Companies) -->
+    <section class="section" id="booths">
+      <div class="container">
+        <div class="section__header">
+          <h2 class="section__title" data-i18n="booth.title">Participating Companies</h2>
+          <div class="section__divider"></div>
+          <p class="section__subtitle" data-i18n="booth.subtitle">Explore the leading companies joining our career fair.</p>
+        </div>
+
+        <div id="boothGrid" class="booth-grid">
+          <div class="empty-state" style="grid-column: 1 / -1;">
+            <div class="spinner" style="margin: 0 auto;"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Company Modal -->
+    <div id="companyModal" class="modal-overlay" onclick="closeModal(event)">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div style="display:flex; align-items:center; gap:16px;">
+            <div id="modalLogoHeader"></div>
+            <div>
+              <h3 id="modalCompanyName" style="margin:0; color:var(--color-charcoal); font-size:1.25rem;"></h3>
+              <div id="modalBoothInfo" style="margin-top:4px;"></div>
+            </div>
+          </div>
+          <button class="modal-close" onclick="closeModal(event, true)">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="modal-section" id="modalIntroSec">
+            <h4 data-i18n="empReg.intro">Company Intro</h4>
+            <div id="modalIntro" class="text-sm text-muted" style="white-space: pre-wrap;"></div>
+          </div>
+          
+          <div class="modal-section" id="modalJobsSec">
+            <h4 data-i18n="booth.jobs">Open Positions</h4>
+            <div id="modalJobs" class="text-sm text-muted" style="white-space: pre-wrap;"></div>
+          </div>
+
+          <div class="modal-section" id="modalReqSec">
+            <h4 data-i18n="booth.req">Requirements</h4>
+            <div id="modalReq" class="text-sm text-muted" style="white-space: pre-wrap;"></div>
+          </div>
+
+          <div class="modal-section" id="modalBenSec">
+            <h4 data-i18n="booth.ben">Benefits</h4>
+            <div id="modalBen" class="text-sm text-muted" style="white-space: pre-wrap;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- How It Works -->
     <section class="section">
       <div class="container">
@@ -170,8 +224,147 @@
       }
     }
 
+    let loadedBooths = [];
+
+    async function loadBooths() {
+      const container = document.getElementById('boothGrid');
+      try {
+        // Fetch public list of assigned approved companies
+        loadedBooths = await API.get('/api/submissions/public/booths');
+        
+        // Fetch map layout configuration
+        const settings = await API.get('/api/settings');
+        const layoutTxt = settings.booth_layout;
+        
+        if (!layoutTxt) {
+          // Fallback legacy layout if map builder hasn't been used yet
+          if (!loadedBooths || loadedBooths.length === 0) {
+            container.innerHTML = `
+              <div class="empty-state" style="grid-column: 1 / -1;">
+                <div class="empty-state__icon">🏢</div>
+                <div class="empty-state__title" data-i18n="booth.empty">No companies assigned to booths yet.</div>
+              </div>`;
+            I18N.applyAll();
+            return;
+          }
+          container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(280px, 1fr))';
+          container.innerHTML = loadedBooths.map((b, i) => buildCompanyCard(b, i)).join('');
+          I18N.applyAll();
+          return;
+        }
+
+        // Render mapped layout
+        const mapData = JSON.parse(layoutTxt);
+        container.style.gridTemplateColumns = \`repeat(\${mapData.cols}, 1fr)\`;
+        container.style.maxWidth = \`\${mapData.cols * 280}px\`;
+        container.style.margin = '0 auto';
+        container.innerHTML = '';
+        
+        // Ensure Booth assignments are easily lookable
+        const boothMap = {};
+        loadedBooths.forEach((b, i) => {
+          if (b.booth_number) boothMap[b.booth_number.trim().toLowerCase()] = { company: b, index: i };
+        });
+
+        for (let r = 0; r < mapData.rows; r++) {
+          for (let c = 0; c < mapData.cols; c++) {
+            const cellId = \`\${r}-\${c}\`;
+            const cellContent = mapData.cells[cellId] || { type: 'empty', name: '' };
+            
+            if (cellContent.type === 'empty') {
+              // Empty space (walkway, gap)
+              container.innerHTML += \`<div style="visibility:hidden; height:50px;"></div>\`;
+            } else {
+              // Active booth slot
+              const bName = cellContent.name ? cellContent.name.trim() : '';
+              const bNameKey = bName.toLowerCase();
+              const assigned = boothMap[bNameKey];
+
+              if (assigned) {
+                // Renders the specific company card mapped to this spot
+                container.innerHTML += buildCompanyCard(assigned.company, assigned.index);
+              } else {
+                // Renders an empty available booth placeholder
+                container.innerHTML += \`
+                  <div class="booth-card" style="opacity: 0.6; cursor: default; border: 2px dashed var(--color-border); box-shadow: none;">
+                    <div class="booth-number"><span data-i18n="booth.boothNum">Booth</span> \${App.escapeHtml(bName)}</div>
+                    <div class="booth-logo-placeholder" style="background: transparent; border: none; color: var(--color-text-light);">
+                       <div style="font-size: 3rem;">🏕️</div>
+                    </div>
+                    <div class="booth-company text-muted" style="font-size:var(--font-sm);">Available Slot</div>
+                  </div>
+                \`;
+              }
+            }
+          }
+        }
+        I18N.applyAll();
+      } catch (err) {
+        console.error(err);
+        container.innerHTML = '<div class="empty-state text-danger" style="grid-column: 1 / -1;">Failed to load participating companies.</div>';
+      }
+    }
+
+    function buildCompanyCard(b, i) {
+      return \`
+        <div class="booth-card" onclick="openModal(\${i})">
+          <div class="booth-number"><span data-i18n="booth.boothNum">Booth</span> \${App.escapeHtml(b.booth_number)}</div>
+          \${b.logo_path 
+            ? \`<img src="\${b.logo_path}" alt="Logo" class="booth-logo">\`
+            : \`<div class="booth-logo-placeholder">\${App.escapeHtml(b.company_name).charAt(0)}</div>\`
+          }
+          <div class="booth-company">\${App.escapeHtml(b.company_name)}</div>
+          <div class="booth-industry">\${App.escapeHtml(b.industry || '')}</div>
+        </div>
+      \`;
+    }
+
+    function openModal(idx) {
+      const company = loadedBooths[idx];
+      if (!company) return;
+
+      document.getElementById('modalCompanyName').textContent = company.company_name;
+      
+      const logoHTML = company.logo_path 
+        ? `<img src="${company.logo_path}" style="width:60px; height:60px; object-fit:contain; border-radius:12px; border:1px solid var(--color-border); padding:4px; background:white;">`
+        : `<div style="width:60px; height:60px; display:flex; align-items:center; justify-content:center; background:var(--color-surface-alt); border-radius:12px; font-weight:700; font-size:24px; color:var(--color-gold);">${App.escapeHtml(company.company_name).charAt(0)}</div>`;
+      document.getElementById('modalLogoHeader').innerHTML = logoHTML;
+
+      document.getElementById('modalBoothInfo').innerHTML = `
+        <span class="badge" style="background:rgba(201,169,110,0.15); color:var(--color-gold-dark);"><span data-i18n="booth.boothNum">Booth</span> ${App.escapeHtml(company.booth_number)}</span>
+        <span class="text-xs text-muted" style="margin-left:8px;">${App.escapeHtml(company.industry || '')}</span>
+      `;
+
+      const fillSection = (secId, contentId, data) => {
+        const sec = document.getElementById(secId);
+        if (data) {
+          sec.style.display = 'block';
+          document.getElementById(contentId).textContent = data;
+        } else {
+          sec.style.display = 'none';
+        }
+      };
+
+      fillSection('modalIntroSec', 'modalIntro', company.company_intro);
+      fillSection('modalJobsSec', 'modalJobs', company.job_positions);
+      fillSection('modalReqSec', 'modalReq', company.requirements);
+      fillSection('modalBenSec', 'modalBen', company.benefits);
+
+      I18N.applyAll();
+      document.getElementById('companyModal').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(e, force = false) {
+      if (force || e.target.id === 'companyModal') {
+        document.getElementById('companyModal').classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    }
+
     I18N.init('langToggle');
     loadAnnouncements();
+    loadBooths();
     updateNav();
   </script>
 </body>
