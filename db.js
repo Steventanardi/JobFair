@@ -55,10 +55,6 @@ db.exec(`
     created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
-  CREATE TABLE IF NOT EXISTS settings (
-    key   TEXT PRIMARY KEY,
-    value TEXT NOT NULL
-  );
 `);
 
 // Seed default admin if not exists
@@ -86,19 +82,6 @@ if (announcementCount.cnt === 0) {
     3, 0
   );
   console.log('Sample announcements seeded.');
-}
-
-// Seed default settings if empty
-const settingsCount = db.prepare('SELECT COUNT(*) as cnt FROM settings').get();
-if (settingsCount.cnt === 0) {
-  const seedSetting = db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)');
-  seedSetting.run('event_date', 'To Be Announced');
-  seedSetting.run('event_date_zh', '待公佈');
-  seedSetting.run('event_deadline', 'To Be Announced');
-  seedSetting.run('event_deadline_zh', '待公佈');
-  seedSetting.run('event_venue', 'NQU Student Activity Center');
-  seedSetting.run('event_venue_zh', '金大學生活動中心');
-  console.log('Default settings seeded.');
 }
 
 module.exports = db;

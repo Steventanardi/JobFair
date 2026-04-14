@@ -7,8 +7,6 @@ const authRoutes = require('./routes/auth');
 const submissionRoutes = require('./routes/submissions');
 const adminRoutes = require('./routes/admin');
 const announcementRoutes = require('./routes/announcements');
-const settingsRoutes = require('./routes/settings');
-
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -36,8 +34,6 @@ app.use('/api/auth', authRoutes);
 app.use('/api/submissions', submissionRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/announcements', announcementRoutes);
-app.use('/api/settings', settingsRoutes);
-
 // ── SPA Fallback for HTML pages ────────────────────────────
 app.get('/employer/*', (req, res) => {
   const file = req.path.endsWith('.html') ? req.path : req.path + '.html';
