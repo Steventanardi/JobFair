@@ -109,10 +109,10 @@
                 </div>
                 ${s.booth_number ? `<div class="text-sm" style="color:var(--color-gold-dark); font-weight:600;">🎪 ${boothLabel}: ${App.escapeHtml(s.booth_number)}</div>` : ''}
                 ${s.admin_notes ? `<div class="text-sm text-muted mt-2">📝 ${noteLabel}: ${App.escapeHtml(s.admin_notes)}</div>` : ''}
-                ${s.status === 'pending' ? `
+                ${s.status !== 'rejected' ? `
                   <div class="submission-card__actions">
                     <a href="/employer/submit.html?edit=${s.id}" class="btn btn--outline btn--sm">${editLabel}</a>
-                    <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="deleteSubmission(${s.id})">${deleteLabel}</button>
+                    ${s.status === 'pending' ? `<button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="deleteSubmission(${s.id})">${deleteLabel}</button>` : ''}
                   </div>
                 ` : ''}
               </div>

@@ -110,8 +110,8 @@ router.put('/:id', requireEmployer, upload.single('logo'), async (req, res) => {
     if (rows.length === 0) return res.status(404).json({ error: 'Submission not found' });
     const submission = rows[0];
 
-    if (submission.status !== 'pending') {
-      return res.status(400).json({ error: 'Can only edit pending submissions' });
+    if (submission.status === 'rejected') {
+      return res.status(400).json({ error: 'Rejected submissions cannot be edited' });
     }
 
     const {
