@@ -255,8 +255,8 @@
 
         // Render mapped layout
         const mapData = JSON.parse(layoutTxt);
-        container.style.gridTemplateColumns = \`repeat(\${mapData.cols}, 1fr)\`;
-        container.style.maxWidth = \`\${mapData.cols * 280}px\`;
+        container.style.gridTemplateColumns = `repeat(${mapData.cols}, 1fr)`;
+        container.style.maxWidth = `${mapData.cols * 280}px`;
         container.style.margin = '0 auto';
         container.innerHTML = '';
         
@@ -268,12 +268,12 @@
 
         for (let r = 0; r < mapData.rows; r++) {
           for (let c = 0; c < mapData.cols; c++) {
-            const cellId = \`\${r}-\${c}\`;
+            const cellId = `${r}-${c}`;
             const cellContent = mapData.cells[cellId] || { type: 'empty', name: '' };
             
             if (cellContent.type === 'empty') {
               // Empty space (walkway, gap)
-              container.innerHTML += \`<div style="visibility:hidden; height:50px;"></div>\`;
+              container.innerHTML += `<div style="visibility:hidden; height:50px;"></div>`;
             } else {
               // Active booth slot
               const bName = cellContent.name ? cellContent.name.trim() : '';
@@ -285,15 +285,15 @@
                 container.innerHTML += buildCompanyCard(assigned.company, assigned.index);
               } else {
                 // Renders an empty available booth placeholder
-                container.innerHTML += \`
+                container.innerHTML += `
                   <div class="booth-card" style="opacity: 0.6; cursor: default; border: 2px dashed var(--color-border); box-shadow: none;">
-                    <div class="booth-number"><span data-i18n="booth.boothNum">Booth</span> \${App.escapeHtml(bName)}</div>
+                    <div class="booth-number"><span data-i18n="booth.boothNum">Booth</span> ${App.escapeHtml(bName)}</div>
                     <div class="booth-logo-placeholder" style="background: transparent; border: none; color: var(--color-text-light);">
                        <div style="font-size: 3rem;">🏕️</div>
                     </div>
                     <div class="booth-company text-muted" style="font-size:var(--font-sm);">Available Slot</div>
                   </div>
-                \`;
+                `;
               }
             }
           }
@@ -306,17 +306,17 @@
     }
 
     function buildCompanyCard(b, i) {
-      return \`
-        <div class="booth-card" onclick="openModal(\${i})">
-          <div class="booth-number"><span data-i18n="booth.boothNum">Booth</span> \${App.escapeHtml(b.booth_number)}</div>
-          \${b.logo_path 
-            ? \`<img src="\${b.logo_path}" alt="Logo" class="booth-logo">\`
-            : \`<div class="booth-logo-placeholder">\${App.escapeHtml(b.company_name).charAt(0)}</div>\`
+      return `
+        <div class="booth-card" onclick="openModal(${i})">
+          <div class="booth-number"><span data-i18n="booth.boothNum">Booth</span> ${App.escapeHtml(b.booth_number)}</div>
+          ${b.logo_path 
+            ? `<img src="${b.logo_path}" alt="Logo" class="booth-logo">`
+            : `<div class="booth-logo-placeholder">${App.escapeHtml(b.company_name).charAt(0)}</div>`
           }
-          <div class="booth-company">\${App.escapeHtml(b.company_name)}</div>
-          <div class="booth-industry">\${App.escapeHtml(b.industry || '')}</div>
+          <div class="booth-company">${App.escapeHtml(b.company_name)}</div>
+          <div class="booth-industry">${App.escapeHtml(b.industry || '')}</div>
         </div>
-      \`;
+      `;
     }
 
     function openModal(idx) {
