@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Admin login for NQU Job Fair System">
+  <title>Admin Login — NQU Job Fair</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="auth-page">
+    <div class="auth-card fade-in-up">
+      <div class="auth-card__logo">
+        <div class="auth-card__logo-text">
+          NQU <span class="auth-card__logo-accent" data-i18n="nav.brand">Job Fair</span>
+        </div>
+        <div style="margin-top:var(--space-3);" id="langToggle"></div>
+      </div>
+
+      <h1 class="auth-card__title" data-i18n="admLogin.title">Admin Login</h1>
+      <p class="auth-card__subtitle" data-i18n="admLogin.subtitle">Access the administration panel</p>
+
+      <form id="loginForm" autocomplete="on">
+        <div class="form-group">
+          <label class="form-label" for="username" data-i18n="admLogin.username">Username</label>
+          <input class="form-input" type="text" id="username" name="username" placeholder="admin" required autocomplete="username">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password" data-i18n="admLogin.password">Password</label>
+          <input class="form-input" type="password" id="password" name="password" placeholder="••••••" required autocomplete="current-password">
+        </div>
+
+        <div id="errorMsg" class="form-error mb-4" style="display:none;"></div>
+
+        <button type="submit" class="btn btn--primary btn--full btn--lg" id="submitBtn" data-i18n="admLogin.submit">
+          Sign In
+        </button>
+      </form>
+
+      <div style="text-align:center; margin-top:var(--space-6);">
+        <a href="/" class="text-sm text-muted" data-i18n="admLogin.backHome">← Back to Home</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/i18n.js"></script>
+  <script>
+    I18N.init('langToggle');
+
+    const form = document.getElementById('loginForm');
+    const errorMsg = document.getElementById('errorMsg');
+    const submitBtn = document.getElementById('submitBtn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorMsg.style.display = 'none';
+      submitBtn.disabled = true;
+      submitBtn.textContent = I18N.t('admLogin.submitting');
+
+      try {
+        await API.post('/api/auth/admin/login', {
+          username: document.getElementById('username').value,
+          password: document.getElementById('password').value
+        });
+        App.toast(I18N.t('msg.welcomeAdmin'), 'success');
+        setTimeout(() => window.location.href = '/admin/dashboard.html', 500);
+      } catch (err) {
+        errorMsg.textContent = err.message;
+        errorMsg.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = I18N.t('admLogin.submit');
+      }
+    });
+
+    API.checkAuth().then(user => {
+      if (user && user.role === 'admin') window.location.href = '/admin/dashboard.html';
+    });
+  </script>
+</body>
+</html>

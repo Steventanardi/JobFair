@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Register your company for the NQU Job Fair">
+  <title>Employer Registration — NQU Job Fair</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="auth-page">
+    <div class="auth-card fade-in-up">
+      <div class="auth-card__logo">
+        <div class="auth-card__logo-text">
+          NQU <span class="auth-card__logo-accent" data-i18n="nav.brand">Job Fair</span>
+        </div>
+        <div style="margin-top:var(--space-3);" id="langToggle"></div>
+      </div>
+
+      <h1 class="auth-card__title" data-i18n="empReg.title">Create Account</h1>
+      <p class="auth-card__subtitle" data-i18n="empReg.subtitle">Register to participate in the job fair</p>
+
+      <form id="registerForm" autocomplete="on">
+        <div class="form-group">
+          <label class="form-label" for="companyName" data-i18n="empReg.companyName">Company Name</label>
+          <input class="form-input" type="text" id="companyName" name="companyName" placeholder="e.g. ABC Corporation" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="email" data-i18n="empReg.email">Email</label>
+          <input class="form-input" type="email" id="email" name="email" placeholder="company@example.com" required autocomplete="email">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password" data-i18n="empReg.password">Password</label>
+          <input class="form-input" type="password" id="password" name="password" placeholder="••••••" required minlength="6" autocomplete="new-password">
+          <div class="form-hint" data-i18n="empReg.passwordHint">Minimum 6 characters</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="confirmPassword" data-i18n="empReg.confirmPassword">Confirm Password</label>
+          <input class="form-input" type="password" id="confirmPassword" name="confirmPassword" placeholder="••••••" required minlength="6" autocomplete="new-password">
+        </div>
+
+        <div id="errorMsg" class="form-error mb-4" style="display:none;"></div>
+
+        <button type="submit" class="btn btn--primary btn--full btn--lg" id="submitBtn" data-i18n="empReg.submit">
+          Create Account
+        </button>
+      </form>
+
+      <div class="auth-card__footer">
+        <span data-i18n="empReg.hasAccount">Already have an account?</span><br>
+        <a href="/employer/login.html" style="font-weight:600;" data-i18n="empReg.loginLink">Sign in here</a>
+      </div>
+
+      <div style="text-align:center; margin-top:var(--space-4);">
+        <a href="/" class="text-sm text-muted" data-i18n="empReg.backHome">← Back to Home</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/i18n.js"></script>
+  <script>
+    I18N.init('langToggle');
+
+    const form = document.getElementById('registerForm');
+    const errorMsg = document.getElementById('errorMsg');
+    const submitBtn = document.getElementById('submitBtn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorMsg.style.display = 'none';
+
+      const password = document.getElementById('password').value;
+      const confirm = document.getElementById('confirmPassword').value;
+
+      if (password !== confirm) {
+        errorMsg.textContent = I18N.t('empReg.mismatch');
+        errorMsg.style.display = 'block';
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = I18N.t('empReg.submitting');
+
+      try {
+        await API.post('/api/auth/employer/register', {
+          email: document.getElementById('email').value,
+          password: password,
+          company_name: document.getElementById('companyName').value
+        });
+        App.toast(I18N.t('msg.regSuccess'), 'success');
+        setTimeout(() => window.location.href = '/employer/dashboard.html', 800);
+      } catch (err) {
+        errorMsg.textContent = err.message;
+        errorMsg.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = I18N.t('empReg.submit');
+      }
+    });
+
+    API.checkAuth().then(user => {
+      if (user && user.role === 'employer') window.location.href = '/employer/dashboard.html';
+    });
+  </script>
+</body>
+</html>

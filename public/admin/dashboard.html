@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="NQU Job Fair Admin Dashboard">
+  <title>Admin Dashboard — NQU Job Fair</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="dashboard">
+
+    <!-- Sidebar -->
+    <aside class="dashboard__sidebar">
+      <div class="dashboard__sidebar-brand">
+        NQU <span class="gold" data-i18n="nav.brand">Job Fair</span>
+        <div style="font-size:var(--font-xs); color:rgba(255,255,255,0.4); font-weight:400; margin-top:4px;" data-i18n="adm.panelLabel">Admin Panel</div>
+      </div>
+
+      <ul class="dashboard__sidebar-nav">
+        <li><a class="sidebar-link sidebar-link--active" data-tab="tab-submissions" onclick="switchTab(this)">
+          <span class="sidebar-link__icon">📋</span> <span data-i18n="adm.submissions">Submissions</span>
+        </a></li>
+        <li><a class="sidebar-link" data-tab="tab-employers" onclick="switchTab(this)">
+          <span class="sidebar-link__icon">🏢</span> <span data-i18n="adm.employers">Employers</span>
+        </a></li>
+        <li><a class="sidebar-link" data-tab="tab-announcements" onclick="switchTab(this)">
+          <span class="sidebar-link__icon">📢</span> <span data-i18n="adm.announcements">Announcements</span>
+        </a></li>
+        <li><a class="sidebar-link" data-tab="tab-settings" onclick="switchTab(this)">
+          <span class="sidebar-link__icon">⚙️</span> <span data-i18n="adm.settings">Settings</span>
+        </a></li>
+      </ul>
+
+      <div class="sidebar-logout">
+        <div id="langToggle"></div>
+        <a class="sidebar-link" onclick="App.logout()" style="margin-top:var(--space-2);">
+          <span class="sidebar-link__icon">🚪</span> <span data-i18n="adm.logout">Logout</span>
+        </a>
+        <a class="sidebar-link" href="/" style="margin-top:4px;">
+          <span class="sidebar-link__icon">🏠</span> <span data-i18n="adm.home">Home</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dashboard__main">
+
+      <!-- Stats -->
+      <div class="stats-grid fade-in-up" id="statsGrid">
+        <div class="stat-card stat-card--gold">
+          <div class="stat-card__label" data-i18n="adm.statTotal">Total</div>
+          <div class="stat-card__value" id="statTotal">—</div>
+        </div>
+        <div class="stat-card stat-card--warning">
+          <div class="stat-card__label" data-i18n="adm.statPending">Pending</div>
+          <div class="stat-card__value" id="statPending">—</div>
+        </div>
+        <div class="stat-card stat-card--success">
+          <div class="stat-card__label" data-i18n="adm.statApproved">Approved</div>
+          <div class="stat-card__value" id="statApproved">—</div>
+        </div>
+        <div class="stat-card stat-card--danger">
+          <div class="stat-card__label" data-i18n="adm.statRejected">Rejected</div>
+          <div class="stat-card__value" id="statRejected">—</div>
+        </div>
+      </div>
+
+      <!-- ═══ TAB: SUBMISSIONS ═══ -->
+      <div class="tab-panel tab-panel--active" id="tab-submissions">
+        <div class="dashboard__header">
+          <h1 class="dashboard__title" data-i18n="adm.submissions">Submissions</h1>
+        </div>
+
+        <div class="toolbar">
+          <div class="toolbar__search">
+            <span class="toolbar__search-icon">🔍</span>
+            <input class="toolbar__search-input" type="text" id="searchInput" data-i18n-placeholder="adm.searchPlace" placeholder="Search company, contact..." oninput="filterSubmissions()">
+          </div>
+          <button class="filter-btn filter-btn--active" data-status="" onclick="setFilter(this, '')" data-i18n="adm.all">All</button>
+          <button class="filter-btn" data-status="pending" onclick="setFilter(this, 'pending')" data-i18n="adm.pending">Pending</button>
+          <button class="filter-btn" data-status="approved" onclick="setFilter(this, 'approved')" data-i18n="adm.approved">Approved</button>
+          <button class="filter-btn" data-status="rejected" onclick="setFilter(this, 'rejected')" data-i18n="adm.rejected">Rejected</button>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="data-table" id="submissionsTable">
+            <thead>
+              <tr>
+                <th data-i18n="adm.thLogo">Logo</th>
+                <th data-i18n="adm.thCompany">Company</th>
+                <th data-i18n="adm.thIndustry">Industry</th>
+                <th data-i18n="adm.thContact">Contact</th>
+                <th data-i18n="adm.thStatus">Status</th>
+                <th data-i18n="adm.thBooth">Booth</th>
+                <th data-i18n="adm.thDate">Date</th>
+                <th data-i18n="adm.thActions">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="submissionsBody">
+              <tr><td colspan="8" class="text-center text-muted" style="padding:3rem;" data-i18n="adm.loading">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══ TAB: EMPLOYERS ═══ -->
+      <div class="tab-panel" id="tab-employers">
+        <div class="dashboard__header">
+          <h1 class="dashboard__title" data-i18n="adm.empTitle">Employer Accounts</h1>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th data-i18n="adm.thId">ID</th>
+                <th data-i18n="adm.thCompany">Company</th>
+                <th data-i18n="adm.thEmail">Email</th>
+                <th data-i18n="adm.thSubCount">Submissions</th>
+                <th data-i18n="adm.thRegistered">Registered</th>
+                <th data-i18n="adm.thActions">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="employersBody">
+              <tr><td colspan="6" class="text-center text-muted" style="padding:3rem;" data-i18n="adm.loading">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══ TAB: ANNOUNCEMENTS ═══ -->
+      <div class="tab-panel" id="tab-announcements">
+        <div class="dashboard__header">
+          <h1 class="dashboard__title" data-i18n="adm.annTitle">Announcements</h1>
+          <button class="btn btn--primary" onclick="openAnnouncementModal()" data-i18n="adm.newAnn">+ New</button>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th data-i18n="adm.thAnnTitle">Title</th>
+                <th data-i18n="adm.thPinned">Pinned</th>
+                <th data-i18n="adm.thPriority">Priority</th>
+                <th data-i18n="adm.thCreated">Created</th>
+                <th data-i18n="adm.thActions">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="announcementsBody">
+              <tr><td colspan="5" class="text-center text-muted" style="padding:3rem;" data-i18n="adm.loading">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══ TAB: SETTINGS ═══ -->
+      <div class="tab-panel" id="tab-settings">
+        <div class="dashboard__header">
+          <h1 class="dashboard__title" data-i18n="adm.settingsTitle">Event Settings</h1>
+        </div>
+
+        <div class="card" style="padding:var(--space-6); max-width:700px;">
+          <p class="text-sm text-muted" style="margin-bottom:var(--space-4);" data-i18n="adm.settingsDesc">These values are displayed on the main page. Update them for each event period.</p>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-4);">
+            <div class="form-group">
+              <label class="form-label" data-i18n="adm.settingDateEN">Event Date (EN)</label>
+              <input class="form-input" type="text" id="s_event_date" placeholder="e.g. June 7, 2025">
+            </div>
+            <div class="form-group">
+              <label class="form-label" data-i18n="adm.settingDateZH">Event Date (中文)</label>
+              <input class="form-input" type="text" id="s_event_date_zh" placeholder="例如 2025年6月7日">
+            </div>
+            <div class="form-group">
+              <label class="form-label" data-i18n="adm.settingDeadlineEN">Registration Deadline (EN)</label>
+              <input class="form-input" type="text" id="s_event_deadline" placeholder="e.g. May 15, 2025">
+            </div>
+            <div class="form-group">
+              <label class="form-label" data-i18n="adm.settingDeadlineZH">Registration Deadline (中文)</label>
+              <input class="form-input" type="text" id="s_event_deadline_zh" placeholder="例如 2025年5月15日">
+            </div>
+            <div class="form-group">
+              <label class="form-label" data-i18n="adm.settingVenueEN">Venue (EN)</label>
+              <input class="form-input" type="text" id="s_event_venue" placeholder="e.g. NQU Student Activity Center">
+            </div>
+            <div class="form-group">
+              <label class="form-label" data-i18n="adm.settingVenueZH">Venue (中文)</label>
+              <input class="form-input" type="text" id="s_event_venue_zh" placeholder="例如 金大學生活動中心">
+            </div>
+          </div>
+
+          <div style="margin-top:var(--space-5); display:flex; gap:var(--space-3);">
+            <button class="btn btn--primary" onclick="saveSettings()" data-i18n="adm.saveSettings">Save Settings</button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ═══ MODAL: Review ═══ -->
+  <div class="modal-overlay" id="reviewModal">
+    <div class="modal">
+      <div class="modal__header">
+        <h2 class="modal__title" id="reviewModalTitle" data-i18n="adm.reviewTitle">Review Submission</h2>
+        <button class="modal__close" onclick="App.hideModal('reviewModal')">✕</button>
+      </div>
+      <div id="reviewModalBody"></div>
+      <div class="form-group mt-4" id="reviewNotesGroup">
+        <label class="form-label" for="adminNotes"><span data-i18n="adm.adminNotes">Admin Notes</span> <span class="optional" data-i18n="submit.optional">(optional)</span></label>
+        <textarea class="form-textarea" id="adminNotes" rows="2" data-i18n-placeholder="adm.adminNotesPlace" placeholder="Reason for approval/rejection..."></textarea>
+      </div>
+      <div class="modal__actions">
+        <button class="btn btn--outline" onclick="App.hideModal('reviewModal')" data-i18n="adm.cancel">Cancel</button>
+        <button class="btn btn--danger btn--sm" id="rejectBtn" onclick="reviewAction('rejected')" data-i18n="adm.reject">✕ Reject</button>
+        <button class="btn btn--success" id="approveBtn" onclick="reviewAction('approved')" data-i18n="adm.approve">✓ Approve</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MODAL: Booth ═══ -->
+  <div class="modal-overlay" id="boothModal">
+    <div class="modal">
+      <div class="modal__header">
+        <h2 class="modal__title" data-i18n="adm.assignBooth">Assign Booth</h2>
+        <button class="modal__close" onclick="App.hideModal('boothModal')">✕</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="boothNumber" data-i18n="adm.boothNumber">Booth Number</label>
+        <input class="form-input" type="text" id="boothNumber" placeholder="e.g. A-01">
+      </div>
+      <div class="modal__actions">
+        <button class="btn btn--outline" onclick="App.hideModal('boothModal')" data-i18n="adm.cancel">Cancel</button>
+        <button class="btn btn--primary" onclick="assignBooth()" data-i18n="adm.assign">Assign</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MODAL: Announcement ═══ -->
+  <div class="modal-overlay" id="announcementModal">
+    <div class="modal">
+      <div class="modal__header">
+        <h2 class="modal__title" id="announcementModalTitle" data-i18n="adm.newAnnTitle">New Announcement</h2>
+        <button class="modal__close" onclick="App.hideModal('announcementModal')">✕</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="annTitle" data-i18n="adm.annFormTitle">Title</label>
+        <input class="form-input" type="text" id="annTitle" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="annContent" data-i18n="adm.annFormContent">Content</label>
+        <textarea class="form-textarea" id="annContent" rows="4" required></textarea>
+      </div>
+      <div style="display:flex; gap:var(--space-4);">
+        <div class="form-group" style="flex:1;">
+          <label class="form-label" for="annPriority" data-i18n="adm.annFormPriority">Priority</label>
+          <input class="form-input" type="number" id="annPriority" value="0" min="0" max="100">
+        </div>
+        <div class="form-group" style="flex:1;">
+          <label class="form-label" for="annPinned" data-i18n="adm.annFormPinned">Pinned</label>
+          <select class="form-select" id="annPinned">
+            <option value="0" data-i18n="adm.no">No</option>
+            <option value="1" data-i18n="adm.yes">Yes</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal__actions">
+        <button class="btn btn--outline" onclick="App.hideModal('announcementModal')" data-i18n="adm.cancel">Cancel</button>
+        <button class="btn btn--primary" onclick="saveAnnouncement()" data-i18n="adm.save">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MODAL: Reset Password ═══ -->
+  <div class="modal-overlay" id="resetPwModal">
+    <div class="modal">
+      <div class="modal__header">
+        <h2 class="modal__title" data-i18n="adm.resetPwTitle">Reset Employer Password</h2>
+        <button class="modal__close" onclick="App.hideModal('resetPwModal')">✕</button>
+      </div>
+      <div id="resetPwInfo" class="text-sm text-muted mb-4"></div>
+      <div class="form-group">
+        <label class="form-label" for="newPassword" data-i18n="adm.newPassword">New Password</label>
+        <input class="form-input" type="text" id="newPassword" data-i18n-placeholder="adm.newPwPlace" placeholder="Enter new password (min 6 chars)" minlength="6">
+      </div>
+      <div class="modal__actions">
+        <button class="btn btn--outline" onclick="App.hideModal('resetPwModal')" data-i18n="adm.cancel">Cancel</button>
+        <button class="btn btn--primary" onclick="resetPassword()" data-i18n="adm.resetBtn">Reset Password</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/i18n.js"></script>
+  <script>
+    let currentFilter = '';
+    let reviewingId = null;
+    let boothAssignId = null;
+    let editingAnnouncementId = null;
+    let resetPwEmployerId = null;
+
+    async function init() {
+      const user = await App.requireAuth('admin');
+      if (!user) return;
+      I18N.init('langToggle');
+      loadStats();
+      loadSubmissions();
+      loadEmployers();
+      loadAnnouncements();
+      loadSiteSettings();
+    }
+
+    function switchTab(el) {
+      document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('sidebar-link--active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('tab-panel--active'));
+      el.classList.add('sidebar-link--active');
+      document.getElementById(el.dataset.tab)?.classList.add('tab-panel--active');
+    }
+
+    async function loadStats() {
+      try {
+        const s = await API.get('/api/admin/stats');
+        document.getElementById('statTotal').textContent = s.total;
+        document.getElementById('statPending').textContent = s.pending;
+        document.getElementById('statApproved').textContent = s.approved;
+        document.getElementById('statRejected').textContent = s.rejected;
+      } catch (err) { console.error(err); }
+    }
+
+    async function loadSubmissions() {
+      const body = document.getElementById('submissionsBody');
+      try {
+        let url = '/api/admin/submissions';
+        const params = new URLSearchParams();
+        if (currentFilter) params.set('status', currentFilter);
+        const search = document.getElementById('searchInput').value;
+        if (search) params.set('search', search);
+        if (params.toString()) url += '?' + params;
+
+        const submissions = await API.get(url);
+        if (submissions.length === 0) {
+          body.innerHTML = `<tr><td colspan="8" class="text-center text-muted" style="padding:3rem;" data-i18n="adm.noSubs">No submissions found</td></tr>`;
+          I18N.applyAll();
+          return;
+        }
+
+        body.innerHTML = submissions.map(s => `
+          <tr>
+            <td>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+                ${s.logo_path
+                  ? `<img src="${s.logo_path}" alt="" class="logo-preview">`
+                  : `<div class="logo-preview" style="display:flex;align-items:center;justify-content:center;font-size:1rem;">🏢</div>`}
+                ${s.logo_path ? `<button class="btn btn--ghost" style="padding:1px 6px;font-size:0.65rem;white-space:nowrap;" onclick="downloadLogo('${s.logo_path}', '${App.escapeHtml(s.company_name).replace(/'/g, "\\'")}')" title="Download logo">⬇ DL</button>` : ''}
+              </div>
+            </td>
+            <td><div style="font-weight:600;">${App.escapeHtml(s.company_name)}</div><div class="text-xs text-muted">${App.escapeHtml(s.employer_email || '')}</div></td>
+            <td class="text-sm">${App.escapeHtml(s.industry || '—')}</td>
+            <td><div class="text-sm">${App.escapeHtml(s.contact_person)}</div><div class="text-xs text-muted">${App.escapeHtml(s.contact_email)}</div></td>
+            <td>${App.statusBadge(s.status)}</td>
+            <td class="text-sm">${s.booth_number ? `<span style="color:var(--color-gold-dark);font-weight:600;">${App.escapeHtml(s.booth_number)}</span>` : '—'}</td>
+            <td class="text-xs text-muted">${App.formatDate(s.submitted_at)}</td>
+            <td><div class="table-actions">
+              ${s.status === 'pending' ? `
+                <button class="btn btn--success btn--sm" onclick="openReviewModal(${s.id})" title="Approve">✓</button>
+                <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="openReviewModalReject(${s.id})" title="Reject">✕</button>
+              ` : ''}
+              ${s.status === 'approved' ? `<button class="btn btn--outline btn--sm" onclick="openBoothModal(${s.id}, '${App.escapeHtml(s.booth_number || '')}')">🎪</button>` : ''}
+              <button class="btn btn--ghost btn--sm" onclick="viewDetail(${s.id})">👁</button>
+              <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="deleteSubmission(${s.id})">🗑</button>
+            </div></td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        body.innerHTML = `<tr><td colspan="8" class="text-center" style="padding:3rem;color:var(--color-danger);">Error: ${App.escapeHtml(err.message)}</td></tr>`;
+      }
+    }
+
+    function setFilter(el, status) {
+      currentFilter = status;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('filter-btn--active'));
+      el.classList.add('filter-btn--active');
+      loadSubmissions();
+    }
+
+    let filterTimeout;
+    function filterSubmissions() {
+      clearTimeout(filterTimeout);
+      filterTimeout = setTimeout(loadSubmissions, 300);
+    }
+
+    function openReviewModal(id) {
+      reviewingId = id;
+      document.getElementById('adminNotes').value = '';
+      document.getElementById('reviewModalTitle').textContent = I18N.t('adm.reviewTitle');
+      document.getElementById('reviewModalBody').innerHTML = `<p class="text-muted">Submission #${id}</p>`;
+      document.getElementById('reviewNotesGroup').style.display = '';
+      document.getElementById('rejectBtn').style.display = '';
+      document.getElementById('approveBtn').style.display = '';
+      App.showModal('reviewModal');
+    }
+
+    function openReviewModalReject(id) {
+      openReviewModal(id);
+      document.getElementById('approveBtn').style.display = 'none';
+    }
+
+    async function reviewAction(status) {
+      try {
+        await API.patch(`/api/admin/submissions/${reviewingId}/status`, {
+          status, admin_notes: document.getElementById('adminNotes').value
+        });
+        App.hideModal('reviewModal');
+        App.toast(I18N.t(status === 'approved' ? 'msg.subApproved' : 'msg.subRejected'), 'success');
+        loadSubmissions();
+        loadStats();
+      } catch (err) { App.toast(err.message, 'error'); }
+    }
+
+    function viewDetail(id) {
+      reviewingId = id;
+      document.getElementById('reviewModalTitle').textContent = I18N.t('adm.detail');
+      document.getElementById('reviewNotesGroup').style.display = 'none';
+      document.getElementById('rejectBtn').style.display = 'none';
+      document.getElementById('approveBtn').style.display = 'none';
+
+      API.get('/api/admin/submissions').then(subs => {
+        const s = subs.find(x => x.id === id);
+        if (!s) return;
+        document.getElementById('reviewModalBody').innerHTML = `
+          <div style="display:grid; gap:var(--space-3);">
+            ${s.logo_path ? `
+              <div style="display:flex;align-items:flex-end;gap:var(--space-3);">
+                <img src="${s.logo_path}" class="logo-preview--lg" alt="">
+                <button class="btn btn--outline btn--sm" onclick="downloadLogo('${s.logo_path}', '${App.escapeHtml(s.company_name).replace(/'/g, "\\'")}')" style="white-space:nowrap;">⬇ ${I18N.t('adm.downloadLogo')}</button>
+              </div>
+            ` : ''}
+            <div><strong>Company:</strong> ${App.escapeHtml(s.company_name)}</div>
+            <div><strong>Industry:</strong> ${App.escapeHtml(s.industry || '—')}</div>
+            <div><strong>Contact:</strong> ${App.escapeHtml(s.contact_person)} (${App.escapeHtml(s.contact_email)})</div>
+            ${s.contact_phone ? `<div><strong>Phone:</strong> ${App.escapeHtml(s.contact_phone)}</div>` : ''}
+            ${s.company_intro ? `<div><strong>About:</strong> ${App.escapeHtml(s.company_intro)}</div>` : ''}
+            ${s.job_positions ? `<div><strong>Positions:</strong><br>${App.escapeHtml(s.job_positions)}</div>` : ''}
+            ${s.requirements ? `<div><strong>Requirements:</strong><br>${App.escapeHtml(s.requirements)}</div>` : ''}
+            ${s.benefits ? `<div><strong>Benefits:</strong><br>${App.escapeHtml(s.benefits)}</div>` : ''}
+            <div><strong>Status:</strong> ${App.statusBadge(s.status)}</div>
+            ${s.booth_number ? `<div><strong>Booth:</strong> ${App.escapeHtml(s.booth_number)}</div>` : ''}
+            ${s.admin_notes ? `<div><strong>Notes:</strong> ${App.escapeHtml(s.admin_notes)}</div>` : ''}
+          </div>`;
+        App.showModal('reviewModal');
+      });
+    }
+
+    function openBoothModal(id, current) {
+      boothAssignId = id;
+      document.getElementById('boothNumber').value = current;
+      App.showModal('boothModal');
+    }
+
+    async function assignBooth() {
+      try {
+        await API.patch(`/api/admin/submissions/${boothAssignId}/booth`, {
+          booth_number: document.getElementById('boothNumber').value
+        });
+        App.hideModal('boothModal');
+        App.toast(I18N.t('msg.boothAssigned'), 'success');
+        loadSubmissions();
+      } catch (err) { App.toast(err.message, 'error'); }
+    }
+
+    async function deleteSubmission(id) {
+      if (!App.confirm(I18N.t('adm.confirmDelSub'))) return;
+      try {
+        await API.delete(`/api/admin/submissions/${id}`);
+        App.toast(I18N.t('msg.subDeleted'), 'success');
+        loadSubmissions(); loadStats();
+      } catch (err) { App.toast(err.message, 'error'); }
+    }
+
+    async function loadEmployers() {
+      const body = document.getElementById('employersBody');
+      try {
+        const employers = await API.get('/api/admin/employers');
+        if (employers.length === 0) {
+          body.innerHTML = `<tr><td colspan="6" class="text-center text-muted" style="padding:3rem;">—</td></tr>`;
+          return;
+        }
+        const delLabel = I18N.t('adm.delete');
+        const resetLabel = I18N.t('adm.resetPassword');
+        body.innerHTML = employers.map(e => `
+          <tr>
+            <td class="text-sm text-muted">#${e.id}</td>
+            <td style="font-weight:600;">${App.escapeHtml(e.company_name)}</td>
+            <td class="text-sm">${App.escapeHtml(e.email)}</td>
+            <td class="text-center">${e.submission_count}</td>
+            <td class="text-xs text-muted">${App.formatDate(e.created_at)}</td>
+            <td><div class="table-actions">
+              <button class="btn btn--outline btn--sm" onclick="openResetPwModal(${e.id}, '${App.escapeHtml(e.company_name).replace(/'/g,"\\'")}', '${App.escapeHtml(e.email).replace(/'/g,"\\'")}')">🔑 ${resetLabel}</button>
+              <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="deleteEmployer(${e.id}, '${App.escapeHtml(e.company_name).replace(/'/g,"\\'")}')">🗑 ${delLabel}</button>
+            </div></td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        body.innerHTML = `<tr><td colspan="6" class="text-center" style="color:var(--color-danger);">Error</td></tr>`;
+      }
+    }
+
+    async function deleteEmployer(id, name) {
+      if (!App.confirm(I18N.t('adm.confirmDelEmp') + ` "${name}"`)) return;
+      try {
+        await API.delete(`/api/admin/employers/${id}`);
+        App.toast(I18N.t('msg.empDeleted'), 'success');
+        loadEmployers(); loadSubmissions(); loadStats();
+      } catch (err) { App.toast(err.message, 'error'); }
+    }
+
+    async function loadAnnouncements() {
+      const body = document.getElementById('announcementsBody');
+      try {
+        const list = await API.get('/api/announcements');
+        if (list.length === 0) {
+          body.innerHTML = `<tr><td colspan="5" class="text-center text-muted" style="padding:3rem;">—</td></tr>`;
+          return;
+        }
+        const editLabel = I18N.t('adm.edit');
+        body.innerHTML = list.map(a => `
+          <tr>
+            <td><div style="font-weight:600; max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${App.escapeHtml(a.title)}</div>
+              <div class="text-xs text-muted" style="max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${App.escapeHtml(a.content).substring(0,60)}...</div></td>
+            <td>${a.is_pinned ? '<span class="badge badge--pinned">📌</span>' : '<span class="text-muted text-xs">—</span>'}</td>
+            <td class="text-sm">${a.priority}</td>
+            <td class="text-xs text-muted">${App.formatDate(a.created_at)}</td>
+            <td><div class="table-actions">
+              <button class="btn btn--ghost btn--sm" onclick='editAnnouncement(${a.id}, ${JSON.stringify(a.title)}, ${JSON.stringify(a.content)}, ${a.priority}, ${a.is_pinned})'>✏️ ${editLabel}</button>
+              <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="deleteAnnouncement(${a.id})">🗑</button>
+            </div></td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        body.innerHTML = `<tr><td colspan="5" class="text-center" style="color:var(--color-danger);">Error</td></tr>`;
+      }
+    }
+
+    function openAnnouncementModal() {
+      editingAnnouncementId = null;
+      document.getElementById('announcementModalTitle').textContent = I18N.t('adm.newAnnTitle');
+      document.getElementById('annTitle').value = '';
+      document.getElementById('annContent').value = '';
+      document.getElementById('annPriority').value = '0';
+      document.getElementById('annPinned').value = '0';
+      App.showModal('announcementModal');
+    }
+
+    function editAnnouncement(id, title, content, priority, pinned) {
+      editingAnnouncementId = id;
+      document.getElementById('announcementModalTitle').textContent = I18N.t('adm.editAnnTitle');
+      document.getElementById('annTitle').value = title;
+      document.getElementById('annContent').value = content;
+      document.getElementById('annPriority').value = priority;
+      document.getElementById('annPinned').value = pinned ? '1' : '0';
+      App.showModal('announcementModal');
+    }
+
+    async function saveAnnouncement() {
+      const title = document.getElementById('annTitle').value;
+      const content = document.getElementById('annContent').value;
+      if (!title || !content) { App.toast(I18N.t('msg.required'), 'error'); return; }
+
+      const payload = {
+        title, content,
+        priority: parseInt(document.getElementById('annPriority').value) || 0,
+        is_pinned: document.getElementById('annPinned').value === '1'
+      };
+
+      try {
+        if (editingAnnouncementId) {
+          await API.put(`/api/announcements/${editingAnnouncementId}`, payload);
+          App.toast(I18N.t('msg.annUpdated'), 'success');
+        } else {
+          await API.post('/api/announcements', payload);
+          App.toast(I18N.t('msg.annCreated'), 'success');
+        }
+        App.hideModal('announcementModal');
+        loadAnnouncements();
+      } catch (err) { App.toast(err.message, 'error'); }
+    }
+
+    async function deleteAnnouncement(id) {
+      if (!App.confirm(I18N.t('adm.confirmDelAnn'))) return;
+      try {
+        await API.delete(`/api/announcements/${id}`);
+        App.toast(I18N.t('msg.annDeleted'), 'success');
+        loadAnnouncements();
+      } catch (err) { App.toast(err.message, 'error'); }
+    }
+
+    // Close modals on overlay click
+    function openResetPwModal(id, name, email) {
+      resetPwEmployerId = id;
+      document.getElementById('resetPwInfo').textContent = `${name} (${email})`;
+      document.getElementById('newPassword').value = '';
+      I18N.applyAll();
+      App.showModal('resetPwModal');
+    }
+
+    async function resetPassword() {
+      const pw = document.getElementById('newPassword').value;
+      if (!pw || pw.length < 6) {
+        App.toast(I18N.currentLang === 'zh' ? '密碼至少6個字元' : 'Password must be at least 6 characters', 'error');
+        return;
+      }
+      try {
+        await API.patch(`/api/admin/employers/${resetPwEmployerId}/reset-password`, { new_password: pw });
+        App.hideModal('resetPwModal');
+        App.toast(I18N.t('msg.pwResetOk'), 'success');
+      } catch (err) { App.toast(err.message, 'error'); }
+    }
+
+    ['reviewModal','boothModal','announcementModal','resetPwModal'].forEach(id => {
+      document.getElementById(id).addEventListener('click', function(e) {
+        if (e.target === this) App.hideModal(id);
+      });
+    });
+
+    /**
+     * Download a logo file for poster use.
+     * Fetches the image as a blob and triggers a proper download.
+     */
+    function downloadLogo(path, companyName) {
+      const safeName = companyName.replace(/[^a-zA-Z0-9\u4e00-\u9fff_\- ]/g, '').trim() || 'logo';
+      const ext = path.split('.').pop() || 'png';
+      const filename = `${safeName}_logo.${ext}`;
+
+      fetch(path)
+        .then(res => res.blob())
+        .then(blob => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        })
+        .catch(() => {
+          // Fallback: open in new tab
+          window.open(path, '_blank');
+        });
+    }
+
+    const SETTING_KEYS = ['event_date','event_date_zh','event_deadline','event_deadline_zh','event_venue','event_venue_zh'];
+
+    async function loadSiteSettings() {
+      try {
+        const s = await API.get('/api/settings');
+        SETTING_KEYS.forEach(k => {
+          const el = document.getElementById('s_' + k);
+          if (el) el.value = s[k] || '';
+        });
+      } catch (err) { console.error('Failed to load settings', err); }
+    }
+
+    async function saveSettings() {
+      const payload = {};
+      SETTING_KEYS.forEach(k => {
+        payload[k] = document.getElementById('s_' + k).value;
+      });
+      try {
+        await API.put('/api/settings', payload);
+        App.toast(I18N.t('msg.settingsSaved'), 'success');
+      } catch (err) { App.toast(err.message, 'error'); }
+    }
+
+    init();
+  </script>
+</body>
+</html>

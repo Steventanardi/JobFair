@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="National Quemoy University Job Fair — Connect with top employers and discover career opportunities.">
+  <title>NQU Job Fair</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="page-wrapper">
+
+    <!-- Navigation -->
+    <nav class="nav">
+      <div class="nav__inner">
+        <a href="/" class="nav__brand">
+          <span>NQU</span> <span class="nav__brand-accent" data-i18n="nav.brand">Job Fair</span>
+        </a>
+        <ul class="nav__links" id="navLinks">
+          <li><a href="#announcements" class="nav__link" data-i18n="nav.latest">Latest News</a></li>
+          <li><a href="/employer/login.html" class="nav__link" data-i18n="nav.employer">Employer</a></li>
+          <li><a href="/admin/login.html" class="nav__link" data-i18n="nav.admin">Admin</a></li>
+          <li id="langToggle"></li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+      <div class="container hero__content">
+        <div class="hero__badge fade-in" data-i18n="hero.badge">2025 Career Fair</div>
+        <h1 class="hero__title fade-in-up">
+          <span data-i18n="hero.title1">National Quemoy University</span><br>
+          <span class="gold" data-i18n="hero.title2">Job Fair</span>
+        </h1>
+        <p class="hero__subtitle fade-in-up stagger-1" data-i18n="hero.subtitle">
+          Connecting top employers with exceptional NQU talent.
+        </p>
+        <div class="hero__actions fade-in-up stagger-2">
+          <a href="/employer/register.html" class="btn btn--primary btn--lg" data-i18n="hero.registerBtn">
+            Employer Registration
+          </a>
+          <a href="#announcements" class="btn btn--secondary btn--lg" data-i18n="hero.learnMore">
+            Learn More
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Event Info Cards -->
+    <section class="section">
+      <div class="container">
+        <div class="stats-grid fade-in-up">
+          <div class="card card--lift card--gold" style="text-align:center; padding: 2rem;">
+            <div style="font-size:2rem; margin-bottom:0.5rem;">📅</div>
+            <div style="font-weight:700; font-size:1.1rem; margin-bottom:0.25rem;" data-i18n="event.date">Event Date</div>
+            <div class="text-muted text-sm" id="eventDateVal">...</div>
+          </div>
+          <div class="card card--lift card--gold" style="text-align:center; padding: 2rem;">
+            <div style="font-size:2rem; margin-bottom:0.5rem;">📍</div>
+            <div style="font-weight:700; font-size:1.1rem; margin-bottom:0.25rem;" data-i18n="event.venue">Venue</div>
+            <div class="text-muted text-sm" id="eventVenueVal">...</div>
+          </div>
+          <div class="card card--lift card--gold" style="text-align:center; padding: 2rem;">
+            <div style="font-size:2rem; margin-bottom:0.5rem;">🏢</div>
+            <div style="font-weight:700; font-size:1.1rem; margin-bottom:0.25rem;" data-i18n="event.open">Open For</div>
+            <div class="text-muted text-sm" data-i18n="event.openVal">All Industries</div>
+          </div>
+          <div class="card card--lift card--gold" style="text-align:center; padding: 2rem;">
+            <div style="font-size:2rem; margin-bottom:0.5rem;">⏰</div>
+            <div style="font-weight:700; font-size:1.1rem; margin-bottom:0.25rem;" data-i18n="event.deadline">Deadline</div>
+            <div class="text-muted text-sm" id="eventDeadlineVal">...</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Announcements -->
+    <section class="section" id="announcements" style="background: var(--color-surface-alt);">
+      <div class="container">
+        <div class="section__header">
+          <h2 class="section__title" data-i18n="ann.title">Latest News</h2>
+          <div class="section__divider"></div>
+          <p class="section__subtitle" data-i18n="ann.subtitle">Stay updated with the latest information about the job fair.</p>
+        </div>
+        <div class="announcement-list" id="announcementList">
+          <div class="empty-state">
+            <div class="spinner" style="margin: 0 auto;"></div>
+            <p class="text-muted mt-4" data-i18n="ann.loading">Loading announcements...</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="section">
+      <div class="container">
+        <div class="section__header">
+          <h2 class="section__title" data-i18n="how.title">How It Works</h2>
+          <div class="section__divider"></div>
+        </div>
+        <div class="stats-grid" style="max-width:900px; margin: 0 auto;">
+          <div class="card card--lift" style="text-align:center; padding: 2rem;">
+            <div style="font-size:2.5rem; margin-bottom:0.75rem; color:var(--color-gold);">01</div>
+            <div style="font-weight:700; margin-bottom:0.5rem;" data-i18n="how.step1">Register</div>
+            <div class="text-muted text-sm" data-i18n="how.step1desc">Create your employer account on our platform.</div>
+          </div>
+          <div class="card card--lift" style="text-align:center; padding: 2rem;">
+            <div style="font-size:2.5rem; margin-bottom:0.75rem; color:var(--color-gold);">02</div>
+            <div style="font-weight:700; margin-bottom:0.5rem;" data-i18n="how.step2">Submit</div>
+            <div class="text-muted text-sm" data-i18n="how.step2desc">Fill in company details, upload logo & list job openings.</div>
+          </div>
+          <div class="card card--lift" style="text-align:center; padding: 2rem;">
+            <div style="font-size:2.5rem; margin-bottom:0.75rem; color:var(--color-gold);">03</div>
+            <div style="font-weight:700; margin-bottom:0.5rem;" data-i18n="how.step3">Approval</div>
+            <div class="text-muted text-sm" data-i18n="how.step3desc">Our admin team reviews and approves your submission.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer__brand">NQU <span class="gold" data-i18n="nav.brand">Job Fair</span></div>
+        <p data-i18n="footer.uni">National Quemoy University</p>
+        <p style="margin-top:0.5rem; font-size:0.75rem; opacity:0.5;" data-i18n="footer.copy">© 2025 NQU Career Center. All rights reserved.</p>
+      </div>
+    </footer>
+
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/i18n.js"></script>
+  <script>
+    async function loadAnnouncements() {
+      const container = document.getElementById('announcementList');
+      try {
+        const announcements = await API.get('/api/announcements');
+        
+        if (announcements.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-state__icon">📢</div>
+              <div class="empty-state__title" data-i18n="ann.empty">No Announcements Yet</div>
+              <div class="empty-state__text" data-i18n="ann.emptyText">Check back later for updates.</div>
+            </div>`;
+          I18N.applyAll();
+          return;
+        }
+
+        container.innerHTML = announcements.map((a, i) => `
+          <div class="announcement-card ${a.is_pinned ? 'announcement-card--pinned' : ''} fade-in-up stagger-${Math.min(i+1, 5)}">
+            <div class="announcement-card__header">
+              <div>
+                <h3 class="announcement-card__title">${App.escapeHtml(a.title)}</h3>
+                ${a.is_pinned ? `<span class="badge badge--pinned">📌 <span data-i18n="ann.pinned">Pinned</span></span>` : ''}
+              </div>
+              <span class="announcement-card__date">${App.formatDate(a.created_at)}</span>
+            </div>
+            <div class="announcement-card__content">${App.escapeHtml(a.content)}</div>
+          </div>
+        `).join('');
+        I18N.applyAll();
+      } catch (err) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state__icon">⚠️</div>
+            <div class="empty-state__title">Error</div>
+            <div class="empty-state__text">${App.escapeHtml(err.message)}</div>
+          </div>`;
+      }
+    }
+
+    async function updateNav() {
+      const user = await API.checkAuth();
+      if (user) {
+        const navLinks = document.getElementById('navLinks');
+        if (user.role === 'employer') {
+          navLinks.innerHTML = `
+            <li><a href="#announcements" class="nav__link" data-i18n="nav.latest">Latest News</a></li>
+            <li><a href="/employer/dashboard.html" class="nav__link" data-i18n="nav.dashboard">Dashboard</a></li>
+            <li><a href="#" class="nav__link" onclick="App.logout(); return false;" data-i18n="nav.logout">Logout</a></li>
+            <li id="langToggle"></li>
+          `;
+        } else if (user.role === 'admin') {
+          navLinks.innerHTML = `
+            <li><a href="#announcements" class="nav__link" data-i18n="nav.latest">Latest News</a></li>
+            <li><a href="/admin/dashboard.html" class="nav__link" data-i18n="nav.adminPanel">Admin Panel</a></li>
+            <li><a href="#" class="nav__link" onclick="App.logout(); return false;" data-i18n="nav.logout">Logout</a></li>
+            <li id="langToggle"></li>
+          `;
+        }
+        I18N.init('langToggle');
+      }
+    }
+
+    async function loadSettings() {
+      try {
+        const s = await API.get('/api/settings');
+        const lang = I18N.currentLang;
+        document.getElementById('eventDateVal').textContent = lang === 'zh' ? (s.event_date_zh || s.event_date) : s.event_date;
+        document.getElementById('eventVenueVal').textContent = lang === 'zh' ? (s.event_venue_zh || s.event_venue) : s.event_venue;
+        document.getElementById('eventDeadlineVal').textContent = lang === 'zh' ? (s.event_deadline_zh || s.event_deadline) : s.event_deadline;
+      } catch (err) { console.error('Settings load error:', err); }
+    }
+
+    // Re-apply settings when language changes
+    const origSetLang = I18N.setLang.bind(I18N);
+    I18N.setLang = function(lang) { origSetLang(lang); loadSettings(); };
+
+    I18N.init('langToggle');
+    loadSettings();
+    loadAnnouncements();
+    updateNav();
+  </script>
+</body>
+</html>

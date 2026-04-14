@@ -1,0 +1,16 @@
+node_modules/
+jobfair.db
+jobfair.db-journal
+jobfair.db-wal
+jobfair.db-shm
+
+# Ignore all user-uploaded logos but keep the directory (using .gitkeep)
+uploads/*
+!uploads/.gitkeep
+
+# Ignore environment variables
+.env
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db

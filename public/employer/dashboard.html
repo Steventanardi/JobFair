@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Manage your job fair submissions">
+  <title>Employer Dashboard — NQU Job Fair</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="page-wrapper">
+
+    <nav class="nav">
+      <div class="nav__inner">
+        <a href="/" class="nav__brand">
+          <span>NQU</span> <span class="nav__brand-accent" data-i18n="nav.brand">Job Fair</span>
+        </a>
+        <ul class="nav__links">
+          <li><a href="/" class="nav__link" data-i18n="nav.home">Home</a></li>
+          <li><a href="/employer/dashboard.html" class="nav__link nav__link--active" data-i18n="nav.dashboard">Dashboard</a></li>
+          <li><a href="#" class="nav__link" onclick="App.logout(); return false;" data-i18n="nav.logout">Logout</a></li>
+          <li id="langToggle"></li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="page-content">
+      <div class="container" style="padding-top:var(--space-8); padding-bottom:var(--space-16);">
+
+        <div class="dashboard__header fade-in-up">
+          <div>
+            <h1 class="dashboard__title" data-i18n="empDash.title">Dashboard</h1>
+            <p class="text-muted text-sm mt-2" id="welcomeMsg" data-i18n="empDash.welcome">Welcome back!</p>
+          </div>
+          <a href="/employer/submit.html" class="btn btn--primary" data-i18n="empDash.newSub">+ New Submission</a>
+        </div>
+
+        <div id="submissionsList">
+          <div class="empty-state">
+            <div class="spinner" style="margin:0 auto;"></div>
+            <p class="text-muted mt-4" data-i18n="empDash.loading">Loading your submissions...</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <footer class="footer">
+      <div class="container">
+        <div class="footer__brand">NQU <span class="gold" data-i18n="nav.brand">Job Fair</span></div>
+        <p data-i18n="footer.uni">National Quemoy University</p>
+      </div>
+    </footer>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/i18n.js"></script>
+  <script>
+    let currentUser = null;
+
+    async function init() {
+      currentUser = await App.requireAuth('employer');
+      if (!currentUser) return;
+      I18N.init('langToggle');
+      document.getElementById('welcomeMsg').textContent = 
+        I18N.currentLang === 'zh' ? `歡迎回來，${currentUser.company_name}！` : `Welcome, ${currentUser.company_name}!`;
+      loadSubmissions();
+    }
+
+    async function loadSubmissions() {
+      const container = document.getElementById('submissionsList');
+      try {
+        const submissions = await API.get('/api/submissions/mine');
+
+        if (submissions.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state fade-in-up">
+              <div class="empty-state__icon">📋</div>
+              <div class="empty-state__title" data-i18n="empDash.noSubs">No Submissions Yet</div>
+              <div class="empty-state__text" data-i18n="empDash.noSubsText">Create your first submission to participate in the job fair.</div>
+              <a href="/employer/submit.html" class="btn btn--primary" data-i18n="empDash.newSub">+ New Submission</a>
+            </div>`;
+          I18N.applyAll();
+          return;
+        }
+
+        const editLabel = I18N.t('empDash.edit');
+        const deleteLabel = I18N.t('empDash.delete');
+        const boothLabel = I18N.t('empDash.booth');
+        const noteLabel = I18N.t('empDash.adminNote');
+
+        container.innerHTML = `<div class="submissions-grid">
+          ${submissions.map((s, i) => `
+            <div class="submission-card fade-in-up stagger-${Math.min(i+1,5)}">
+              ${s.logo_path 
+                ? `<img src="${s.logo_path}" alt="${App.escapeHtml(s.company_name)}" class="submission-card__logo">` 
+                : `<div class="submission-card__logo" style="display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:var(--color-text-light);">🏢</div>`
+              }
+              <div class="submission-card__info">
+                <div class="submission-card__top">
+                  <div>
+                    <div class="submission-card__name">${App.escapeHtml(s.company_name)}</div>
+                    <div class="submission-card__meta">
+                      ${App.escapeHtml(s.industry || '—')} · ${App.timeAgo(s.submitted_at)}
+                    </div>
+                  </div>
+                  ${App.statusBadge(s.status)}
+                </div>
+                ${s.booth_number ? `<div class="text-sm" style="color:var(--color-gold-dark); font-weight:600;">🎪 ${boothLabel}: ${App.escapeHtml(s.booth_number)}</div>` : ''}
+                ${s.admin_notes ? `<div class="text-sm text-muted mt-2">📝 ${noteLabel}: ${App.escapeHtml(s.admin_notes)}</div>` : ''}
+                ${s.status === 'pending' ? `
+                  <div class="submission-card__actions">
+                    <a href="/employer/submit.html?edit=${s.id}" class="btn btn--outline btn--sm">${editLabel}</a>
+                    <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="deleteSubmission(${s.id})">${deleteLabel}</button>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          `).join('')}
+        </div>`;
+      } catch (err) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state__icon">⚠️</div>
+            <div class="empty-state__title">Error</div>
+            <div class="empty-state__text">${App.escapeHtml(err.message)}</div>
+          </div>`;
+      }
+    }
+
+    async function deleteSubmission(id) {
+      if (!App.confirm(I18N.t('empDash.confirmDel'))) return;
+      try {
+        await API.delete(`/api/submissions/${id}`);
+        App.toast(I18N.t('msg.subDeleted'), 'success');
+        loadSubmissions();
+      } catch (err) {
+        App.toast(err.message, 'error');
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
