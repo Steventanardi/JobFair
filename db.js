@@ -9,6 +9,7 @@ const db = new Pool({
 
 const initDB = async () => {
   try {
+    // Split queries to ensure compatibility with all Postgres environments
     await db.query(`
       CREATE TABLE IF NOT EXISTS employers (
         id            SERIAL PRIMARY KEY,
@@ -16,8 +17,10 @@ const initDB = async () => {
         password_hash TEXT NOT NULL,
         company_name  TEXT NOT NULL,
         created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
+      )
+    `);
 
+    await db.query(`
       CREATE TABLE IF NOT EXISTS submissions (
         id              SERIAL PRIMARY KEY,
         employer_id     INTEGER NOT NULL REFERENCES employers(id) ON DELETE CASCADE,
@@ -36,14 +39,18 @@ const initDB = async () => {
         booth_number    TEXT,
         submitted_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         reviewed_at     TIMESTAMP
-      );
+      )
+    `);
 
+    await db.query(`
       CREATE TABLE IF NOT EXISTS admins (
         id            SERIAL PRIMARY KEY,
         username      TEXT NOT NULL UNIQUE,
         password_hash TEXT NOT NULL
-      );
+      )
+    `);
 
+    await db.query(`
       CREATE TABLE IF NOT EXISTS announcements (
         id          SERIAL PRIMARY KEY,
         title       TEXT NOT NULL,
@@ -51,7 +58,7 @@ const initDB = async () => {
         priority    INTEGER DEFAULT 0,
         is_pinned   INTEGER DEFAULT 0,
         created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
+      )
     `);
 
     // Seed default admin if not exists
@@ -83,6 +90,7 @@ const initDB = async () => {
   }
 };
 
+// Start initialization
 initDB();
 
 module.exports = db;
