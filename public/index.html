@@ -47,42 +47,16 @@
       </div>
     </section>
 
-    <!-- Event Info Cards -->
-    <section class="section">
-      <div class="container">
-        <div class="stats-grid fade-in-up">
-          <div class="card card--lift card--gold" style="text-align:center; padding: 2rem;">
-            <div style="font-size:2rem; margin-bottom:0.5rem;">📅</div>
-            <div style="font-weight:700; font-size:1.1rem; margin-bottom:0.25rem;" data-i18n="event.date">Event Date</div>
-            <div class="text-muted text-sm" id="eventDateVal">...</div>
-          </div>
-          <div class="card card--lift card--gold" style="text-align:center; padding: 2rem;">
-            <div style="font-size:2rem; margin-bottom:0.5rem;">📍</div>
-            <div style="font-weight:700; font-size:1.1rem; margin-bottom:0.25rem;" data-i18n="event.venue">Venue</div>
-            <div class="text-muted text-sm" id="eventVenueVal">...</div>
-          </div>
-          <div class="card card--lift card--gold" style="text-align:center; padding: 2rem;">
-            <div style="font-size:2rem; margin-bottom:0.5rem;">🏢</div>
-            <div style="font-weight:700; font-size:1.1rem; margin-bottom:0.25rem;" data-i18n="event.open">Open For</div>
-            <div class="text-muted text-sm" data-i18n="event.openVal">All Industries</div>
-          </div>
-          <div class="card card--lift card--gold" style="text-align:center; padding: 2rem;">
-            <div style="font-size:2rem; margin-bottom:0.5rem;">⏰</div>
-            <div style="font-weight:700; font-size:1.1rem; margin-bottom:0.25rem;" data-i18n="event.deadline">Deadline</div>
-            <div class="text-muted text-sm" id="eventDeadlineVal">...</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Announcements -->
+    <!-- Latest Information -->
     <section class="section" id="announcements" style="background: var(--color-surface-alt);">
       <div class="container">
         <div class="section__header">
-          <h2 class="section__title" data-i18n="ann.title">Latest News</h2>
+          <h2 class="section__title" data-i18n="ann.title">Latest Information</h2>
           <div class="section__divider"></div>
           <p class="section__subtitle" data-i18n="ann.subtitle">Stay updated with the latest information about the job fair.</p>
         </div>
+
+        <!-- Announcements -->
         <div class="announcement-list" id="announcementList">
           <div class="empty-state">
             <div class="spinner" style="margin: 0 auto;"></div>
@@ -196,22 +170,7 @@
       }
     }
 
-    async function loadSettings() {
-      try {
-        const s = await API.get('/api/settings');
-        const lang = I18N.currentLang;
-        document.getElementById('eventDateVal').textContent = lang === 'zh' ? (s.event_date_zh || s.event_date) : s.event_date;
-        document.getElementById('eventVenueVal').textContent = lang === 'zh' ? (s.event_venue_zh || s.event_venue) : s.event_venue;
-        document.getElementById('eventDeadlineVal').textContent = lang === 'zh' ? (s.event_deadline_zh || s.event_deadline) : s.event_deadline;
-      } catch (err) { console.error('Settings load error:', err); }
-    }
-
-    // Re-apply settings when language changes
-    const origSetLang = I18N.setLang.bind(I18N);
-    I18N.setLang = function(lang) { origSetLang(lang); loadSettings(); };
-
     I18N.init('langToggle');
-    loadSettings();
     loadAnnouncements();
     updateNav();
   </script>

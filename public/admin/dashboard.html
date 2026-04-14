@@ -27,9 +27,6 @@
         <li><a class="sidebar-link" data-tab="tab-announcements" onclick="switchTab(this)">
           <span class="sidebar-link__icon">📢</span> <span data-i18n="adm.announcements">Announcements</span>
         </a></li>
-        <li><a class="sidebar-link" data-tab="tab-settings" onclick="switchTab(this)">
-          <span class="sidebar-link__icon">⚙️</span> <span data-i18n="adm.settings">Settings</span>
-        </a></li>
       </ul>
 
       <div class="sidebar-logout">
@@ -154,47 +151,6 @@
         </div>
       </div>
 
-      <!-- ═══ TAB: SETTINGS ═══ -->
-      <div class="tab-panel" id="tab-settings">
-        <div class="dashboard__header">
-          <h1 class="dashboard__title" data-i18n="adm.settingsTitle">Event Settings</h1>
-        </div>
-
-        <div class="card" style="padding:var(--space-6); max-width:700px;">
-          <p class="text-sm text-muted" style="margin-bottom:var(--space-4);" data-i18n="adm.settingsDesc">These values are displayed on the main page. Update them for each event period.</p>
-
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-4);">
-            <div class="form-group">
-              <label class="form-label" data-i18n="adm.settingDateEN">Event Date (EN)</label>
-              <input class="form-input" type="text" id="s_event_date" placeholder="e.g. June 7, 2025">
-            </div>
-            <div class="form-group">
-              <label class="form-label" data-i18n="adm.settingDateZH">Event Date (中文)</label>
-              <input class="form-input" type="text" id="s_event_date_zh" placeholder="例如 2025年6月7日">
-            </div>
-            <div class="form-group">
-              <label class="form-label" data-i18n="adm.settingDeadlineEN">Registration Deadline (EN)</label>
-              <input class="form-input" type="text" id="s_event_deadline" placeholder="e.g. May 15, 2025">
-            </div>
-            <div class="form-group">
-              <label class="form-label" data-i18n="adm.settingDeadlineZH">Registration Deadline (中文)</label>
-              <input class="form-input" type="text" id="s_event_deadline_zh" placeholder="例如 2025年5月15日">
-            </div>
-            <div class="form-group">
-              <label class="form-label" data-i18n="adm.settingVenueEN">Venue (EN)</label>
-              <input class="form-input" type="text" id="s_event_venue" placeholder="e.g. NQU Student Activity Center">
-            </div>
-            <div class="form-group">
-              <label class="form-label" data-i18n="adm.settingVenueZH">Venue (中文)</label>
-              <input class="form-input" type="text" id="s_event_venue_zh" placeholder="例如 金大學生活動中心">
-            </div>
-          </div>
-
-          <div style="margin-top:var(--space-5); display:flex; gap:var(--space-3);">
-            <button class="btn btn--primary" onclick="saveSettings()" data-i18n="adm.saveSettings">Save Settings</button>
-          </div>
-        </div>
-      </div>
 
     </main>
   </div>
@@ -309,7 +265,7 @@
       loadSubmissions();
       loadEmployers();
       loadAnnouncements();
-      loadSiteSettings();
+
     }
 
     function switchTab(el) {
@@ -651,28 +607,7 @@
         });
     }
 
-    const SETTING_KEYS = ['event_date','event_date_zh','event_deadline','event_deadline_zh','event_venue','event_venue_zh'];
 
-    async function loadSiteSettings() {
-      try {
-        const s = await API.get('/api/settings');
-        SETTING_KEYS.forEach(k => {
-          const el = document.getElementById('s_' + k);
-          if (el) el.value = s[k] || '';
-        });
-      } catch (err) { console.error('Failed to load settings', err); }
-    }
-
-    async function saveSettings() {
-      const payload = {};
-      SETTING_KEYS.forEach(k => {
-        payload[k] = document.getElementById('s_' + k).value;
-      });
-      try {
-        await API.put('/api/settings', payload);
-        App.toast(I18N.t('msg.settingsSaved'), 'success');
-      } catch (err) { App.toast(err.message, 'error'); }
-    }
 
     init();
   </script>

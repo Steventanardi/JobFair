@@ -57,7 +57,7 @@ app.get('/admin/*', (req, res) => {
 app.listen(PORT, () => {
   console.log(`\n  ┌──────────────────────────────────────────┐`);
   console.log(`  │  NQU Job Fair System                     │`);
-  console.log(`  │  Running at http://localhost:${PORT}         │`);
+  console.log(`  │  Running at http://localhost:${PORT}        │`);
   console.log(`  │  Admin: admin / nqu2025                  │`);
   console.log(`  └──────────────────────────────────────────┘\n`);
 });

@@ -9,7 +9,7 @@ const I18N = {
   translations: {
     // ── Navigation ────────────────────────────────────────
     'nav.brand': { en: 'Job Fair', zh: '徵才博覽會' },
-    'nav.latest': { en: 'Latest News', zh: '最新消息' },
+    'nav.latest': { en: 'Latest Info', zh: '最新資訊' },
     'nav.employer': { en: 'Employer', zh: '企業登入' },
     'nav.admin': { en: 'Admin', zh: '管理員' },
     'nav.home': { en: 'Home', zh: '首頁' },
@@ -36,7 +36,7 @@ const I18N = {
     'event.deadlineVal': { en: 'To Be Announced', zh: '待公佈' },
 
     // ── Announcements ─────────────────────────────────────
-    'ann.title': { en: 'Latest News', zh: '最新消息' },
+    'ann.title': { en: 'Latest Information', zh: '最新資訊' },
     'ann.subtitle': { en: 'Stay updated with the latest information about the job fair.', zh: '掌握徵才博覽會最新資訊。' },
     'ann.loading': { en: 'Loading announcements...', zh: '載入公告中...' },
     'ann.empty': { en: 'No Announcements Yet', zh: '目前無公告' },
