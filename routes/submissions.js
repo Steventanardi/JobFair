@@ -8,17 +8,8 @@ const { requireEmployer } = require('../middleware/auth');
 const router = express.Router();
 
 // Multer config for logo uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = path.join(__dirname, '..', 'uploads');
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
-  }
-});
+// Use memory storage for Vercel Serverless (read-only file system)
+const storage = multer.memoryStorage();
 
 const upload = multer({
   storage,
@@ -44,7 +35,10 @@ router.post('/', requireEmployer, upload.single('logo'), async (req, res) => {
     return res.status(400).json({ error: 'Company name, contact person, and contact email are required' });
   }
 
-  const logo_path = req.file ? `/uploads/${req.file.filename}` : null;
+  let logo_path = null;
+  if (req.file) {
+    logo_path = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+  }
 
   try {
     const result = await db.query(`
@@ -119,7 +113,10 @@ router.put('/:id', requireEmployer, upload.single('logo'), async (req, res) => {
       contact_phone, company_intro, job_positions, requirements, benefits
     } = req.body;
 
-    const logo_path = req.file ? `/uploads/${req.file.filename}` : submission.logo_path;
+    let logo_path = submission.logo_path;
+    if (req.file) {
+      logo_path = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+    }
 
     await db.query(`
       UPDATE submissions SET

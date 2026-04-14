@@ -47,6 +47,15 @@ app.use('/api/auth', authRoutes);
 app.use('/api/submissions', submissionRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/announcements', announcementRoutes);
+
+// ── Global API Error Handler ───────────────────────────────
+app.use('/api', (err, req, res, next) => {
+  console.error('API Error:', err);
+  res.status(err.status || 500).json({ 
+    error: err.message || 'Internal Server Error' 
+  });
+});
+
 // ── SPA Fallback for HTML pages ────────────────────────────
 app.get('/employer/*', (req, res) => {
   const file = req.path.endsWith('.html') ? req.path : req.path + '.html';
