@@ -1,3 +1,6 @@
+// Must be set before any TLS connection — fixes Supabase self-signed cert
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
