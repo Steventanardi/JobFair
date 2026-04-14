@@ -14,9 +14,12 @@ const connectionString =
 
 console.log('DB connecting to:', connectionString ? connectionString.substring(0, 30) + '...' : 'NO URL FOUND');
 
+// Always use SSL for remote databases (Supabase, Neon, etc.)
+const isRemote = !connectionString.includes('localhost');
+
 const db = new Pool({
   connectionString,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  ssl: isRemote ? { rejectUnauthorized: false } : false
 });
 
 const initDB = async () => {
