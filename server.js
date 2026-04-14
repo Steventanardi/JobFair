@@ -21,9 +21,15 @@ app.use(session({
   cookie: {
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
     httpOnly: true,
-    sameSite: 'lax'
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production'
   }
 }));
+
+// Trust Vercel's proxy so secure cookies work
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
 
 // Static files
 app.use(express.static(path.join(__dirname, 'public')));
@@ -49,11 +55,16 @@ app.get('/admin/*', (req, res) => {
   });
 });
 
-// ── Start ──────────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`\n  ┌──────────────────────────────────────────┐`);
-  console.log(`  │  NQU Job Fair System                     │`);
-  console.log(`  │  Running at http://localhost:${PORT}        │`);
-  console.log(`  │  Admin: admin / nqu2025                  │`);
-  console.log(`  └──────────────────────────────────────────┘\n`);
-});
+// ── Start (only when not on Vercel) ────────────────────────
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`\n  ┌──────────────────────────────────────────┐`);
+    console.log(`  │  NQU Job Fair System                     │`);
+    console.log(`  │  Running at http://localhost:${PORT}        │`);
+    console.log(`  │  Admin: admin / nqu2025                  │`);
+    console.log(`  └──────────────────────────────────────────┘\n`);
+  });
+}
+
+// Export for Vercel serverless
+module.exports = app;

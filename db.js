@@ -2,14 +2,23 @@ require('dotenv').config();
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 
+// Support all common Vercel/Supabase env var names
+const connectionString =
+  process.env.DATABASE_URL ||
+  process.env.POSTGRES_URL ||
+  process.env.SUPABASE_DB_URL ||
+  process.env.STORAGE_URL ||
+  'postgresql://postgres:postgres@localhost:5432/jobfair';
+
+console.log('DB connecting to:', connectionString ? connectionString.substring(0, 30) + '...' : 'NO URL FOUND');
+
 const db = new Pool({
-  connectionString: process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.SUPABASE_DB_URL || 'postgresql://postgres:postgres@localhost:5432/jobfair',
+  connectionString,
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
 const initDB = async () => {
   try {
-    // Split queries to ensure compatibility with all Postgres environments
     await db.query(`
       CREATE TABLE IF NOT EXISTS employers (
         id            SERIAL PRIMARY KEY,
@@ -61,6 +70,8 @@ const initDB = async () => {
       )
     `);
 
+    console.log('Tables created successfully.');
+
     // Seed default admin if not exists
     const { rows: admins } = await db.query('SELECT id FROM admins WHERE username = $1', ['admin']);
     if (admins.length === 0) {
@@ -86,7 +97,7 @@ const initDB = async () => {
       console.log('Sample announcements seeded.');
     }
   } catch (err) {
-    console.error('Database initialization failed:', err);
+    console.error('Database initialization failed:', err.message);
   }
 };
 
