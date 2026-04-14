@@ -59,7 +59,7 @@ const App = {
    */
   formatDate(dateStr) {
     if (!dateStr) return '—';
-    const date = new Date(dateStr + 'Z');
+    const date = new Date(dateStr);
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -72,7 +72,7 @@ const App = {
    */
   timeAgo(dateStr) {
     if (!dateStr) return '';
-    const date = new Date(dateStr + 'Z');
+    const date = new Date(dateStr);
     const now = new Date();
     const seconds = Math.floor((now - date) / 1000);
 
