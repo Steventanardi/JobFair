@@ -5,6 +5,8 @@ const bcrypt = require('bcryptjs');
 // Support all common Vercel/Supabase env var names
 const connectionString =
   process.env.DATABASE_URL ||
+  process.env.DATABASE_POSTGRES_URL ||
+  process.env.DATABASE_POSTGRES_URL_NON_POOLING ||
   process.env.POSTGRES_URL ||
   process.env.SUPABASE_DB_URL ||
   process.env.STORAGE_URL ||
