@@ -12,10 +12,10 @@
 
     <!-- Sidebar -->
     <aside class="dashboard__sidebar">
-      <div class="dashboard__sidebar-brand">
+      <a href="/" class="dashboard__sidebar-brand" style="text-decoration:none; display:block; color:inherit;">
         NQU <span class="gold" data-i18n="nav.brand">Job Fair</span>
         <div style="font-size:var(--font-xs); color:rgba(255,255,255,0.4); font-weight:400; margin-top:4px;" data-i18n="adm.panelLabel">Admin Panel</div>
-      </div>
+      </a>
 
       <ul class="dashboard__sidebar-nav">
         <li><a class="sidebar-link sidebar-link--active" data-tab="tab-submissions" onclick="switchTab(this)">
@@ -34,9 +34,7 @@
         <a class="sidebar-link" onclick="App.logout()" style="margin-top:var(--space-2);">
           <span class="sidebar-link__icon">🚪</span> <span data-i18n="adm.logout">Logout</span>
         </a>
-        <a class="sidebar-link" href="/" style="margin-top:4px;">
-          <span class="sidebar-link__icon">🏠</span> <span data-i18n="adm.home">Home</span>
-        </a>
+
       </div>
     </aside>
 
