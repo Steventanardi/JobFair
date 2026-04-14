@@ -13,7 +13,7 @@ const API = {
   async request(endpoint, options = {}) {
     const config = {
       headers: {},
-      credentials: 'same-origin',
+      credentials: 'include',
       ...options
     };
 
