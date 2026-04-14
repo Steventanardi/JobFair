@@ -65,6 +65,7 @@
       <div class="tab-panel tab-panel--active" id="tab-submissions">
         <div class="dashboard__header">
           <h1 class="dashboard__title" data-i18n="adm.submissions">Submissions</h1>
+          <button class="btn btn--outline" onclick="window.location.href='/api/admin/submissions/export'">📥 Export CSV</button>
         </div>
 
         <div class="toolbar">
@@ -82,7 +83,6 @@
           <table class="data-table" id="submissionsTable">
             <thead>
               <tr>
-                <th data-i18n="adm.thLogo">Logo</th>
                 <th data-i18n="adm.thCompany">Company</th>
                 <th data-i18n="adm.thIndustry">Industry</th>
                 <th data-i18n="adm.thContact">Contact</th>
@@ -300,14 +300,6 @@
 
         body.innerHTML = submissions.map(s => `
           <tr>
-            <td>
-              <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
-                ${s.logo_path
-                  ? `<img src="${s.logo_path}" alt="" class="logo-preview">`
-                  : `<div class="logo-preview" style="display:flex;align-items:center;justify-content:center;font-size:1rem;">🏢</div>`}
-                ${s.logo_path ? `<button class="btn btn--ghost" style="padding:1px 6px;font-size:0.65rem;white-space:nowrap;" onclick="downloadLogo('${s.logo_path}', '${App.escapeHtml(s.company_name).replace(/'/g, "\\'")}')" title="Download logo">⬇ DL</button>` : ''}
-              </div>
-            </td>
             <td><div style="font-weight:600;">${App.escapeHtml(s.company_name)}</div><div class="text-xs text-muted">${App.escapeHtml(s.employer_email || '')}</div></td>
             <td class="text-sm">${App.escapeHtml(s.industry || '—')}</td>
             <td><div class="text-sm">${App.escapeHtml(s.contact_person)}</div><div class="text-xs text-muted">${App.escapeHtml(s.contact_email)}</div></td>

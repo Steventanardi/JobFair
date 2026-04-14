@@ -1,11 +1,20 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const rateLimit = require('express-rate-limit');
 const db = require('../db');
 
 const router = express.Router();
 
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // Limit each IP to 10 requests per windowMs
+  message: { error: 'Too many attempts from this IP, please try again after 15 minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // POST /api/auth/employer/register
-router.post('/employer/register', async (req, res) => {
+router.post('/employer/register', authLimiter, async (req, res) => {
   const { email, password, company_name } = req.body;
 
   if (!email || !password || !company_name) {
@@ -43,7 +52,7 @@ router.post('/employer/register', async (req, res) => {
 });
 
 // POST /api/auth/employer/login
-router.post('/employer/login', async (req, res) => {
+router.post('/employer/login', authLimiter, async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -73,7 +82,7 @@ router.post('/employer/login', async (req, res) => {
 });
 
 // POST /api/auth/admin/login
-router.post('/admin/login', async (req, res) => {
+router.post('/admin/login', authLimiter, async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {

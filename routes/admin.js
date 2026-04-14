@@ -12,7 +12,10 @@ router.use(requireAdmin);
 router.get('/submissions', async (req, res) => {
   const { status, search } = req.query;
   let sql = `
-    SELECT s.*, e.email as employer_email 
+    SELECT 
+      s.id, s.employer_id, s.company_name, s.industry, s.contact_person, 
+      s.contact_email, s.contact_phone, s.status, s.booth_number, 
+      s.submitted_at, s.reviewed_at, e.email as employer_email 
     FROM submissions s 
     LEFT JOIN employers e ON s.employer_id = e.id
   `;
@@ -44,6 +47,52 @@ router.get('/submissions', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// GET /api/admin/submissions/export — download CSV
+router.get('/submissions/export', async (req, res) => {
+  try {
+    const { rows } = await db.query(`
+      SELECT 
+        s.id, s.company_name, s.industry, s.contact_person, 
+        s.contact_email, s.contact_phone, s.status, s.booth_number, 
+        s.job_positions, s.submitted_at 
+      FROM submissions s 
+      ORDER BY s.company_name ASC
+    `);
+
+    if (rows.length === 0) {
+      return res.status(404).send('No submissions found');
+    }
+
+    // CSV Headers
+    const headers = ['ID', 'Company Name', 'Industry', 'Contact Person', 'Email', 'Phone', 'Status', 'Booth Number', 'Job Positions', 'Submitted At'];
+    
+    // CSV Rows
+    const csvRows = rows.map(row => {
+      return [
+        row.id,
+        `"${(row.company_name || '').replace(/"/g, '""')}"`,
+        `"${(row.industry || '').replace(/"/g, '""')}"`,
+        `"${(row.contact_person || '').replace(/"/g, '""')}"`,
+        `"${(row.contact_email || '').replace(/"/g, '""')}"`,
+        `"${(row.contact_phone || '').replace(/"/g, '""')}"`,
+        row.status,
+        `"${(row.booth_number || '').replace(/"/g, '""')}"`,
+        `"${(row.job_positions || '').replace(/"/g, '""')}"`,
+        new Date(row.submitted_at).toISOString().split('T')[0]
+      ].join(',');
+    });
+
+    const csvString = headers.join(',') + '\n' + csvRows.join('\n');
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="jobfair-submissions.csv"');
+    res.send(csvString);
+  } catch (err) {
+    console.error('Export Error:', err);
+    res.status(500).send('Server Error during export');
   }
 });
 

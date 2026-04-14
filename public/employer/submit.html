@@ -142,6 +142,7 @@
   <script src="/js/i18n.js"></script>
   <script>
     let editId = null;
+    let compressedLogoBlob = null;
 
     async function init() {
       const user = await App.requireAuth('employer');
@@ -189,10 +190,47 @@
       if (file) {
         const reader = new FileReader();
         reader.onload = function(ev) {
-          document.getElementById('logoPreviewImg').src = ev.target.result;
-          document.getElementById('logoPreview').style.display = 'block';
+          const img = new Image();
+          img.onload = function() {
+            // Maximum dimensions
+            const MAX_WIDTH = 500;
+            const MAX_HEIGHT = 500;
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height) {
+              if (width > MAX_WIDTH) {
+                height = Math.round(height *= MAX_WIDTH / width);
+                width = MAX_WIDTH;
+              }
+            } else {
+              if (height > MAX_HEIGHT) {
+                width = Math.round(width *= MAX_HEIGHT / height);
+                height = MAX_HEIGHT;
+              }
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // Get compressed image blob
+            canvas.toBlob((blob) => {
+              compressedLogoBlob = blob;
+              // Show preview from data URL
+              document.getElementById('logoPreviewImg').src = canvas.toDataURL('image/jpeg', 0.85);
+              document.getElementById('logoPreview').style.display = 'block';
+            }, 'image/jpeg', 0.85);
+          };
+          img.src = ev.target.result;
         };
         reader.readAsDataURL(file);
+      } else {
+        compressedLogoBlob = null;
+        document.getElementById('logoPreview').style.display = 'none';
       }
     });
 
@@ -215,8 +253,9 @@
       formData.append('requirements', document.getElementById('requirements').value);
       formData.append('benefits', document.getElementById('benefits').value);
 
-      const logoFile = document.getElementById('logo').files[0];
-      if (logoFile) formData.append('logo', logoFile);
+      if (compressedLogoBlob) {
+        formData.append('logo', compressedLogoBlob, 'logo.jpg');
+      }
 
       try {
         if (editId) {
