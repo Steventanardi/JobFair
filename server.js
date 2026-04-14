@@ -4,6 +4,7 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
+const pgSession = require('connect-pg-simple')(session);
 const db = require('./db'); // triggers table creation on require
 
 const authRoutes = require('./routes/auth');
@@ -13,11 +14,19 @@ const announcementRoutes = require('./routes/announcements');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust Vercel's proxy so secure cookies work
+app.set('trust proxy', 1);
+
 // ── Middleware ──────────────────────────────────────────────
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(session({
+  store: new pgSession({
+    pool: db,
+    tableName: 'session',
+    createTableIfMissing: true
+  }),
   secret: process.env.SESSION_SECRET || 'nqu-jobfair-secret-default-dev',
   resave: false,
   saveUninitialized: false,
@@ -28,11 +37,6 @@ app.use(session({
     secure: process.env.NODE_ENV === 'production'
   }
 }));
-
-// Trust Vercel's proxy so secure cookies work
-if (process.env.NODE_ENV === 'production') {
-  app.set('trust proxy', 1);
-}
 
 // Static files
 app.use(express.static(path.join(__dirname, 'public')));
