@@ -329,7 +329,10 @@ const I18N = {
    */
   t(key) {
     const entry = this.translations[key];
-    if (!entry) return key;
+    if (!entry) {
+      console.warn(`[i18n] Missing translation key: "${key}"`);
+      return key;
+    }
     return entry[this.currentLang] || entry['en'] || key;
   },
 

@@ -1,6 +1,3 @@
-// Must be set before any TLS connection — fixes Supabase self-signed cert
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
@@ -27,7 +24,13 @@ app.use(session({
     tableName: 'session',
     createTableIfMissing: true
   }),
-  secret: process.env.SESSION_SECRET || 'nqu-jobfair-secret-default-dev',
+  secret: (() => {
+    if (!process.env.SESSION_SECRET && process.env.NODE_ENV === 'production') {
+      console.error('FATAL: SESSION_SECRET env var is not set in production!');
+      process.exit(1);
+    }
+    return process.env.SESSION_SECRET || 'nqu-jobfair-secret-default-dev';
+  })(),
   resave: false,
   saveUninitialized: false,
   cookie: {
@@ -37,6 +40,22 @@ app.use(session({
     secure: process.env.NODE_ENV === 'production'
   }
 }));
+
+// ── CSRF protection — reject cross-origin state-changing requests ──
+app.use((req, res, next) => {
+  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
+  const origin = req.headers.origin || req.headers.referer;
+  if (!origin) return next(); // same-origin requests don't send Origin
+  const host = req.headers.host;
+  try {
+    if (new URL(origin).host !== host) {
+      return res.status(403).json({ error: 'Cross-origin request rejected' });
+    }
+  } catch {
+    return res.status(403).json({ error: 'Invalid origin' });
+  }
+  next();
+});
 
 // Static files
 app.use(express.static(path.join(__dirname, 'public')));
@@ -77,7 +96,6 @@ if (process.env.NODE_ENV !== 'production') {
     console.log(`\n  ┌──────────────────────────────────────────┐`);
     console.log(`  │  NQU Job Fair System                     │`);
     console.log(`  │  Running at http://localhost:${PORT}        │`);
-    console.log(`  │  Admin: admin / nqu2025                  │`);
     console.log(`  └──────────────────────────────────────────┘\n`);
   });
 }

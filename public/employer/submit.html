@@ -393,6 +393,9 @@
                   <input type="file" id="p_logo" name="p_logo" accept="image/*">
                   <div class="file-upload__icon">🖼️</div>
                   <div class="file-upload__text" data-i18n="q.logoHint">Click to upload image</div>
+                  <div id="p_logoPreview" style="margin-top:var(--space-3); display:none;">
+                    <img id="p_logoPreviewImg" class="logo-preview--lg" style="margin:0 auto;">
+                  </div>
                 </div>
               </div>
 
@@ -614,11 +617,13 @@
             else if (h > MAX) { w = w * MAX / h; h = MAX; }
             canvas.width = w; canvas.height = h;
             canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            const previewMap = { 'logo': ['logoPreview', 'logoPreviewImg'], 'p_logo': ['p_logoPreview', 'p_logoPreviewImg'] };
             canvas.toBlob(blob => {
               compressedLogoBlob = blob;
-              if (inputId === 'logo') {
-                document.getElementById('logoPreview').style.display = 'block';
-                document.getElementById('logoPreviewImg').src = URL.createObjectURL(blob);
+              const ids = previewMap[inputId];
+              if (ids) {
+                document.getElementById(ids[0]).style.display = 'block';
+                document.getElementById(ids[1]).src = URL.createObjectURL(blob);
               }
             }, 'image/jpeg', 0.8);
           };
@@ -763,6 +768,10 @@
         data.parking_spaces = radio('p_parking_spaces');
         data.other_requirements = val('p_otherReqs');
         data.email_confirm = radio('p_email_confirm');
+
+        if ((parseInt(data.lunch_box_non_veg)||0) + (parseInt(data.lunch_box_veg)||0) > 3) {
+          throw new Error(I18N.t('q.lunchHint'));
+        }
       }
 
       // Attach logo
@@ -808,43 +817,43 @@
         if (cat === 'Recruitment') {
           setVal('companyName', sub.company_name);
           setVal('boothName', sub.booth_signboard_name);
-          setVal('companyIntro', sub.company_introduction);
+          setVal('companyIntro', sub.company_intro);
           setVal('ceoName', sub.ceo_name);
           setVal('taxId', sub.tax_id);
-          setVal('industryType', sub.industry_type);
-          setVal('mainProducts', sub.main_products_services);
-          setCheckboxes('internship_history', sub.internship_history);
+          setVal('industryType', sub.industry);
+          setVal('mainProducts', sub.main_products);
+          setCheckboxes('internship_history', sub.internship_cooperation);
           setCheckboxes('target_departments', sub.target_departments);
-          setVal('contactWindow', sub.contact_window_method);
+          setVal('contactWindow', sub.contact_person);
           setVal('mailingAddr', sub.mailing_address);
           setVal('attendeeMain', sub.attendee_main);
           setRadio('attendee_count', sub.attendee_count);
           setRadio('lunch_box_non_veg', sub.lunch_box_non_veg);
           setRadio('lunch_box_veg', sub.lunch_box_veg);
-          setVal('rafflePrizes', sub.raffle_prizes_willingness);
+          setVal('rafflePrizes', sub.raffle_prizes);
           setRadio('parking_spaces', sub.parking_spaces);
           setVal('otherReqs', sub.other_requirements);
-          if (sub.company_logo) {
+          if (sub.logo_path) {
             document.getElementById('logoPreview').style.display = 'block';
-            document.getElementById('logoPreviewImg').src = sub.company_logo;
+            document.getElementById('logoPreviewImg').src = sub.logo_path;
           }
         } else if (cat === 'Resume') {
           setVal('r_companyName', sub.company_name);
           setVal('r_ceoName', sub.ceo_name);
           setVal('r_taxId', sub.tax_id);
-          setVal('r_industryType', sub.industry_type);
-          setVal('r_mainProducts', sub.main_products_services);
-          setVal('r_contactWindow', sub.contact_window_method);
+          setVal('r_industryType', sub.industry);
+          setVal('r_mainProducts', sub.main_products);
+          setVal('r_contactWindow', sub.contact_person);
           setVal('r_mailingAddr', sub.mailing_address);
         } else if (cat === 'PublicWelfare') {
           setVal('p_unitName', sub.company_name);
           setVal('p_boothName', sub.booth_signboard_name);
-          setVal('p_intro', sub.company_introduction);
+          setVal('p_intro', sub.company_intro);
           setVal('p_principal', sub.ceo_name);
           setRadio('group_type', sub.group_type);
           setVal('establishmentDate', sub.establishment_date);
-          setCheckboxes('p_internship_history', sub.internship_history);
-          setVal('p_contactWindow', sub.contact_window_method);
+          setCheckboxes('p_internship_history', sub.internship_cooperation);
+          setVal('p_contactWindow', sub.contact_person);
           setVal('p_mailingAddr', sub.mailing_address);
           setVal('p_attendeeMain', sub.attendee_main);
           setRadio('p_attendee_count', sub.attendee_count);
@@ -852,6 +861,10 @@
           setRadio('p_lunch_veg', sub.lunch_box_veg);
           setRadio('p_parking_spaces', sub.parking_spaces);
           setVal('p_otherReqs', sub.other_requirements);
+          if (sub.logo_path) {
+            document.getElementById('p_logoPreview').style.display = 'block';
+            document.getElementById('p_logoPreviewImg').src = sub.logo_path;
+          }
         }
       } catch (err) {
         console.error('Failed to load submission:', err);

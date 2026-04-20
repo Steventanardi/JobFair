@@ -25,7 +25,10 @@ if (isRemote) {
 
 const db = new Pool({
   connectionString,
-  ssl: isRemote ? { rejectUnauthorized: false } : false
+  ssl: isRemote ? { rejectUnauthorized: false } : false,
+  max: 10,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 5000
 });
 
 const initDB = async () => {
@@ -115,6 +118,11 @@ const initDB = async () => {
         created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
+    // Indexes for frequently queried columns
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_submissions_employer_id ON submissions(employer_id)`);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_submissions_status ON submissions(status)`);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_submissions_company_name ON submissions(company_name)`);
 
     console.log('Tables created successfully.');
 

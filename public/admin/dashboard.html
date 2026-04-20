@@ -392,7 +392,7 @@
               ${s.logo_path ? `
                 <div class="detail-item" style="margin-bottom:var(--space-4);">
                   <img src="${s.logo_path}" class="logo-preview--lg" alt="" style="max-height:100px; width:auto; border:1px solid var(--color-border); padding:4px;">
-                  <button class="btn btn--outline btn--sm" onclick="downloadLogo('${s.logo_path}', '${esc(s.company_name).replace(/'/g, "\\'")}')" style="margin-top:4px;">⬇ ${translate('adm.downloadLogo')}</button>
+                  <button class="btn btn--outline btn--sm" onclick="downloadLogo(${JSON.stringify(s.logo_path)}, ${JSON.stringify(s.company_name)})" style="margin-top:4px;">⬇ ${translate('adm.downloadLogo')}</button>
                 </div>
               ` : ''}
               <div class="detail-item"><strong>${translate('submit.companyName')}:</strong> ${esc(s.company_name)}</div>

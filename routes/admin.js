@@ -1,11 +1,21 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const rateLimit = require('express-rate-limit');
 const db = require('../db');
 const { requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
-// All routes require admin authentication
+const adminLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 120,
+  message: { error: 'Too many requests, please slow down.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// All routes require admin authentication + rate limiting
+router.use(adminLimiter);
 router.use(requireAdmin);
 
 // GET /api/admin/submissions — list all submissions with optional filters
@@ -76,10 +86,12 @@ router.get('/submissions/export', async (req, res) => {
       'Shuttle Details', 'Raffle Prizes', 'Parking', 'Other Req', 'Submitted At'
     ];
     
-    // Helper to sanitize CSV field
+    // Helper to sanitize CSV field — escapes quotes and prevents formula injection
     const esc = (val) => {
       if (val === null || val === undefined) return '""';
-      return `"${String(val).replace(/"/g, '""')}"`;
+      let s = String(val);
+      if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+      return `"${s.replace(/"/g, '""')}"`;
     };
 
     // CSV Rows
@@ -162,6 +174,12 @@ router.patch('/submissions/:id/status', async (req, res) => {
 router.patch('/submissions/:id/booth', async (req, res) => {
   const { booth_number } = req.body;
 
+  if (booth_number !== undefined && booth_number !== null && booth_number !== '') {
+    if (!/^[A-Za-z0-9\-]{1,10}$/.test(booth_number)) {
+      return res.status(400).json({ error: 'Booth number must be 1–10 alphanumeric characters' });
+    }
+  }
+
   try {
     const { rows } = await db.query('SELECT id, status FROM submissions WHERE id = $1', [req.params.id]);
     if (rows.length === 0) return res.status(404).json({ error: 'Submission not found' });
@@ -169,8 +187,17 @@ router.patch('/submissions/:id/booth', async (req, res) => {
       return res.status(400).json({ error: 'Can only assign booth to approved submissions' });
     }
 
-    await db.query('UPDATE submissions SET booth_number = $1 WHERE id = $2', [booth_number || null, req.params.id]);
+    if (booth_number) {
+      const { rows: dup } = await db.query(
+        'SELECT id FROM submissions WHERE booth_number = $1 AND id != $2',
+        [booth_number, req.params.id]
+      );
+      if (dup.length > 0) {
+        return res.status(409).json({ error: `Booth ${booth_number} is already assigned to another submission` });
+      }
+    }
 
+    await db.query('UPDATE submissions SET booth_number = $1 WHERE id = $2', [booth_number || null, req.params.id]);
     res.json({ message: 'Booth assigned' });
   } catch (err) {
     console.error(err);
@@ -248,20 +275,25 @@ router.patch('/employers/:id/reset-password', async (req, res) => {
 // GET /api/admin/stats — dashboard statistics
 router.get('/stats', async (req, res) => {
   try {
-    const [{ rows: totalRows }, { rows: pendingRows }, { rows: approvedRows }, { rows: rejectedRows }, { rows: employerRows }] = await Promise.all([
-      db.query('SELECT COUNT(*) as cnt FROM submissions'),
-      db.query("SELECT COUNT(*) as cnt FROM submissions WHERE status = 'pending'"),
-      db.query("SELECT COUNT(*) as cnt FROM submissions WHERE status = 'approved'"),
-      db.query("SELECT COUNT(*) as cnt FROM submissions WHERE status = 'rejected'"),
-      db.query('SELECT COUNT(*) as cnt FROM employers')
+    const [{ rows: subRows }, { rows: empRows }] = await Promise.all([
+      db.query(`
+        SELECT
+          COUNT(*) AS total,
+          COUNT(*) FILTER (WHERE status = 'pending')  AS pending,
+          COUNT(*) FILTER (WHERE status = 'approved') AS approved,
+          COUNT(*) FILTER (WHERE status = 'rejected') AS rejected
+        FROM submissions
+      `),
+      db.query('SELECT COUNT(*) AS cnt FROM employers')
     ]);
 
+    const s = subRows[0];
     res.json({
-      total: parseInt(totalRows[0].cnt),
-      pending: parseInt(pendingRows[0].cnt),
-      approved: parseInt(approvedRows[0].cnt),
-      rejected: parseInt(rejectedRows[0].cnt),
-      employerCount: parseInt(employerRows[0].cnt)
+      total:         parseInt(s.total),
+      pending:       parseInt(s.pending),
+      approved:      parseInt(s.approved),
+      rejected:      parseInt(s.rejected),
+      employerCount: parseInt(empRows[0].cnt)
     });
   } catch (err) {
     console.error(err);
