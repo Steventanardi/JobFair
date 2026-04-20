@@ -62,13 +62,6 @@
           <div class="stat-card__label" data-i18n="adm.statApproved">Approved</div>
           <div class="stat-card__value" id="statApproved">—</div>
         </div>
-      
-      <div class="activity-overview" style="margin-top:var(--space-6); background:var(--color-bg-alt); padding:var(--space-4); border-radius:var(--radius-lg); border:1px solid var(--color-border);">
-        <h3 style="font-size:1rem; margin-bottom:1rem; display:flex; align-items:center; gap:8px;">🕒 <span data-i18n="adm.recentActivity">Recent Activity</span></h3>
-        <div id="quickLogsBody" class="text-xs">
-          <div class="text-muted" data-i18n="adm.loading">Loading...</div>
-        </div>
-      </div>
         <div class="stat-card stat-card--danger">
           <div class="stat-card__label" data-i18n="adm.statRejected">Rejected</div>
           <div class="stat-card__value" id="statRejected">—</div>
@@ -79,6 +72,14 @@
         </div>
       </div>
 
+      <!-- Recent Activity widget -->
+      <div class="activity-overview" style="margin-top:var(--space-6); background:var(--color-bg-alt); padding:var(--space-4); border-radius:var(--radius-lg); border:1px solid var(--color-border);">
+        <h3 style="font-size:1rem; margin-bottom:1rem; display:flex; align-items:center; gap:8px;">🕒 <span data-i18n="adm.recentActivity">Recent Activity</span></h3>
+        <div id="quickLogsBody" class="text-xs">
+          <div class="text-muted" data-i18n="adm.loading">Loading...</div>
+        </div>
+      </div>
+
       <!-- ═══ TAB: SUBMISSIONS ═══ -->
       <div class="tab-panel tab-panel--active" id="tab-submissions">
         <div class="dashboard__header">
@@ -86,8 +87,8 @@
           <div style="display:flex; gap:var(--space-2);">
             <div id="bulkActions" style="display:none; gap:var(--space-2); align-items:center; background:rgba(0,0,0,0.05); padding:4px 12px; border-radius:8px;">
               <span class="text-sm font-bold" id="selectedCount">0 selected</span>
-              <button class="btn btn--success btn--sm" onclick="bulkReview('approved')">Approve</button>
-              <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="bulkReview('rejected')">Reject</button>
+              <button class="btn btn--success btn--sm" onclick="bulkReview('approved')" data-i18n="adm.bulkApprove">Approve Selected</button>
+              <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="bulkReview('rejected')" data-i18n="adm.bulkReject">Reject Selected</button>
             </div>
             <button class="btn btn--outline" onclick="window.location.href='/api/admin/submissions/export'">📥 Export CSV</button>
           </div>
@@ -119,7 +120,7 @@
               </tr>
             </thead>
             <tbody id="submissionsBody">
-              <tr><td colspan="7" class="text-center text-muted" style="padding:3rem;" data-i18n="adm.loading">Loading...</td></tr>
+              <tr><td colspan="8" class="text-center text-muted" style="padding:3rem;" data-i18n="adm.loading">Loading...</td></tr>
             </tbody>
           </table>
         </div>
@@ -182,19 +183,19 @@
         </div>
         <div class="analytics-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:var(--space-6);">
           <div class="stat-card">
-            <h3>Status Distribution</h3>
+            <h3 data-i18n="adm.chartStatus">Status Distribution</h3>
             <div style="height:300px;"><canvas id="statusChart"></canvas></div>
           </div>
           <div class="stat-card">
-            <h3>Activity Categories</h3>
+            <h3 data-i18n="adm.chartCategory">Activity Categories</h3>
             <div style="height:300px;"><canvas id="categoryChart"></canvas></div>
           </div>
           <div class="stat-card">
-            <h3>Logistics Overview</h3>
+            <h3 data-i18n="adm.chartLogistics">Logistics Overview</h3>
             <div id="logisticsDisplay" style="padding-top:1rem;"></div>
           </div>
           <div class="stat-card">
-            <h3>Top 5 Industries</h3>
+            <h3 data-i18n="adm.chartIndustry">Top 5 Industries</h3>
             <div style="height:300px;"><canvas id="industryChart"></canvas></div>
           </div>
         </div>
@@ -209,15 +210,15 @@
           <div class="form-group">
             <label class="form-label" data-i18n="adm.regStatus">Registration Status</label>
             <select class="form-select" id="setting_registration_status" style="width:100%;">
-              <option value="open">Open (Accepting Submissions)</option>
-              <option value="closed">Closed (Maintenance Mode)</option>
+              <option value="open" data-i18n="adm.regStatusOpen">Open (Accepting Submissions)</option>
+              <option value="closed" data-i18n="adm.regStatusClosed">Closed (Maintenance Mode)</option>
             </select>
           </div>
           <div class="form-group mt-4">
             <label class="form-label" data-i18n="adm.regDeadline">Registration Deadline</label>
             <input class="form-input" type="date" id="setting_registration_deadline" style="width:100%;">
           </div>
-          <button class="btn btn--primary mt-6" onclick="saveSettings()">Save Configuration</button>
+          <button class="btn btn--primary mt-6" onclick="saveSettings()" data-i18n="adm.saveConfig">Save Configuration</button>
         </div>
 
         <div class="dashboard__header mt-10">
@@ -227,11 +228,11 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th>Admin</th>
-                <th>Action</th>
-                <th>Target</th>
-                <th>Details</th>
-                <th>Time</th>
+                <th data-i18n="adm.logAdmin">Admin</th>
+                <th data-i18n="adm.logAction">Action</th>
+                <th data-i18n="adm.logTarget">Target</th>
+                <th data-i18n="adm.logDetails">Details</th>
+                <th data-i18n="adm.logTime">Time</th>
               </tr>
             </thead>
             <tbody id="logsBody"></tbody>
@@ -422,7 +423,7 @@
                 <button class="btn btn--success btn--sm" onclick="openReviewModal(${s.id})" title="Approve">✓</button>
                 <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="openReviewModalReject(${s.id})" title="Reject">✕</button>
               ` : ''}
-              ${s.status === 'approved' ? `<button class="btn btn--outline btn--sm" onclick="openBoothModal(${s.id}, '${App.escapeHtml(s.booth_number || '')}')">🎪</button>` : ''}
+              ${s.status === 'approved' ? `<button class="btn btn--outline btn--sm" onclick="openBoothModal(${s.id}, ${JSON.stringify(s.booth_number || '')})">🎪</button>` : ''}
               <button class="btn btn--ghost btn--sm" onclick="viewDetail(${s.id})">👁</button>
               <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="deleteSubmission(${s.id})">🗑</button>
             </div></td>
@@ -742,67 +743,60 @@
     }
 
     // ── ANALYTICS ──
+    const chartInstances = {};
     async function loadAnalytics() {
       try {
         const data = await API.get('/api/admin/analytics');
-        
-        // Status Chart
-        new Chart(document.getElementById('statusChart'), {
+
+        const makeChart = (id, config) => {
+          if (chartInstances[id]) chartInstances[id].destroy();
+          chartInstances[id] = new Chart(document.getElementById(id), config);
+        };
+
+        makeChart('statusChart', {
           type: 'doughnut',
           data: {
             labels: data.statusDistribution.map(d => d.status),
-            datasets: [{
-              data: data.statusDistribution.map(d => d.count),
-              backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#3b82f6']
-            }]
+            datasets: [{ data: data.statusDistribution.map(d => parseInt(d.count)), backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#3b82f6'] }]
           },
           options: { responsive: true, maintainAspectRatio: false }
         });
 
-        // Category Chart
-        new Chart(document.getElementById('categoryChart'), {
+        makeChart('categoryChart', {
           type: 'bar',
           data: {
             labels: data.categoryDistribution.map(d => d.activity_category || 'Other'),
-            datasets: [{
-              label: 'Companies',
-              data: data.categoryDistribution.map(d => d.count),
-              backgroundColor: '#8b5cf6'
-            }]
+            datasets: [{ label: I18N.t('adm.statTotal'), data: data.categoryDistribution.map(d => parseInt(d.count)), backgroundColor: '#8b5cf6' }]
           },
           options: { responsive: true, maintainAspectRatio: false }
         });
 
-        // Industries Chart
-        new Chart(document.getElementById('industryChart'), {
+        makeChart('industryChart', {
           type: 'pie',
           data: {
-            labels: data.topIndustries.map(d => d.industry || 'Unknown'),
-            datasets: [{
-              data: data.topIndustries.map(d => d.count),
-              backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899']
-            }]
+            labels: data.topIndustries.map(d => d.industry || '—'),
+            datasets: [{ data: data.topIndustries.map(d => parseInt(d.count)), backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'] }]
           },
           options: { responsive: true, maintainAspectRatio: false }
         });
 
-        // Logistics
         const log = data.logistics;
         document.getElementById('logisticsDisplay').innerHTML = `
           <div style="font-size:1.5rem; font-weight:bold; margin-bottom:1rem;">
-            🍱 ${log.lunch_non_veg || 0} / ${log.lunch_veg || 0} <span style="font-size:0.9rem; font-weight:normal;">Lunch Boxes</span>
+            🍱 ${log.lunch_non_veg || 0} / ${log.lunch_veg || 0} <span style="font-size:0.9rem; font-weight:normal;" data-i18n="adm.lunchBoxes">Lunch Boxes</span>
           </div>
           <div style="font-size:1.5rem; font-weight:bold;">
-            🚗 ${log.parking || 0} <span style="font-size:0.9rem; font-weight:normal;">Parking Spaces</span>
+            🚗 ${log.parking || 0} <span style="font-size:0.9rem; font-weight:normal;" data-i18n="adm.parkingSpaces">Parking Spaces</span>
           </div>
         `;
+        I18N.applyAll();
       } catch (err) { console.error(err); }
     }
 
     // ── SETTINGS ──
     async function loadSettingsDisplay() {
       try {
-        const settings = await API.get('/api/settings');
+        const settings = await API.get('/api/admin/settings');
         if (settings.registration_status) document.getElementById('setting_registration_status').value = settings.registration_status;
         if (settings.registration_deadline) document.getElementById('setting_registration_deadline').value = settings.registration_deadline;
       } catch (err) { console.error(err); }
@@ -814,8 +808,8 @@
         registration_deadline: document.getElementById('setting_registration_deadline').value
       };
       try {
-        await API.post('/api/admin/settings/admin', updates);
-        App.toast('Settings updated successfully', 'success');
+        await API.post('/api/admin/settings', updates);
+        App.toast(I18N.t('adm.settingsUpdated'), 'success');
       } catch (err) { App.toast(err.message, 'error'); }
     }
 
@@ -841,7 +835,7 @@
               <span><strong>${l.admin_name || 'System'}</strong> ${l.action}</span>
               <span class="text-muted">${App.formatDate(l.created_at)}</span>
             </div>
-          `).join('') || '<div class="text-muted">No activity yet</div>';
+          `).join('') || `<div class="text-muted">${I18N.t('adm.noActivity')}</div>`;
         }
       } catch (err) { console.error(err); }
     }
@@ -858,7 +852,7 @@
       const count = document.getElementById('selectedCount');
       if (selected.length > 0) {
         bar.style.display = 'flex';
-        count.textContent = `${selected.length} selected`;
+        count.textContent = `${selected.length} ${I18N.t('adm.selected')}`;
       } else {
         bar.style.display = 'none';
       }
@@ -867,14 +861,14 @@
     async function bulkReview(status) {
       const selected = Array.from(document.querySelectorAll('.sub-checkbox:checked')).map(cb => cb.value);
       if (selected.length === 0) return;
-      if (!App.confirm(`Approve/Reject ${selected.length} selected submissions?`)) return;
+      const actionLabel = status === 'approved' ? I18N.t('adm.bulkApprove') : I18N.t('adm.bulkReject');
+      if (!App.confirm(`${actionLabel}: ${selected.length} ${I18N.t('adm.selected')}?`)) return;
 
       try {
-        // Send sequential or Promise.all requests
-        await Promise.all(selected.map(id => 
-          API.patch(`/api/admin/submissions/${id}/status`, { status, admin_notes: 'Bulk action' })
+        await Promise.all(selected.map(id =>
+          API.patch(`/api/admin/submissions/${id}/status`, { status, admin_notes: I18N.t('adm.bulkActionNote') })
         ));
-        App.toast(`Successfully processed ${selected.length} submissions`, 'success');
+        App.toast(I18N.t('adm.bulkSuccess').replace('{n}', selected.length), 'success');
         loadSubmissions();
         loadStats();
       } catch (err) { App.toast(err.message, 'error'); }

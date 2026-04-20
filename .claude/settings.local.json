@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(rtk gain *)"
+      "Bash(rtk gain *)",
+      "mcp__plugin_claude-mem_mcp-search__smart_outline"
     ]
   }
 }

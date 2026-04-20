@@ -180,7 +180,7 @@ router.patch('/submissions/:id/status', async (req, res) => {
       WHERE id = $3
     `, [status, admin_notes || null, req.params.id]);
 
-    await logAction(req.session.userId, `Changed status to ${status}`, 'submission', req.params.id, admin_notes);
+    await logAction(req.session.user.id, `Changed status to ${status}`, 'submission', req.params.id, admin_notes);
 
     res.json({ message: `Submission ${status}` });
   } catch (err) {
@@ -217,7 +217,7 @@ router.patch('/submissions/:id/booth', async (req, res) => {
     }
 
     await db.query('UPDATE submissions SET booth_number = $1 WHERE id = $2', [booth_number || null, req.params.id]);
-    await logAction(req.session.userId, `Assigned booth ${booth_number || 'NULL'}`, 'submission', req.params.id);
+    await logAction(req.session.user.id, `Assigned booth ${booth_number || 'NULL'}`, 'submission', req.params.id);
     res.json({ message: 'Booth assigned' });
   } catch (err) {
     console.error(err);
@@ -232,7 +232,7 @@ router.delete('/submissions/:id', async (req, res) => {
     if (rows.length === 0) return res.status(404).json({ error: 'Submission not found' });
 
     await db.query('DELETE FROM submissions WHERE id = $1', [req.params.id]);
-    await logAction(req.session.userId, 'Deleted submission', 'submission', req.params.id);
+    await logAction(req.session.user.id, 'Deleted submission', 'submission', req.params.id);
     res.json({ message: 'Submission deleted' });
   } catch (err) {
     console.error(err);
@@ -264,7 +264,7 @@ router.delete('/employers/:id', async (req, res) => {
 
     await db.query('DELETE FROM submissions WHERE employer_id = $1', [req.params.id]);
     await db.query('DELETE FROM employers WHERE id = $1', [req.params.id]);
-    await logAction(req.session.userId, 'Deleted employer and their submissions', 'employer', req.params.id);
+    await logAction(req.session.user.id, 'Deleted employer and their submissions', 'employer', req.params.id);
     res.json({ message: 'Employer and their submissions deleted' });
   } catch (err) {
     console.error(err);
@@ -317,6 +317,38 @@ router.get('/stats', async (req, res) => {
       rejected:      parseInt(s.rejected),
       employerCount: parseInt(empRows[0].cnt)
     });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// GET /api/admin/settings — get all settings as key-value object
+router.get('/settings', async (req, res) => {
+  try {
+    const { rows } = await db.query('SELECT key, value FROM settings');
+    const result = {};
+    rows.forEach(r => { result[r.key] = r.value; });
+    res.json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/admin/settings — upsert settings
+router.post('/settings', async (req, res) => {
+  const allowed = ['registration_status', 'registration_deadline'];
+  try {
+    for (const [key, value] of Object.entries(req.body)) {
+      if (!allowed.includes(key)) continue;
+      await db.query(
+        'INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value',
+        [key, value ?? '']
+      );
+    }
+    await logAction(req.session.user.id, 'Updated settings', 'settings', null, JSON.stringify(req.body));
+    res.json({ message: 'Settings saved' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });

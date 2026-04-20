@@ -52,18 +52,6 @@ const initDB = async () => {
     `);
 
     await db.query(`
-      CREATE TABLE IF NOT EXISTS admin_logs (
-        id          SERIAL PRIMARY KEY,
-        admin_id    INTEGER NOT NULL REFERENCES admins(id) ON DELETE CASCADE,
-        action      TEXT NOT NULL,
-        target_type TEXT,
-        target_id   INTEGER,
-        details     TEXT,
-        created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-
-    await db.query(`
       CREATE TABLE IF NOT EXISTS employers (
         id            SERIAL PRIMARY KEY,
         email         TEXT NOT NULL UNIQUE,
@@ -124,6 +112,18 @@ const initDB = async () => {
         id            SERIAL PRIMARY KEY,
         username      TEXT NOT NULL UNIQUE,
         password_hash TEXT NOT NULL
+      )
+    `);
+
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS admin_logs (
+        id          SERIAL PRIMARY KEY,
+        admin_id    INTEGER NOT NULL REFERENCES admins(id) ON DELETE CASCADE,
+        action      TEXT NOT NULL,
+        target_type TEXT,
+        target_id   INTEGER,
+        details     TEXT,
+        created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
 
