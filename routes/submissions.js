@@ -48,6 +48,9 @@ router.post('/', requireEmployer, upload.single('logo'), async (req, res) => {
   let logo_path = null;
   if (req.file) {
     logo_path = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+  } else if (req.body.company_logo) {
+    // Handle base64 logo from JSON body
+    logo_path = req.body.company_logo;
   }
 
   try {
@@ -144,6 +147,9 @@ router.put('/:id', requireEmployer, upload.single('logo'), async (req, res) => {
     let logo_path = submission.logo_path;
     if (req.file) {
       logo_path = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+    } else if (req.body.company_logo) {
+      // Handle base64 logo from JSON body
+      logo_path = req.body.company_logo;
     }
 
     await db.query(`
