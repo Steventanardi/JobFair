@@ -715,7 +715,7 @@
     // ─── Load existing submission for editing ─────────────────────
     async function loadSubmission(id) {
       try {
-        const sub = await API.get(`/submissions/${id}`);
+        const sub = await API.get(`/api/submissions/${id}`);
 
         // Set category radio
         const catRadio = document.querySelector(`input[name="activity_category"][value="${sub.activity_category}"]`);
@@ -806,9 +806,9 @@
       try {
         const data = await gatherFormData();
         if (editId) {
-          await API.put(`/submissions/${editId}`, data);
+          await API.put(`/api/submissions/${editId}`, data);
         } else {
-          await API.post('/submissions', data);
+          await API.post('/api/submissions', data);
         }
         window.location.href = '/employer/dashboard.html';
       } catch (err) {
@@ -831,7 +831,7 @@
       setupLogoUpload('p_logo');
 
       const params = new URLSearchParams(window.location.search);
-      editId = params.get('id');
+      editId = params.get('id') || params.get('edit');
       if (editId) {
         document.getElementById('pageTitle').setAttribute('data-i18n', 'submit.titleEdit');
         document.getElementById('submitBtn').setAttribute('data-i18n', 'btn.update');

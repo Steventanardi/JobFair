@@ -27,7 +27,21 @@ const API = {
 
     try {
       const response = await fetch(endpoint, config);
-      const data = await response.json();
+      
+      // Get content type to check if it's JSON
+      const contentType = response.headers.get('content-type');
+      let data = null;
+
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        // Not JSON — likely an error page (HTML) or empty response
+        const text = await response.text();
+        if (!response.ok) {
+          throw new Error(`Server error (${response.status}): The server returned an unexpected response.`);
+        }
+        return text; 
+      }
 
       if (!response.ok) {
         throw new Error(data.error || `Request failed (${response.status})`);
@@ -37,6 +51,10 @@ const API = {
     } catch (error) {
       if (error.message === 'Failed to fetch') {
         throw new Error('Network error — please check your connection');
+      }
+      // If it's a JSON parse error (which shouldn't happen now but just in case)
+      if (error instanceof SyntaxError) {
+        throw new Error('The server returned an invalid data format.');
       }
       throw error;
     }
