@@ -507,6 +507,23 @@ img {
   margin-top: var(--space-1);
 }
 
+.form-group--error .form-input,
+.form-group--error .form-textarea,
+.form-group--error .form-select {
+  border-color: var(--color-danger);
+  background-color: var(--color-danger-bg);
+}
+
+.form-group--error .form-input:focus,
+.form-group--error .form-textarea:focus,
+.form-group--error .form-select:focus {
+  box-shadow: 0 0 0 3px rgba(196, 59, 59, 0.12);
+}
+
+.form-group--error .form-label {
+  color: var(--color-danger);
+}
+
 .grid {
   display: grid;
   gap: var(--space-4);

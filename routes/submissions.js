@@ -37,8 +37,12 @@ router.post('/', requireEmployer, upload.single('logo'), async (req, res) => {
     parking_spaces, other_requirements, group_type, establishment_date
   } = req.body;
 
-  if (!company_name || !contact_person || !contact_email) {
-    return res.status(400).json({ error: 'Company name, contact person, and contact email are required' });
+  // Derive contact_person and contact_email from form data or session fallback
+  const resolvedContactPerson = contact_person || attendee_main || ceo_name || employer.company_name;
+  const resolvedContactEmail = contact_email || employer.email;
+
+  if (!company_name) {
+    return res.status(400).json({ error: 'Company name is required' });
   }
 
   let logo_path = null;
@@ -61,7 +65,7 @@ router.post('/', requireEmployer, upload.single('logo'), async (req, res) => {
       RETURNING id
     `, [
       employer.id, company_name, logo_path, industry || null,
-      contact_person, contact_email, contact_phone || null,
+      resolvedContactPerson, resolvedContactEmail, contact_phone || null,
       company_intro || null, job_positions || null, requirements || null, benefits || null,
       activity_category || null, is_previous_participant || null, booth_signboard_name || null,
       ceo_name || null, tax_id || null, main_products || null, internship_cooperation || null,

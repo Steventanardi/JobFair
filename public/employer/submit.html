@@ -301,25 +301,25 @@
               <!-- Q2: Company Full Name -->
               <div class="form-group">
                 <label class="form-label" for="r_companyName"><span data-i18n="q.companyName">Company Full Name</span><span class="required-star">*</span></label>
-                <input class="form-input" type="text" id="r_companyName" name="r_company_name">
+                <input class="form-input" type="text" id="r_companyName" name="r_company_name" required>
               </div>
 
               <!-- Q3: CEO Name -->
               <div class="form-group">
                 <label class="form-label" for="r_ceoName"><span data-i18n="q.ceoName">Responsible Person (CEO) Name</span><span class="required-star">*</span></label>
-                <input class="form-input" type="text" id="r_ceoName" name="r_ceo_name">
+                <input class="form-input" type="text" id="r_ceoName" name="r_ceo_name" required>
               </div>
 
               <!-- Q4: Tax ID -->
               <div class="form-group">
                 <label class="form-label" for="r_taxId"><span data-i18n="q.taxId">Business Registration Number (Tax ID)</span><span class="required-star">*</span></label>
-                <input class="form-input" type="text" id="r_taxId" name="r_tax_id">
+                <input class="form-input" type="text" id="r_taxId" name="r_tax_id" required>
               </div>
 
               <!-- Q5: Industry Type -->
               <div class="form-group">
                 <label class="form-label" for="r_industryType"><span data-i18n="q.industry">Industry Type</span><span class="required-star">*</span></label>
-                <select class="form-select" id="r_industryType" name="r_industry_type">
+                <select class="form-select" id="r_industryType" name="r_industry_type" required>
                   <option value="" data-i18n="opt.selectOne">-- Please Select --</option>
                 </select>
               </div>
@@ -327,19 +327,19 @@
               <!-- Q6: Main Products -->
               <div class="form-group">
                 <label class="form-label" for="r_mainProducts"><span data-i18n="q.mainProducts">Main Products / Business Description</span><span class="required-star">*</span></label>
-                <input class="form-input" type="text" id="r_mainProducts" name="r_main_products">
+                <input class="form-input" type="text" id="r_mainProducts" name="r_main_products" required>
               </div>
 
               <!-- Q7: Contact Window -->
               <div class="form-group">
                 <label class="form-label" for="r_contactWindow"><span data-i18n="q.contactWindow">Contact Person, Phone & Email</span><span class="required-star">*</span></label>
-                <textarea class="form-textarea" id="r_contactWindow" name="r_contact_window" rows="2"></textarea>
+                <textarea class="form-textarea" id="r_contactWindow" name="r_contact_window" rows="2" required></textarea>
               </div>
 
               <!-- Q8: Mailing Address -->
               <div class="form-group">
                 <label class="form-label" for="r_mailingAddr"><span data-i18n="q.mailingAddr">Company Mailing Address</span><span class="required-star">*</span></label>
-                <input class="form-input" type="text" id="r_mailingAddr" name="r_mailing_address">
+                <input class="form-input" type="text" id="r_mailingAddr" name="r_mailing_address" required>
               </div>
 
               <!-- Q9: Download/Email Confirm -->
@@ -347,7 +347,7 @@
                 <label class="form-label"><span data-i18n="q.emailConfirm">Please download the Job Vacancy Form and email it back to us</span><span class="required-star">*</span></label>
                 <div class="form-notice" data-i18n="q.emailConfirmHint">After submission, please download the Job Vacancy Data Sheet, fill it in, and email it back to the organizing unit.</div>
                 <div class="radio-stack">
-                  <label class="radio-label"><input type="radio" name="r_email_confirm" value="OK"><span data-i18n="opt.noProb">No problem 🆗</span></label>
+                  <label class="radio-label"><input type="radio" name="r_email_confirm" value="OK" required><span data-i18n="opt.noProb">No problem 🆗</span></label>
                 </div>
               </div>
             </div>
@@ -377,13 +377,13 @@
               <!-- Q2: Unit Full Name -->
               <div class="form-group">
                 <label class="form-label" for="p_unitName"><span data-i18n="q.unitName">Organization Full Name</span><span class="required-star">*</span></label>
-                <input class="form-input" type="text" id="p_unitName" name="p_unit_name">
+                <input class="form-input" type="text" id="p_unitName" name="p_unit_name" required>
               </div>
 
               <!-- Q3: Booth Signboard Name -->
               <div class="form-group">
                 <label class="form-label" for="p_boothName"><span data-i18n="q.boothName">Booth Signboard Name</span><span class="required-star">*</span></label>
-                <input class="form-input" type="text" id="p_boothName" name="p_booth_name">
+                <input class="form-input" type="text" id="p_boothName" name="p_booth_name" required>
               </div>
 
               <!-- Q4: Logo Upload -->
@@ -400,20 +400,20 @@
               <div class="form-group">
                 <label class="form-label" for="p_intro"><span data-i18n="q.intro">Organization Introduction</span><span class="required-star">*</span></label>
                 <p class="form-hint" data-i18n="q.introHint">Recommended within 100 words</p>
-                <textarea class="form-textarea" id="p_intro" name="p_introduction" rows="3"></textarea>
+                <textarea class="form-textarea" id="p_intro" name="p_introduction" rows="3" required></textarea>
               </div>
 
               <!-- Q6: Responsible Person -->
               <div class="form-group">
                 <label class="form-label" for="p_principal"><span data-i18n="q.ceoName">Responsible Person Name</span><span class="required-star">*</span></label>
-                <input class="form-input" type="text" id="p_principal" name="p_principal">
+                <input class="form-input" type="text" id="p_principal" name="p_principal" required>
               </div>
 
               <!-- Q7: Group Type -->
               <div class="form-group">
                 <label class="form-label"><span data-i18n="q.groupType">Organization / Group Type</span><span class="required-star">*</span></label>
                 <div class="radio-stack">
-                  <label class="radio-label"><input type="radio" name="group_type" value="social"><span data-i18n="opt.groupSocial">Social Group (社會團體)</span></label>
+                  <label class="radio-label"><input type="radio" name="group_type" value="social" required><span data-i18n="opt.groupSocial">Social Group (社會團體)</span></label>
                   <label class="radio-label"><input type="radio" name="group_type" value="prof"><span data-i18n="opt.groupProf">Professional Group (職業團體)</span></label>
                   <label class="radio-label"><input type="radio" name="group_type" value="intl_office"><span data-i18n="opt.groupIntlOff">International Office (國際辦事處)</span></label>
                   <label class="radio-label"><input type="radio" name="group_type" value="intl_ngo"><span data-i18n="opt.groupIntlNGO">International NGO (國際性民間團體)</span></label>
@@ -423,7 +423,7 @@
               <!-- Q8: Establishment Date -->
               <div class="form-group">
                 <label class="form-label" for="establishmentDate"><span data-i18n="q.estDate">Establishment / Registration Approval Date</span><span class="required-star">*</span></label>
-                <input class="form-input" type="text" id="establishmentDate" name="establishment_date" placeholder="YYYY/MM/DD">
+                <input class="form-input" type="text" id="establishmentDate" name="establishment_date" placeholder="YYYY/MM/DD" required>
               </div>
 
               <!-- Q9: Internship Cooperation -->
@@ -437,26 +437,26 @@
               <!-- Q10: Contact Window -->
               <div class="form-group">
                 <label class="form-label" for="p_contactWindow"><span data-i18n="q.contactWindow">Contact Person, Phone & Email</span><span class="required-star">*</span></label>
-                <textarea class="form-textarea" id="p_contactWindow" name="p_contact_window" rows="2"></textarea>
+                <textarea class="form-textarea" id="p_contactWindow" name="p_contact_window" rows="2" required></textarea>
               </div>
 
               <!-- Q11: Mailing Address -->
               <div class="form-group">
                 <label class="form-label" for="p_mailingAddr"><span data-i18n="q.mailingAddr">Organization Mailing Address</span><span class="required-star">*</span></label>
-                <input class="form-input" type="text" id="p_mailingAddr" name="p_mailing_address">
+                <input class="form-input" type="text" id="p_mailingAddr" name="p_mailing_address" required>
               </div>
 
               <!-- Q12: Main Attendee -->
               <div class="form-group">
                 <label class="form-label" for="p_attendeeMain"><span data-i18n="q.attendeeMain">Main Responsible Person on the Day (Name / Title / Mobile)</span><span class="required-star">*</span></label>
-                <input class="form-input" type="text" id="p_attendeeMain" name="p_attendee_main" placeholder="e.g. John Chen / Director / 0912-345678">
+                <input class="form-input" type="text" id="p_attendeeMain" name="p_attendee_main" placeholder="e.g. John Chen / Director / 0912-345678" required>
               </div>
 
               <!-- Q13: Attendee Count (Public: 1 or 2) -->
               <div class="form-group">
                 <label class="form-label"><span data-i18n="q.attendeeCount">Estimated number of attendees on the day (including main person)</span><span class="required-star">*</span></label>
                 <div class="radio-stack">
-                  <label class="radio-label"><input type="radio" name="p_attendee_count" value="1"><span data-i18n="opt.pAttend1">1 person</span></label>
+                  <label class="radio-label"><input type="radio" name="p_attendee_count" value="1" required><span data-i18n="opt.pAttend1">1 person</span></label>
                   <label class="radio-label"><input type="radio" name="p_attendee_count" value="2"><span data-i18n="opt.pAttend2">2 people</span></label>
                 </div>
               </div>
@@ -465,7 +465,7 @@
               <div class="form-group">
                 <label class="form-label"><span data-i18n="q.lunchNonVeg">Number of Regular (Non-Vegetarian) Lunch Boxes</span><span class="required-star">*</span></label>
                 <div class="radio-inline">
-                  <label class="radio-label"><input type="radio" name="p_lunch_non_veg" value="0">0</label>
+                  <label class="radio-label"><input type="radio" name="p_lunch_non_veg" value="0" required>0</label>
                   <label class="radio-label"><input type="radio" name="p_lunch_non_veg" value="1">1</label>
                   <label class="radio-label"><input type="radio" name="p_lunch_non_veg" value="2">2</label>
                   <label class="radio-label"><input type="radio" name="p_lunch_non_veg" value="3">3</label>
@@ -476,7 +476,7 @@
               <div class="form-group">
                 <label class="form-label"><span data-i18n="q.lunchVeg">Number of Vegetarian Lunch Boxes</span><span class="required-star">*</span></label>
                 <div class="radio-inline">
-                  <label class="radio-label"><input type="radio" name="p_lunch_veg" value="0">0</label>
+                  <label class="radio-label"><input type="radio" name="p_lunch_veg" value="0" required>0</label>
                   <label class="radio-label"><input type="radio" name="p_lunch_veg" value="1">1</label>
                   <label class="radio-label"><input type="radio" name="p_lunch_veg" value="2">2</label>
                   <label class="radio-label"><input type="radio" name="p_lunch_veg" value="3">3</label>
@@ -487,7 +487,7 @@
               <div class="form-group">
                 <label class="form-label"><span data-i18n="q.parking">Estimated parking spaces needed on campus</span><span class="required-star">*</span></label>
                 <div class="radio-inline">
-                  <label class="radio-label"><input type="radio" name="p_parking_spaces" value="0">0</label>
+                  <label class="radio-label"><input type="radio" name="p_parking_spaces" value="0" required>0</label>
                   <label class="radio-label"><input type="radio" name="p_parking_spaces" value="1">1</label>
                 </div>
               </div>
@@ -503,7 +503,7 @@
                 <label class="form-label"><span data-i18n="q.emailConfirm">Please download the relevant form and email it back to us</span><span class="required-star">*</span></label>
                 <div class="form-notice" data-i18n="q.emailConfirmHint">After submission, please download the relevant data sheet, fill it in, and email it back to the organizing unit.</div>
                 <div class="radio-stack">
-                  <label class="radio-label"><input type="radio" name="p_email_confirm" value="OK"><span data-i18n="opt.noProb">No problem 🆗</span></label>
+                  <label class="radio-label"><input type="radio" name="p_email_confirm" value="OK" required><span data-i18n="opt.noProb">No problem 🆗</span></label>
                 </div>
               </div>
 
@@ -626,6 +626,70 @@
         };
         reader.readAsDataURL(file);
       });
+    }
+
+
+    // ─── Validation ──────────────────────────────────────────────
+    function validateForm() {
+      // Clear previous errors
+      document.querySelectorAll('.form-group--error').forEach(el => el.classList.remove('form-group--error'));
+
+      const visibleSections = ['sectionPart1'];
+      const cat = document.querySelector('input[name="activity_category"]:checked')?.value;
+      if (cat === 'Recruitment') visibleSections.push('sectionRecruitment');
+      if (cat === 'Resume') visibleSections.push('sectionResume');
+      if (cat === 'PublicWelfare') visibleSections.push('sectionPublicWelfare');
+
+      let firstFailedEl = null;
+
+      visibleSections.forEach(sid => {
+        const section = document.getElementById(sid);
+        if (!section) return;
+
+        // Check required inputs, selects, textareas
+        const inputs = section.querySelectorAll('input[required], select[required], textarea[required]');
+        inputs.forEach(el => {
+          let failed = false;
+          if (el.type === 'radio') {
+            const name = el.name;
+            if (!section.querySelector(`input[name="${name}"]:checked`)) {
+              failed = true;
+            }
+          } else if (el.type === 'checkbox') {
+            // Not usually directly 'required' in this form, handled by grid
+          } else {
+            if (!el.value.trim()) {
+              failed = true;
+            }
+          }
+
+          if (failed) {
+            const group = el.closest('.form-group');
+            if (group) group.classList.add('form-group--error');
+            if (!firstFailedEl) firstFailedEl = el;
+          }
+        });
+
+        // Special check for checkbox grids if they are logically required
+        const grids = section.querySelectorAll('.checkbox-grid[id]');
+        grids.forEach(grid => {
+          const labelGroup = grid.closest('.form-group');
+          const label = labelGroup ? labelGroup.querySelector('.form-label') : null;
+          if (label && label.querySelector('.required-star')) {
+            const checked = grid.querySelectorAll('input:checked');
+            if (checked.length === 0) {
+              if (labelGroup) labelGroup.classList.add('form-group--error');
+              if (!firstFailedEl) firstFailedEl = grid;
+            }
+          }
+        });
+      });
+
+      if (firstFailedEl) {
+        firstFailedEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return false;
+      }
+      return true;
     }
 
     // ─── Gather form data ─────────────────────────────────────────
@@ -804,6 +868,13 @@
       errEl.style.display = 'none';
 
       try {
+        if (!validateForm()) {
+          btn.disabled = false;
+          btn.setAttribute('data-i18n', editId ? 'btn.update' : 'btn.submit');
+          btn.textContent = I18N.t(editId ? 'btn.update' : 'btn.submit');
+          return;
+        }
+
         const data = await gatherFormData();
         if (editId) {
           await API.put(`/api/submissions/${editId}`, data);
