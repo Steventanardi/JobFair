@@ -221,25 +221,25 @@ const I18N = {
     'dep.social': { en: 'Social Work', zh: '社會工作學系' },
 
     // ── Industry Categories (A-S) ────────────────────────
-    'ind.A': { en: 'Agri, Forestry, Fishing, Animal Husbandry', zh: 'A 農、林、漁、牧業' },
-    'ind.B': { en: 'Mining & Quarrying', zh: 'B 礦業及土石採取業' },
-    'ind.C': { en: 'Manufacturing', zh: 'C 製造業' },
-    'ind.D': { en: 'Electricity & Gas Supply', zh: 'D 電力及燃氣供應業' },
-    'ind.E': { en: 'Water Supply & Remediation', zh: 'E 用水供應及污染整治業' },
-    'ind.F': { en: 'Construction', zh: 'F 營造業' },
-    'ind.G': { en: 'Wholesale & Retail Trade', zh: 'G 批發及零售業' },
-    'ind.H': { en: 'Transportation & Storage', zh: 'H 運輸及倉儲業' },
-    'ind.I': { en: 'Accommodation & Food Service', zh: 'I 住宿及餐飲業' },
-    'ind.J': { en: 'Info, Comm, Publishing & AV', zh: 'J 出版、影音製作、傳播及資通訊服務業' },
-    'ind.K': { en: 'Financial & Insurance', zh: 'K 金融及保險業' },
-    'ind.L': { en: 'Real Estate', zh: 'L 不動產業' },
-    'ind.M': { en: 'Prof, Sci & Technical Services', zh: 'M 專業、科學及技術服務業' },
-    'ind.N': { en: 'Support Services', zh: 'N 支援服務業' },
-    'ind.O': { en: 'Public Admin, Defence & Social Security', zh: 'O 公共行政及國防；強制性社會安全' },
-    'ind.P': { en: 'Education', zh: 'P 教育業' },
-    'ind.Q': { en: 'Human Health & Social Work', zh: 'Q 醫療保健及社會工作服務業' },
-    'ind.R': { en: 'Arts, Entertainment & Recreation', zh: 'R 藝術、娛樂及休閒服務業' },
-    'ind.S': { en: 'Other Services', zh: 'S 其他服務業' },
+    'ind.A': { en: 'A. Agriculture, Forestry, Fishing and Animal Husbandry', zh: 'A大類-農、林、漁、牧業' },
+    'ind.B': { en: 'B. Mining & Quarrying', zh: 'B大類-礦業及土石採取業' },
+    'ind.C': { en: 'C. Manufacturing', zh: 'C大類-製造業' },
+    'ind.D': { en: 'D. Electricity & Gas Supply', zh: 'D大類-電力及燃氣供應業' },
+    'ind.E': { en: 'E. Water Supply & Remediation', zh: 'E大類-用水供應及污染整治業' },
+    'ind.F': { en: 'F. Construction', zh: 'F大類-營建業' },
+    'ind.G': { en: 'G. Wholesale & Retail Trade', zh: 'G大類-批發及零售業' },
+    'ind.H': { en: 'H. Transportation & Storage', zh: 'H大類-運輸及倉儲業' },
+    'ind.I': { en: 'I. Accommodation & Food Service', zh: 'I大類-住宿及餐飲業' },
+    'ind.J': { en: 'J. Info, Comm, Publishing & AV', zh: 'J大類-出版、影音製作、傳播及資通訊服務業' },
+    'ind.K': { en: 'K. Financial & Insurance', zh: 'K大類-金融及保險業' },
+    'ind.L': { en: 'L. Real Estate', zh: 'L大類-不動產業' },
+    'ind.M': { en: 'M. Prof, Sci & Technical Services', zh: 'M大類-專業、科學及技術服務業' },
+    'ind.N': { en: 'N. Support Services', zh: 'N大類-支援服務業' },
+    'ind.O': { en: 'O. Public Admin, Defence & Social Security', zh: 'O大類-公共行政及國防；強制性社會安全' },
+    'ind.P': { en: 'P. Education', zh: 'P大類-教育業' },
+    'ind.Q': { en: 'Q. Human Health & Social Work', zh: 'Q大類-醫療保健及社會工作服務業' },
+    'ind.R': { en: 'R. Arts, Entertainment & Recreation', zh: 'R大類-藝術、娛樂及休閒服務業' },
+    'ind.S': { en: 'S. Other Services', zh: 'S大類-其他服務業' },
 
     // ── Admin Login ───────────────────────────────────────
     'admLogin.title': { en: 'Admin Login', zh: '管理員登入' },
@@ -374,6 +374,10 @@ const I18N = {
     document.querySelectorAll('[data-i18n-html]').forEach(el => {
       el.innerHTML = this.t(el.dataset.i18nHtml);
     });
+    // Hook for page-specific logic after translation (e.g. dynamic numbering)
+    if (typeof onI18nApplied === 'function') {
+      onI18nApplied();
+    }
   },
 
   /**
@@ -390,6 +394,27 @@ const I18N = {
       <button class="lang-btn ${this.currentLang === 'zh' ? 'lang-btn--active' : ''}" data-lang="zh" onclick="I18N.setLang('zh')">中文</button>
     `;
     container.appendChild(toggle);
+  },
+
+  /**
+   * Get all translations as a nested object for the current language
+   */
+  it() {
+    const res = {};
+    for (const key in this.translations) {
+      const parts = key.split('.');
+      let current = res;
+      for (let i = 0; i < parts.length; i++) {
+        const p = parts[i];
+        if (i === parts.length - 1) {
+          current[p] = this.t(key);
+        } else {
+          current[p] = current[p] || {};
+          current = current[p];
+        }
+      }
+    }
+    return res;
   },
 
   /**

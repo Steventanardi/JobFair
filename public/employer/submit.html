@@ -32,7 +32,7 @@
         <form id="submitForm" class="fade-in-up stagger-2">
           <!-- Section 1: Registration Category -->
           <div class="card mb-6">
-            <h2 class="card__title" data-i18n="submit.sec1">Section 1: Category</h2>
+            <h2 class="card__title" data-i18n="submit.sec1">Part 1: Category</h2>
             
             <div class="form-group">
               <label class="form-label"><span data-i18n="submit.catLabel">Category</span> *</label>
@@ -55,7 +55,7 @@
 
           <!-- Section 2: Core Info (Common) -->
           <div id="sectionCore" class="card mb-6">
-            <h2 class="card__title" data-i18n="submit.sec2">Section 2: Basic Info</h2>
+            <h2 class="card__title" data-i18n="submit.sec2">Part 2: Basic Info</h2>
 
             <div class="form-group">
               <label class="form-label"><span data-i18n="submit.isPrev">Previously Participated?</span> *</label>
@@ -120,7 +120,7 @@
 
           <!-- Section 3: Recruitment & Internship (Conditional) -->
           <div id="sectionRecruit" class="card mb-6">
-            <h2 class="card__title" data-i18n="submit.sec3">Section 3: Recruitment</h2>
+            <h2 class="card__title" data-i18n="submit.sec3">Part 3: Recruitment & Internship</h2>
             
             <div class="form-group">
               <label class="form-label"><span data-i18n="submit.internship">Internship History</span> *</label>
@@ -170,7 +170,7 @@
 
           <!-- Section 4: Public Welfare (Conditional) -->
           <div id="sectionPublic" class="card mb-6" style="display:none;">
-            <h2 class="card__title" data-i18n="submit.sec4">Section 4: Public Welfare</h2>
+            <h2 class="card__title" data-i18n="submit.sec4">Part 4: Public Welfare</h2>
             <div class="form-group">
               <label class="form-label"><span data-i18n="submit.groupType">Group Type</span> *</label>
               <div class="radio-stack">
@@ -188,7 +188,7 @@
 
           <!-- Section 5: Logistics -->
           <div id="sectionLogistics" class="card mb-6">
-            <h2 class="card__title" data-i18n="submit.sec5">Section 5: Logistics</h2>
+            <h2 class="card__title" data-i18n="submit.sec5">Part 5: Logistics</h2>
             <div class="form-group">
               <label class="form-label" for="attendeeMain"><span data-i18n="submit.attendeeMain">Main Attendee</span> *</label>
               <input class="form-input" type="text" id="attendeeMain" placeholder="John Doe / Manager / 0912-345678" required>
@@ -282,10 +282,10 @@
       const industrySelect = document.getElementById('industry');
       industrySelect.innerHTML = `<option value="">${I18N.t('adm.loading')}</option>`;
       
-      // We need to wait for I18N to be ready if it's async, but here it's sync.
-      const inds = I18N.it().submit.industries; 
-      industrySelect.innerHTML = '<option value="">Select...</option>';
-      Object.keys(inds).forEach(key => {
+      const it = I18N.it();
+      const inds = it.ind || {}; 
+      industrySelect.innerHTML = `<option value="">${I18N.t('submit.selectIndustry')}</option>`;
+      Object.keys(inds).sort().forEach(key => {
         const opt = document.createElement('option');
         opt.value = key;
         opt.textContent = inds[key];
@@ -293,36 +293,42 @@
       });
 
       // Populate Dept Lists
-      const depts = I18N.it().depts;
+      const depts = it.dep || {};
       const internshipList = document.getElementById('internshipList');
       const deptList = document.getElementById('deptList');
       
+      internshipList.innerHTML = '';
+      deptList.innerHTML = '';
+
       Object.keys(depts).forEach(key => {
-        const item = `
-          <label class="checkbox-label">
-            <input type="checkbox" value="${key}"> <span>${depts[key]}</span>
-          </label>`;
-        const internWrap = document.createElement('div'); internWrap.innerHTML = item;
-        const deptWrap = document.createElement('div'); deptWrap.innerHTML = item;
-        
-        internWrap.querySelector('input').setAttribute('name', 'internship_cooperation');
-        deptWrap.querySelector('input').setAttribute('name', 'target_departments');
-        
-        internshipList.appendChild(internWrap.firstElementChild);
-        deptList.appendChild(deptWrap.firstElementChild);
+        // Internship (Has 'None')
+        if (key !== 'unlimited') {
+          const iLabel = document.createElement('label');
+          iLabel.className = 'checkbox-label';
+          iLabel.innerHTML = `<input type="checkbox" name="internship_history" value="${key}"> <span>${depts[key]}</span>`;
+          internshipList.appendChild(iLabel);
+        }
+
+        // Depts (Has 'Unlimited')
+        if (key !== 'none') {
+          const dLabel = document.createElement('label');
+          dLabel.className = 'checkbox-label';
+          dLabel.innerHTML = `<input type="checkbox" name="target_departments" value="${key}"> <span>${depts[key]}</span>`;
+          deptList.appendChild(dLabel);
+        }
       });
 
-      // Set default contact info
-      document.getElementById('companyName').value = user.company_name;
-
-      const params = new URLSearchParams(window.location.search);
-      editId = params.get('edit');
+      // Check for edit mode
+      const urlParams = new URLSearchParams(window.location.search);
+      editId = urlParams.get('id');
       if (editId) {
+        document.getElementById('pageTitle').setAttribute('data-i18n', 'submit.titleEdit');
         document.getElementById('submitBtn').setAttribute('data-i18n', 'submit.updateBtn');
-        await loadExisting(editId);
+        I18N.applyAll();
+        loadSubmission(editId);
+      } else {
+        toggleSections(); // Initial numbering
       }
-      
-      toggleSections();
     }
 
     function toggleSections() {
@@ -337,17 +343,6 @@
         secRecruit.style.display = 'block';
         secPublic.style.display = 'none';
       }
-    }
-
-    async function loadExisting(id) {
-      try {
-        const s = await API.get(`/api/submissions/${id}`);
-        
-        // Text/Select fields
-        const fields = [
-          'companyName', 'boothSignboardName', 'ceoName', 'taxId', 'industry',
-          'companyIntro', 'mainProducts', 'mailingAddress', 'jobPositions',
-          'requirements', 'benefits', 'rafflePrizes', 'otherRequirements',
           'establishment_date', 'attendeeMain'
         ];
         fields.forEach(f => {
@@ -473,6 +468,12 @@
         submitBtn.disabled = false;
       }
     });
+
+    function onI18nApplied() {
+      if (typeof renumberSections === 'function') {
+        renumberSections();
+      }
+    }
 
     init();
   </script>
