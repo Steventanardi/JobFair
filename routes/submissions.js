@@ -1,19 +1,18 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
+const rateLimit = require('express-rate-limit');
 const db = require('../db');
 const { requireEmployer } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Multer config for logo uploads
-// Use memory storage for Vercel Serverless (read-only file system)
+// Reduced to ~3.5MB so that base64 encoding (~33% inflation) stays under 5MB stored in DB
 const storage = multer.memoryStorage();
 
 const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  limits: { fileSize: 3.5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|gif|svg|webp/;
     const extOk = allowedTypes.test(path.extname(file.originalname).toLowerCase());
@@ -23,8 +22,24 @@ const upload = multer({
   }
 });
 
+const submitLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 20,
+  message: { error: 'Too many submissions from this IP, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Returns a non-negative integer or null; rejects NaN and negative values.
+function parsePositiveInt(val) {
+  if (val === undefined || val === null || val === '') return null;
+  const n = parseInt(val, 10);
+  if (isNaN(n) || n < 0) return null;
+  return n;
+}
+
 // POST /api/submissions — create new submission
-router.post('/', requireEmployer, upload.single('logo'), async (req, res) => {
+router.post('/', requireEmployer, submitLimiter, upload.single('logo'), async (req, res) => {
   const employer = req.session.user;
   const {
     company_name, industry, contact_person, contact_email,
@@ -37,7 +52,6 @@ router.post('/', requireEmployer, upload.single('logo'), async (req, res) => {
     parking_spaces, other_requirements, group_type, establishment_date
   } = req.body;
 
-  // Derive contact_person and contact_email from form data or session fallback
   const resolvedContactPerson = contact_person || attendee_main || ceo_name || employer.company_name;
   const resolvedContactEmail = contact_email || employer.email;
 
@@ -45,18 +59,23 @@ router.post('/', requireEmployer, upload.single('logo'), async (req, res) => {
     return res.status(400).json({ error: 'Company name is required' });
   }
 
+  const nonVeg = parsePositiveInt(lunch_box_non_veg) ?? 0;
+  const veg = parsePositiveInt(lunch_box_veg) ?? 0;
+  if (nonVeg + veg > 3) {
+    return res.status(400).json({ error: 'Total lunch boxes cannot exceed 3' });
+  }
+
   let logo_path = null;
   if (req.file) {
     logo_path = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
   } else if (req.body.company_logo) {
-    // Handle base64 logo from JSON body
     logo_path = req.body.company_logo;
   }
 
   try {
     const result = await db.query(`
-      INSERT INTO submissions 
-      (employer_id, company_name, logo_path, industry, contact_person, contact_email, 
+      INSERT INTO submissions
+      (employer_id, company_name, logo_path, industry, contact_person, contact_email,
        contact_phone, company_intro, job_positions, requirements, benefits,
        activity_category, is_previous_participant, booth_signboard_name,
        ceo_name, tax_id, main_products, internship_cooperation,
@@ -72,10 +91,12 @@ router.post('/', requireEmployer, upload.single('logo'), async (req, res) => {
       company_intro || null, job_positions || null, requirements || null, benefits || null,
       activity_category || null, is_previous_participant || null, booth_signboard_name || null,
       ceo_name || null, tax_id || null, main_products || null, internship_cooperation || null,
-      target_departments || null, mailing_address || null, attendee_main || null, parseInt(attendee_count) || null,
-      parseInt(lunch_box_non_veg) || 0, parseInt(lunch_box_veg) || 0, has_presentation_need || null,
+      target_departments || null, mailing_address || null, attendee_main || null,
+      parsePositiveInt(attendee_count),
+      nonVeg, veg,
+      has_presentation_need || null,
       has_shuttle_need || null, shuttle_details || null, raffle_prizes || null,
-      parseInt(parking_spaces) || 0, other_requirements || null, group_type || null, establishment_date || null
+      parsePositiveInt(parking_spaces) ?? 0, other_requirements || null, group_type || null, establishment_date || null
     ]);
 
     res.json({
@@ -119,7 +140,7 @@ router.get('/:id', requireEmployer, async (req, res) => {
 });
 
 // PUT /api/submissions/:id — update submission (only if pending)
-router.put('/:id', requireEmployer, upload.single('logo'), async (req, res) => {
+router.put('/:id', requireEmployer, submitLimiter, upload.single('logo'), async (req, res) => {
   try {
     const { rows } = await db.query(
       'SELECT * FROM submissions WHERE id = $1 AND employer_id = $2',
@@ -129,8 +150,8 @@ router.put('/:id', requireEmployer, upload.single('logo'), async (req, res) => {
     if (rows.length === 0) return res.status(404).json({ error: 'Submission not found' });
     const submission = rows[0];
 
-    if (submission.status === 'rejected') {
-      return res.status(400).json({ error: 'Rejected submissions cannot be edited' });
+    if (submission.status !== 'pending') {
+      return res.status(400).json({ error: 'Only pending submissions can be edited' });
     }
 
     const {
@@ -144,11 +165,16 @@ router.put('/:id', requireEmployer, upload.single('logo'), async (req, res) => {
       parking_spaces, other_requirements, group_type, establishment_date
     } = req.body;
 
+    const nonVeg = parsePositiveInt(lunch_box_non_veg) ?? submission.lunch_box_non_veg ?? 0;
+    const veg = parsePositiveInt(lunch_box_veg) ?? submission.lunch_box_veg ?? 0;
+    if (nonVeg + veg > 3) {
+      return res.status(400).json({ error: 'Total lunch boxes cannot exceed 3' });
+    }
+
     let logo_path = submission.logo_path;
     if (req.file) {
       logo_path = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
     } else if (req.body.company_logo) {
-      // Handle base64 logo from JSON body
       logo_path = req.body.company_logo;
     }
 
@@ -160,8 +186,8 @@ router.put('/:id', requireEmployer, upload.single('logo'), async (req, res) => {
         activity_category = $11, is_previous_participant = $12, booth_signboard_name = $13,
         ceo_name = $14, tax_id = $15, main_products = $16, internship_cooperation = $17,
         target_departments = $18, mailing_address = $19, attendee_main = $20,
-        attendee_count = $21, lunch_box_non_veg = $22, lunch_box_veg = $23, 
-        has_presentation_need = $24, has_shuttle_need = $25, shuttle_details = $26, 
+        attendee_count = $21, lunch_box_non_veg = $22, lunch_box_veg = $23,
+        has_presentation_need = $24, has_shuttle_need = $25, shuttle_details = $26,
         raffle_prizes = $27, parking_spaces = $28, other_requirements = $29,
         group_type = $30, establishment_date = $31
       WHERE id = $32
@@ -186,14 +212,14 @@ router.put('/:id', requireEmployer, upload.single('logo'), async (req, res) => {
       target_departments || submission.target_departments,
       mailing_address || submission.mailing_address,
       attendee_main || submission.attendee_main,
-      parseInt(attendee_count) || submission.attendee_count,
-      parseInt(lunch_box_non_veg) ?? submission.lunch_box_non_veg,
-      parseInt(lunch_box_veg) ?? submission.lunch_box_veg,
+      parsePositiveInt(attendee_count) ?? submission.attendee_count,
+      nonVeg,
+      veg,
       has_presentation_need || submission.has_presentation_need,
       has_shuttle_need || submission.has_shuttle_need,
       shuttle_details || submission.shuttle_details,
       raffle_prizes || submission.raffle_prizes,
-      parseInt(parking_spaces) ?? submission.parking_spaces,
+      parsePositiveInt(parking_spaces) ?? submission.parking_spaces ?? 0,
       other_requirements || submission.other_requirements,
       group_type || submission.group_type,
       establishment_date || submission.establishment_date,

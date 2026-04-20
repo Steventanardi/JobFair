@@ -76,10 +76,15 @@ router.get('/submissions/export', async (req, res) => {
       'Shuttle Details', 'Raffle Prizes', 'Parking', 'Other Req', 'Submitted At'
     ];
     
-    // Helper to sanitize CSV field
+    // Sanitize a CSV field: escape quotes, strip newlines, block formula injection
     const esc = (val) => {
       if (val === null || val === undefined) return '""';
-      return `"${String(val).replace(/"/g, '""')}"`;
+      let str = String(val)
+        .replace(/\r?\n|\r/g, ' ')  // collapse newlines to spaces
+        .replace(/"/g, '""');        // escape double-quotes
+      // Prefix formula-injection triggers so spreadsheets don't execute them
+      if (/^[=+\-@|]/.test(str)) str = "'" + str;
+      return `"${str}"`;
     };
 
     // CSV Rows
@@ -210,16 +215,24 @@ router.get('/employers', async (req, res) => {
 
 // DELETE /api/admin/employers/:id — delete employer account and their submissions
 router.delete('/employers/:id', async (req, res) => {
+  const client = await db.connect();
   try {
-    const { rows } = await db.query('SELECT id FROM employers WHERE id = $1', [req.params.id]);
-    if (rows.length === 0) return res.status(404).json({ error: 'Employer not found' });
-
-    await db.query('DELETE FROM submissions WHERE employer_id = $1', [req.params.id]);
-    await db.query('DELETE FROM employers WHERE id = $1', [req.params.id]);
+    await client.query('BEGIN');
+    const { rows } = await client.query('SELECT id FROM employers WHERE id = $1', [req.params.id]);
+    if (rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Employer not found' });
+    }
+    await client.query('DELETE FROM submissions WHERE employer_id = $1', [req.params.id]);
+    await client.query('DELETE FROM employers WHERE id = $1', [req.params.id]);
+    await client.query('COMMIT');
     res.json({ message: 'Employer and their submissions deleted' });
   } catch (err) {
+    await client.query('ROLLBACK');
     console.error(err);
     res.status(500).json({ error: 'Server error' });
+  } finally {
+    client.release();
   }
 });
 

@@ -1,6 +1,3 @@
-// Must be set before any TLS connection — fixes Supabase self-signed cert
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
@@ -27,7 +24,12 @@ app.use(session({
     tableName: 'session',
     createTableIfMissing: true
   }),
-  secret: process.env.SESSION_SECRET || 'nqu-jobfair-secret-default-dev',
+  secret: (() => {
+    if (!process.env.SESSION_SECRET) {
+      console.warn('WARNING: SESSION_SECRET env var not set — using insecure default. Set it in production.');
+    }
+    return process.env.SESSION_SECRET || 'nqu-jobfair-secret-default-dev';
+  })(),
   resave: false,
   saveUninitialized: false,
   cookie: {
@@ -77,7 +79,7 @@ if (process.env.NODE_ENV !== 'production') {
     console.log(`\n  ┌──────────────────────────────────────────┐`);
     console.log(`  │  NQU Job Fair System                     │`);
     console.log(`  │  Running at http://localhost:${PORT}        │`);
-    console.log(`  │  Admin: admin / nqu2025                  │`);
+    console.log(`  │  Admin: admin / [see ADMIN_PASSWORD env] │`);
     console.log(`  └──────────────────────────────────────────┘\n`);
   });
 }
