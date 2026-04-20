@@ -146,6 +146,23 @@ router.get('/submissions/export', async (req, res) => {
   }
 });
 
+// GET /api/admin/submissions/:id — get single submission
+router.get('/submissions/:id', async (req, res) => {
+  try {
+    const { rows } = await db.query(`
+      SELECT s.*, e.email as employer_email
+      FROM submissions s
+      LEFT JOIN employers e ON s.employer_id = e.id
+      WHERE s.id = $1
+    `, [req.params.id]);
+    if (rows.length === 0) return res.status(404).json({ error: 'Submission not found' });
+    res.json(rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // PATCH /api/admin/submissions/:id/status — approve or reject
 router.patch('/submissions/:id/status', async (req, res) => {
   const { status, admin_notes } = req.body;

@@ -59,6 +59,10 @@
           <div class="stat-card__label" data-i18n="adm.statRejected">Rejected</div>
           <div class="stat-card__value" id="statRejected">—</div>
         </div>
+        <div class="stat-card">
+          <div class="stat-card__label" data-i18n="adm.statEmployers">Employers</div>
+          <div class="stat-card__value" id="statEmployers">—</div>
+        </div>
       </div>
 
       <!-- ═══ TAB: SUBMISSIONS ═══ -->
@@ -84,7 +88,7 @@
             <thead>
               <tr>
                 <th data-i18n="adm.thCompany">Company</th>
-                <th data-i18n="adm.thIndustry">Industry</th>
+                <th data-i18n="adm.thCategory">Category</th>
                 <th data-i18n="adm.thContact">Contact</th>
                 <th data-i18n="adm.thStatus">Status</th>
                 <th data-i18n="adm.thBooth">Booth</th>
@@ -93,7 +97,7 @@
               </tr>
             </thead>
             <tbody id="submissionsBody">
-              <tr><td colspan="8" class="text-center text-muted" style="padding:3rem;" data-i18n="adm.loading">Loading...</td></tr>
+              <tr><td colspan="7" class="text-center text-muted" style="padding:3rem;" data-i18n="adm.loading">Loading...</td></tr>
             </tbody>
           </table>
         </div>
@@ -235,7 +239,7 @@
       <div id="resetPwInfo" class="text-sm text-muted mb-4"></div>
       <div class="form-group">
         <label class="form-label" for="newPassword" data-i18n="adm.newPassword">New Password</label>
-        <input class="form-input" type="text" id="newPassword" data-i18n-placeholder="adm.newPwPlace" placeholder="Enter new password (min 6 chars)" minlength="6">
+        <input class="form-input" type="password" id="newPassword" data-i18n-placeholder="adm.newPwPlace" placeholder="Enter new password (min 6 chars)" minlength="6">
       </div>
       <div class="modal__actions">
         <button class="btn btn--outline" onclick="App.hideModal('resetPwModal')" data-i18n="adm.cancel">Cancel</button>
@@ -253,22 +257,29 @@
     let boothAssignId = null;
     let editingAnnouncementId = null;
     let resetPwEmployerId = null;
+    const tabLoaded = {};
 
     async function init() {
       const user = await App.requireAuth('admin');
       if (!user) return;
       I18N.init('langToggle');
       loadStats();
+      // Only load the active tab on init; others load on first visit
       loadSubmissions();
-      loadEmployers();
-      loadAnnouncements();
+      tabLoaded['tab-submissions'] = true;
     }
 
     function switchTab(el) {
       document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('sidebar-link--active'));
       document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('tab-panel--active'));
       el.classList.add('sidebar-link--active');
-      document.getElementById(el.dataset.tab)?.classList.add('tab-panel--active');
+      const tabId = el.dataset.tab;
+      document.getElementById(tabId)?.classList.add('tab-panel--active');
+      if (!tabLoaded[tabId]) {
+        tabLoaded[tabId] = true;
+        if (tabId === 'tab-employers') loadEmployers();
+        if (tabId === 'tab-announcements') loadAnnouncements();
+      }
     }
 
     async function loadStats() {
@@ -278,6 +289,7 @@
         document.getElementById('statPending').textContent = s.pending;
         document.getElementById('statApproved').textContent = s.approved;
         document.getElementById('statRejected').textContent = s.rejected;
+        document.getElementById('statEmployers').textContent = s.employerCount;
       } catch (err) { console.error(err); }
     }
 
@@ -293,15 +305,21 @@
 
         const submissions = await API.get(url);
         if (submissions.length === 0) {
-          body.innerHTML = `<tr><td colspan="8" class="text-center text-muted" style="padding:3rem;" data-i18n="adm.noSubs">No submissions found</td></tr>`;
+          body.innerHTML = `<tr><td colspan="7" class="text-center text-muted" style="padding:3rem;" data-i18n="adm.noSubs">No submissions found</td></tr>`;
           I18N.applyAll();
           return;
         }
 
+        const categoryBadge = (cat) => {
+          const map = { Recruitment: ['#3b82f6','R'], Resume: ['#8b5cf6','C'], PublicWelfare: ['#10b981','P'] };
+          const [color, letter] = map[cat] || ['#6b7280','?'];
+          return `<span style="display:inline-block;width:20px;height:20px;border-radius:4px;background:${color};color:#fff;font-size:10px;font-weight:700;text-align:center;line-height:20px;" title="${App.escapeHtml(cat||'')}">${letter}</span>`;
+        };
+
         body.innerHTML = submissions.map(s => `
           <tr>
             <td><div style="font-weight:600;">${App.escapeHtml(s.company_name)}</div><div class="text-xs text-muted">${App.escapeHtml(s.employer_email || '')}</div></td>
-            <td class="text-sm">${App.escapeHtml(s.industry || '—')}</td>
+            <td class="text-sm">${categoryBadge(s.activity_category)} <span class="text-xs text-muted">${App.escapeHtml(s.activity_category || '—')}</span></td>
             <td><div class="text-sm">${App.escapeHtml(s.contact_person)}</div><div class="text-xs text-muted">${App.escapeHtml(s.contact_email)}</div></td>
             <td>${App.statusBadge(s.status)}</td>
             <td class="text-sm">${s.booth_number ? `<span style="color:var(--color-gold-dark);font-weight:600;">${App.escapeHtml(s.booth_number)}</span>` : '—'}</td>
@@ -369,9 +387,10 @@
       document.getElementById('reviewNotesGroup').style.display = 'none';
       document.getElementById('rejectBtn').style.display = 'none';
       document.getElementById('approveBtn').style.display = 'none';
+      document.getElementById('reviewModalBody').innerHTML = `<div style="text-align:center;padding:2rem;"><div class="spinner" style="margin:0 auto;"></div></div>`;
+      App.showModal('reviewModal');
 
-      API.get('/api/admin/submissions').then(subs => {
-        const s = subs.find(x => x.id === id);
+      API.get(`/api/admin/submissions/${id}`).then(s => {
         if (!s) return;
         
         const esc = App.escapeHtml;
@@ -427,7 +446,6 @@
               ${s.admin_notes ? `<div class="detail-item"><strong>${translate('adm.adminNotes')}:</strong> ${esc(s.admin_notes)}</div>` : ''}
             </div>
           </div>`;
-        App.showModal('reviewModal');
       });
     }
 
@@ -445,6 +463,7 @@
         App.hideModal('boothModal');
         App.toast(I18N.t('msg.boothAssigned'), 'success');
         loadSubmissions();
+        loadStats();
       } catch (err) { App.toast(err.message, 'error'); }
     }
 
@@ -475,8 +494,8 @@
             <td class="text-center">${e.submission_count}</td>
             <td class="text-xs text-muted">${App.formatDate(e.created_at)}</td>
             <td><div class="table-actions">
-              <button class="btn btn--outline btn--sm" onclick="openResetPwModal(${e.id}, '${App.escapeHtml(e.company_name).replace(/'/g,"\\'")}', '${App.escapeHtml(e.email).replace(/'/g,"\\'")}')">🔑 ${resetLabel}</button>
-              <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="deleteEmployer(${e.id}, '${App.escapeHtml(e.company_name).replace(/'/g,"\\'")}')">🗑 ${delLabel}</button>
+              <button class="btn btn--outline btn--sm" onclick="openResetPwModal(${e.id}, ${JSON.stringify(e.company_name)}, ${JSON.stringify(e.email)})">🔑 ${resetLabel}</button>
+              <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="deleteEmployer(${e.id}, ${JSON.stringify(e.company_name)})">🗑 ${delLabel}</button>
             </div></td>
           </tr>
         `).join('');
@@ -586,7 +605,7 @@
     async function resetPassword() {
       const pw = document.getElementById('newPassword').value;
       if (!pw || pw.length < 6) {
-        App.toast(I18N.currentLang === 'zh' ? '密碼至少6個字元' : 'Password must be at least 6 characters', 'error');
+        App.toast(I18N.t('err.pwTooShort'), 'error');
         return;
       }
       try {

@@ -183,6 +183,7 @@ const I18N = {
     // ── Error messages ────────────────────────────────────
     'err.selectCategory': { en: 'Please select a registration category first.', zh: '請先選擇報名類別。' },
     'err.general': { en: 'An error occurred. Please try again.', zh: '發生錯誤，請重試。' },
+    'err.pwTooShort': { en: 'Password must be at least 6 characters', zh: '密碼至少6個字元' },
 
     // ── NQU Departments (Official 2026 Full Names) ────────
     'dep.none': { en: 'None (No internship cooperation)', zh: '無（未有合作）' },
@@ -246,6 +247,7 @@ const I18N = {
     'adm.statPending': { en: 'Pending', zh: '待審核' },
     'adm.statApproved': { en: 'Approved', zh: '已通過' },
     'adm.statRejected': { en: 'Rejected', zh: '已拒絕' },
+    'adm.statEmployers': { en: 'Employers', zh: '企業數' },
     'adm.searchPlace': { en: 'Search company, contact...', zh: '搜尋公司、聯絡人...' },
     'adm.all': { en: 'All', zh: '全部' },
     'adm.pending': { en: 'Pending', zh: '待審' },
@@ -253,6 +255,7 @@ const I18N = {
     'adm.rejected': { en: 'Rejected', zh: '拒絕' },
     'adm.thLogo': { en: 'Logo', zh: '標誌' },
     'adm.thCompany': { en: 'Company', zh: '公司' },
+    'adm.thCategory': { en: 'Category', zh: '類別' },
     'adm.thIndustry': { en: 'Industry', zh: '產業' },
     'adm.thContact': { en: 'Contact', zh: '聯絡人' },
     'adm.thStatus': { en: 'Status', zh: '狀態' },
