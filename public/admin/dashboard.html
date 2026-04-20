@@ -383,9 +383,8 @@
               <h3 class="detail-section__title">${translate('submit.sectionParticipation')}</h3>
               <div class="detail-item"><strong>${translate('submit.activityCategory')}:</strong> ${esc(s.activity_category || '—')}</div>
               <div class="detail-item"><strong>${translate('submit.prevPartic')}:</strong> ${esc(s.is_previous_participant || '—')}</div>
-              <div class="detail-item"><strong>${translate('submit.presentNeed')}:</strong> ${esc(s.has_presentation_need || '—')}</div>
-              <div class="detail-item"><strong>${translate('submit.shuttleNeed')}:</strong> ${esc(s.has_shuttle_need || '—')}</div>
-              ${s.shuttle_details ? `<div class="detail-item"><strong>${translate('submit.shuttleDetails')}:</strong> ${esc(s.shuttle_details)}</div>` : ''}
+              <div class="detail-item"><strong>Group Type:</strong> ${esc(s.group_type || '—')}</div>
+              ${s.establishment_date ? `<div class="detail-item"><strong>Est. Date:</strong> ${esc(s.establishment_date)}</div>` : ''}
             </div>
 
             <div class="detail-section">
@@ -401,7 +400,6 @@
               <div class="detail-item"><strong>${translate('submit.ceoName')}:</strong> ${esc(s.ceo_name || '—')}</div>
               <div class="detail-item"><strong>${translate('submit.taxId')}:</strong> ${esc(s.tax_id || '—')}</div>
               <div class="detail-item"><strong>${translate('submit.industry')}:</strong> ${esc(s.industry || '—')}</div>
-              <div class="detail-item"><strong>${translate('submit.mainProducts')}:</strong> ${esc(s.main_products || '—')}</div>
               <div class="detail-item"><strong>${translate('submit.mailingAddress')}:</strong> ${esc(s.mailing_address || '—')}</div>
             </div>
 
@@ -414,8 +412,7 @@
 
             <div class="detail-section">
               <h3 class="detail-section__title">${translate('submit.sectionLogistics')}</h3>
-              <div class="detail-item"><strong>${translate('submit.attendeeMainName')}:</strong> ${esc(s.attendee_main_name || '—')} (${esc(s.attendee_main_title || '—')})</div>
-              <div class="detail-item"><strong>${translate('submit.attendeeMainPhone')}:</strong> ${esc(s.attendee_main_phone || '—')}</div>
+              <div class="detail-item"><strong>Attendee (Contact):</strong> ${esc(s.attendee_main || '—')}</div>
               <div class="detail-item"><strong>${translate('submit.attendeeCount')}:</strong> ${s.attendee_count}</div>
               <div class="detail-item"><strong>${translate('submit.lunchNonVeg')}:</strong> ${s.lunch_box_non_veg} | <strong>${translate('submit.lunchVeg')}:</strong> ${s.lunch_box_veg}</div>
               <div class="detail-item"><strong>${translate('submit.parking')}:</strong> ${s.parking_spaces}</div>

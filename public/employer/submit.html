@@ -26,64 +26,72 @@
     <div class="page-content">
       <div class="container container--medium" style="padding-top:var(--space-8); padding-bottom:var(--space-16);">
 
-        <h1 class="dashboard__title fade-in-up" id="pageTitle" data-i18n="submit.titleNew">New Submission</h1>
-        <p class="text-muted text-sm mt-2 mb-6 fade-in-up stagger-1" data-i18n="submit.desc">Fill in your company details and job information below.</p>
+        <h1 class="dashboard__title fade-in-up" id="pageTitle" data-i18n="submit.title">Registration</h1>
+        <p class="text-muted text-sm mt-2 mb-6 fade-in-up stagger-1" data-i18n="submit.subtitle">Please fill in the details below.</p>
 
         <form id="submitForm" class="fade-in-up stagger-2">
-          <!-- Section 1: Event Participation -->
+          <!-- Section 1: Registration Category -->
           <div class="card mb-6">
-            <h2 class="card__title" data-i18n="submit.eventPart">Event Participation</h2>
+            <h2 class="card__title" data-i18n="submit.sec1">Section 1: Category</h2>
             
             <div class="form-group">
-              <label class="form-label"><span data-i18n="submit.activityCategory">Activity Category</span> *</label>
-              <div class="radio-group">
+              <label class="form-label"><span data-i18n="submit.catLabel">Category</span> *</label>
+              <div class="radio-stack">
                 <label class="radio-label">
-                  <input type="radio" name="activity_category" value="Recruitment" required>
-                  <span data-i18n="submit.actRecruit">On-site Recruitment</span>
+                  <input type="radio" name="activity_category" value="Recruitment" required onchange="toggleSections()">
+                  <span data-i18n="submit.catRecruit">Recruitment</span>
                 </label>
                 <label class="radio-label">
-                  <input type="radio" name="activity_category" value="Resume">
-                  <span data-i18n="submit.actResume">Resume Collection</span>
+                  <input type="radio" name="activity_category" value="Resume" onchange="toggleSections()">
+                  <span data-i18n="submit.catResume">Resume</span>
                 </label>
                 <label class="radio-label">
-                  <input type="radio" name="activity_category" value="Promotion">
-                  <span data-i18n="submit.actPromo">Public Welfare Promotion</span>
-                </label>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label"><span data-i18n="submit.isPrev">Previously Participated?</span> *</label>
-              <div class="radio-group">
-                <label class="radio-label">
-                  <input type="radio" name="is_previous_participant" value="Yes" required>
-                  <span data-i18n="submit.yes">Yes</span>
-                </label>
-                <label class="radio-label">
-                  <input type="radio" name="is_previous_participant" value="No">
-                  <span data-i18n="submit.no">No</span>
-                </label>
-                <label class="radio-label">
-                  <input type="radio" name="is_previous_participant" value="Not Sure">
-                  <span data-i18n="submit.notSure">Not Sure</span>
+                  <input type="radio" name="activity_category" value="PublicWelfare" onchange="toggleSections()">
+                  <span data-i18n="submit.catPublic">Public Welfare</span>
                 </label>
               </div>
             </div>
           </div>
 
-          <!-- Section 2: Company Core Info -->
-          <div class="card mb-6">
-            <h2 class="card__title" data-i18n="submit.companyInfo">Company Information</h2>
+          <!-- Section 2: Core Info (Common) -->
+          <div id="sectionCore" class="card mb-6">
+            <h2 class="card__title" data-i18n="submit.sec2">Section 2: Basic Info</h2>
+
+            <div class="form-group">
+              <label class="form-label"><span data-i18n="submit.isPrev">Previously Participated?</span> *</label>
+              <div class="radio-group">
+                <label class="radio-label"><input type="radio" name="is_previous_participant" value="Yes" required><span data-i18n="submit.yes">Yes</span></label>
+                <label class="radio-label"><input type="radio" name="is_previous_participant" value="No"><span data-i18n="submit.no">No</span></label>
+                <label class="radio-label"><input type="radio" name="is_previous_participant" value="Not Sure"><span data-i18n="submit.unsure">Not Sure</span></label>
+              </div>
+            </div>
 
             <div class="grid grid--2 gap-4">
               <div class="form-group">
                 <label class="form-label" for="companyName"><span data-i18n="submit.companyName">Company Name</span> *</label>
-                <input class="form-input" type="text" id="companyName" name="companyName" placeholder="e.g. ABC Corporation" required>
+                <input class="form-input" type="text" id="companyName" name="companyName" required>
               </div>
               <div class="form-group">
-                <label class="form-label" for="boothSignboardName"><span data-i18n="submit.boothName">Booth Signboard Name</span> *</label>
-                <input class="form-input" type="text" id="boothSignboardName" name="boothSignboardName" placeholder="Exact name for the booth" required>
+                <label class="form-label" for="boothSignboardName"><span data-i18n="submit.boothName">Booth Name</span> *</label>
+                <input class="form-input" type="text" id="boothSignboardName" name="boothSignboardName" required>
               </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label"><span data-i18n="submit.logo">Logo</span></label>
+              <div class="file-upload">
+                <input type="file" id="logo" name="logo" accept="image/*">
+                <div class="file-upload__icon">🖼️</div>
+                <div class="file-upload__text" data-i18n="submit.logo">Click to upload</div>
+                <div id="logoPreview" style="margin-top:var(--space-3); display:none;">
+                  <img id="logoPreviewImg" class="logo-preview--lg" style="margin:0 auto;">
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="companyIntro"><span data-i18n="submit.intro">Introduction</span> *</label>
+              <textarea class="form-textarea" id="companyIntro" name="companyIntro" rows="3" required></textarea>
             </div>
 
             <div class="grid grid--2 gap-4">
@@ -93,208 +101,156 @@
               </div>
               <div class="form-group">
                 <label class="form-label" for="taxId"><span data-i18n="submit.taxId">Tax ID</span> *</label>
-                <input class="form-input" type="text" id="taxId" name="taxId" maxlength="8" pattern="\d{8}" placeholder="8-digit Tax ID" required>
+                <input class="form-input" type="text" id="taxId" name="taxId" required>
               </div>
             </div>
 
             <div class="form-group">
               <label class="form-label" for="industry"><span data-i18n="submit.industry">Industry</span> *</label>
               <select class="form-select" id="industry" name="industry" required>
-                <option value="" data-i18n="submit.selectIndustry">Select industry</option>
-                <option value="Technology" data-i18n="ind.tech">Technology</option>
-                <option value="Finance" data-i18n="ind.finance">Finance</option>
-                <option value="Manufacturing" data-i18n="ind.manufacturing">Manufacturing</option>
-                <option value="Healthcare" data-i18n="ind.healthcare">Healthcare</option>
-                <option value="Education" data-i18n="ind.education">Education</option>
-                <option value="Retail" data-i18n="ind.retail">Retail</option>
-                <option value="Hospitality" data-i18n="ind.hospitality">Hospitality</option>
-                <option value="Construction" data-i18n="ind.construction">Construction</option>
-                <option value="Government" data-i18n="ind.government">Government</option>
-                <option value="Other" data-i18n="ind.other">Other</option>
+                <!-- Generated by JS -->
               </select>
             </div>
 
             <div class="form-group">
-              <label class="form-label"><span data-i18n="submit.logo">Company Logo</span> <span class="optional" data-i18n="submit.optional">(optional)</span></label>
-              <div class="file-upload" id="logoUpload">
-                <input type="file" id="logo" name="logo" accept="image/*">
-                <div class="file-upload__icon">🖼️</div>
-                <div class="file-upload__text">
-                  <strong data-i18n="submit.logoClick">Click to upload</strong> <span data-i18n="submit.logoDrag">or drag and drop</span><br>
-                  <span class="text-xs" data-i18n="submit.logoHint">PNG, JPG, SVG up to 5MB</span>
-                </div>
-                <div id="logoPreview" style="margin-top:var(--space-3); display:none;">
-                  <img id="logoPreviewImg" class="logo-preview--lg" style="margin:0 auto;" alt="Logo preview">
-                </div>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="companyIntro"><span data-i18n="submit.intro">Company Introduction</span> *</label>
-              <textarea class="form-textarea" id="companyIntro" name="companyIntro" data-i18n-placeholder="submit.introPlace" placeholder="Brief description of your company..." rows="3" required></textarea>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="mainProducts"><span data-i18n="submit.mainProducts">Main Products/Business</span> *</label>
+              <label class="form-label" for="mainProducts"><span data-i18n="submit.mainProducts">Main Products</span> *</label>
               <textarea class="form-textarea" id="mainProducts" name="mainProducts" rows="2" required></textarea>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label"><span data-i18n="submit.internship">Internship Cooperation History</span> *</label>
-              <div class="radio-group">
-                <label class="radio-label">
-                  <input type="radio" name="internship_cooperation" value="Yes" required>
-                  <span data-i18n="submit.yes">Yes</span>
-                </label>
-                <label class="radio-label">
-                  <input type="radio" name="internship_cooperation" value="No">
-                  <span data-i18n="submit.no">No</span>
-                </label>
-              </div>
             </div>
           </div>
 
-          <!-- Section 3: Recruitment/Promotion Strategy -->
-          <div class="card mb-6">
-            <h2 class="card__title" data-i18n="submit.jobInfo">Recruitment Information</h2>
+          <!-- Section 3: Recruitment & Internship (Conditional) -->
+          <div id="sectionRecruit" class="card mb-6">
+            <h2 class="card__title" data-i18n="submit.sec3">Section 3: Recruitment</h2>
+            
+            <div class="form-group">
+              <label class="form-label"><span data-i18n="submit.internship">Internship History</span> *</label>
+              <div class="checkbox-grid" id="internshipList">
+                <!-- Generated by JS -->
+              </div>
+            </div>
 
             <div class="form-group">
               <label class="form-label"><span data-i18n="submit.targetDeps">Target Departments</span> *</label>
-              <div class="checkbox-grid">
-                <label class="checkbox-label"><input type="checkbox" name="target_departments" value="All"> <span data-i18n="dep.all">All</span></label>
-                <label class="checkbox-label"><input type="checkbox" name="target_departments" value="Humanities"> <span data-i18n="dep.humanities">Humanities</span></label>
-                <label class="checkbox-label"><input type="checkbox" name="target_departments" value="Management"> <span data-i18n="dep.management">Management</span></label>
-                <label class="checkbox-label"><input type="checkbox" name="target_departments" value="Science"> <span data-i18n="dep.scieng">Science</span></label>
-                <label class="checkbox-label"><input type="checkbox" name="target_departments" value="Social"> <span data-i18n="dep.social">Social</span></label>
-                <label class="checkbox-label"><input type="checkbox" name="target_departments" value="Health"> <span data-i18n="dep.health">Health</span></label>
+              <div class="checkbox-grid" id="deptList">
+                <!-- Generated by JS -->
               </div>
             </div>
 
             <div class="form-group">
-              <label class="form-label" for="jobPositions"><span data-i18n="submit.positions">Job Positions</span> *</label>
-              <textarea class="form-textarea" id="jobPositions" name="jobPositions" placeholder="e.g. Software Engineer, Marketing Associate" rows="3" required></textarea>
-              <div class="form-hint" data-i18n="submit.positionsHint">List each position on a new line</div>
+              <label class="form-label" for="jobPositions"><span data-i18n="submit.positions">Positions</span> *</label>
+              <textarea class="form-textarea" id="jobPositions" name="jobPositions" rows="3" placeholder="Engineer: 2, Manager: 1"></textarea>
             </div>
 
             <div class="form-group">
-              <label class="form-label" for="requirements"><span data-i18n="submit.requirements">Requirements</span> <span class="optional" data-i18n="submit.optional">(optional)</span></label>
-              <textarea class="form-textarea" id="requirements" name="requirements" placeholder="e.g. Bachelor's degree required..." rows="3"></textarea>
+              <label class="form-label" for="requirements"><span data-i18n="submit.requirements">Requirements</span></label>
+              <textarea class="form-textarea" id="requirements" name="requirements" rows="2"></textarea>
             </div>
 
             <div class="form-group">
-              <label class="form-label" for="benefits"><span data-i18n="submit.benefits">Benefits & Perks</span> <span class="optional" data-i18n="submit.optional">(optional)</span></label>
-              <textarea class="form-textarea" id="benefits" name="benefits" placeholder="e.g. Competitive salary, health insurance..." rows="3"></textarea>
+              <label class="form-label" for="benefits"><span data-i18n="submit.benefits">Benefits</span></label>
+              <textarea class="form-textarea" id="benefits" name="benefits" rows="2"></textarea>
+            </div>
+            
+            <div class="grid grid--2 gap-4">
+              <div class="form-group">
+                <label class="form-label" for="mailingAddress"><span data-i18n="submit.mailingAddr">Mailing Address</span> *</label>
+                <input class="form-input" type="text" id="mailingAddress" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="contactInfoDetail"><span data-i18n="submit.contactInfo">Contact Info</span> *</label>
+                <textarea class="form-input" id="contactInfoDetail" rows="1" required></textarea>
+              </div>
+            </div>
+            <!-- Hidden inputs for backward compatibility with existing API if needed, 
+                 but we'll map them in JS from contactInfoDetail -->
+            <input type="hidden" id="contactPerson">
+            <input type="hidden" id="contactEmail">
+            <input type="hidden" id="contactPhone">
+          </div>
+
+          <!-- Section 4: Public Welfare (Conditional) -->
+          <div id="sectionPublic" class="card mb-6" style="display:none;">
+            <h2 class="card__title" data-i18n="submit.sec4">Section 4: Public Welfare</h2>
+            <div class="form-group">
+              <label class="form-label"><span data-i18n="submit.groupType">Group Type</span> *</label>
+              <div class="radio-stack">
+                <label class="radio-label"><input type="radio" name="group_type" value="social"><span data-i18n="submit.groupSocial">Social</span></label>
+                <label class="radio-label"><input type="radio" name="group_type" value="prof"><span data-i18n="submit.groupProf">Professional</span></label>
+                <label class="radio-label"><input type="radio" name="group_type" value="intl_office"><span data-i18n="submit.groupIntlOff">Intl Office</span></label>
+                <label class="radio-label"><input type="radio" name="group_type" value="intl_org"><span data-i18n="submit.groupIntlNGO">Intl NGO</span></label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="establishment_date"><span data-i18n="submit.estDate">Est. Date</span> *</label>
+              <input class="form-input" type="text" id="establishment_date" placeholder="YYYY/MM/DD">
             </div>
           </div>
 
-          <!-- Section 4: Administrative & Logistics -->
-          <div class="card mb-6">
-            <h2 class="card__title" data-i18n="submit.contactInfo">Logistics & Contact</h2>
-
-            <div class="grid grid--2 gap-4">
-              <div class="form-group">
-                <label class="form-label" for="contactPerson"><span data-i18n="submit.contactPerson">Contact Person</span> *</label>
-                <input class="form-input" type="text" id="contactPerson" name="contactPerson" required>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="contactEmail"><span data-i18n="submit.contactEmail">Contact Email</span> *</label>
-                <input class="form-input" type="email" id="contactEmail" name="contactEmail" required>
+          <!-- Section 5: Logistics -->
+          <div id="sectionLogistics" class="card mb-6">
+            <h2 class="card__title" data-i18n="submit.sec5">Section 5: Logistics</h2>
+            <div class="form-group">
+              <label class="form-label" for="attendeeMain"><span data-i18n="submit.attendeeMain">Main Attendee</span> *</label>
+              <input class="form-input" type="text" id="attendeeMain" placeholder="John Doe / Manager / 0912-345678" required>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" data-i18n="submit.attendeeCount">Total Attendees *</label>
+              <div class="radio-group">
+                <label class="radio-label"><input type="radio" name="attendee_count" value="1" required>1</label>
+                <label class="radio-label"><input type="radio" name="attendee_count" value="2">2</label>
+                <label class="radio-label"><input type="radio" name="attendee_count" value="3">3</label>
               </div>
             </div>
 
             <div class="grid grid--2 gap-4">
               <div class="form-group">
-                <label class="form-label" for="contactPhone"><span data-i18n="submit.contactPhone">Contact Phone</span> *</label>
-                <input class="form-input" type="tel" id="contactPhone" name="contactPhone" required>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="mailingAddress"><span data-i18n="submit.mailingAddr">Mailing Address</span> *</label>
-                <input class="form-input" type="text" id="mailingAddress" name="mailingAddress" required>
-              </div>
-            </div>
-
-            <h3 class="mb-4" style="font-size:var(--font-md); font-weight:600;" data-i18n="submit.attendeeInfo">Attendee Info (Excluding Contact)</h3>
-            <div class="grid grid--3 gap-4">
-              <div class="form-group">
-                <label class="form-label" data-i18n="submit.attendeeName">Name</label>
-                <input class="form-input" type="text" id="attendeeMainName" name="attendeeMainName">
-              </div>
-              <div class="form-group">
-                <label class="form-label" data-i18n="submit.attendeeTitle">Title</label>
-                <input class="form-input" type="text" id="attendeeMainTitle" name="attendeeMainTitle">
-              </div>
-              <div class="form-group">
-                <label class="form-label" data-i18n="submit.attendeePhone">Phone</label>
-                <input class="form-input" type="tel" id="attendeeMainPhone" name="attendeeMainPhone">
-              </div>
-            </div>
-
-            <div class="grid grid--3 gap-4">
-              <div class="form-group">
-                <label class="form-label"><span data-i18n="submit.totalAttendees">Total Attendees</span> *</label>
-                <input class="form-input" type="number" id="attendeeCount" name="attendeeCount" min="1" max="10" value="1" required>
-              </div>
-              <div class="form-group">
-                <label class="form-label"><span data-i18n="submit.lunchNonVeg">Non-Veg Lunch</span> *</label>
-                <input class="form-input lunch-counter" type="number" id="lunchBoxNonVeg" name="lunchBoxNonVeg" min="0" max="3" value="0" required>
-              </div>
-              <div class="form-group">
-                <label class="form-label"><span data-i18n="submit.lunchVeg">Veg Lunch</span> *</label>
-                <input class="form-input lunch-counter" type="number" id="lunchBoxVeg" name="lunchBoxVeg" min="0" max="3" value="0" required>
-              </div>
-            </div>
-            <div class="form-hint mb-4"><span data-i18n="submit.lunchHint">Max 3 total</span></div>
-
-            <div class="grid grid--2 gap-4">
-              <div class="form-group">
-                <label class="form-label"><span data-i18n="submit.presentation">Presentation Need?</span> *</label>
+                <label class="form-label" data-i18n="submit.lunchNonVeg">Non-Veg Lunch *</label>
                 <div class="radio-group">
-                  <label class="radio-label"><input type="radio" name="has_presentation_need" value="Yes" required><span data-i18n="submit.yes">Yes</span></label>
-                  <label class="radio-label"><input type="radio" name="has_presentation_need" value="No"><span data-i18n="submit.no">No</span></label>
+                  <label class="radio-label"><input type="radio" name="lunch_box_non_veg" value="0" required>0</label>
+                  <label class="radio-label"><input type="radio" name="lunch_box_non_veg" value="1">1</label>
+                  <label class="radio-label"><input type="radio" name="lunch_box_non_veg" value="2">2</label>
+                  <label class="radio-label"><input type="radio" name="lunch_box_non_veg" value="3">3</label>
                 </div>
               </div>
               <div class="form-group">
-                <label class="form-label"><span data-i18n="submit.shuttle">Shuttle Need?</span> *</label>
+                <label class="form-label" data-i18n="submit.lunchVeg">Veg Lunch *</label>
                 <div class="radio-group">
-                  <label class="radio-label"><input type="radio" name="has_shuttle_need" value="Yes" required><span data-i18n="submit.yes">Yes</span></label>
-                  <label class="radio-label"><input type="radio" name="has_shuttle_need" value="No"><span data-i18n="submit.no">No</span></label>
+                  <label class="radio-label"><input type="radio" name="lunch_box_veg" value="0" required>0</label>
+                  <label class="radio-label"><input type="radio" name="lunch_box_veg" value="1">1</label>
+                  <label class="radio-label"><input type="radio" name="lunch_box_veg" value="2">2</label>
+                  <label class="radio-label"><input type="radio" name="lunch_box_veg" value="3">3</label>
                 </div>
+              </div>
+            </div>
+            <p class="text-xs text-muted mb-4" data-i18n="submit.lunchHint">Max 3 total</p>
+
+            <div class="form-group">
+              <label class="form-label" data-i18n="submit.parking">Parking Spaces *</label>
+              <div class="radio-group">
+                <label class="radio-label"><input type="radio" name="parking_spaces" value="0" required>0</label>
+                <label class="radio-label"><input type="radio" name="parking_spaces" value="1">1</label>
+                <label class="radio-label"><input type="radio" name="parking_spaces" value="2">2</label>
+                <label class="radio-label"><input type="radio" name="parking_spaces" value="3">3</label>
+                <label class="radio-label"><input type="radio" name="parking_spaces" value="4">4</label>
               </div>
             </div>
 
             <div class="form-group">
-              <label class="form-label" for="shuttleDetails"><span data-i18n="submit.shuttle">Shuttle Details</span> <span class="optional" data-i18n="submit.optional">(optional)</span></label>
-              <textarea class="form-textarea" id="shuttleDetails" name="shuttleDetails" placeholder="Time, location, number of people..." rows="2"></textarea>
-            </div>
-
-            <div class="grid grid--2 gap-4">
-              <div class="form-group">
-                <label class="form-label" for="parkingSpaces"><span data-i18n="submit.parking">Parking Needed</span> *</label>
-                <input class="form-input" type="number" id="parkingSpaces" name="parkingSpaces" min="0" max="5" value="0" required>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="rafflePrizes"><span data-i18n="submit.raffle">Raffle Prizes</span> <span class="optional" data-i18n="submit.optional">(optional)</span></label>
-                <textarea class="form-textarea" id="rafflePrizes" name="rafflePrizes" rows="1"></textarea>
-              </div>
+              <label class="form-label" for="rafflePrizes"><span data-i18n="submit.raffle">Raffle Prizes</span></label>
+              <textarea class="form-textarea" id="rafflePrizes" rows="1"></textarea>
             </div>
 
             <div class="form-group">
-              <label class="form-label" for="otherRequirements"><span data-i18n="submit.otherReq">Other Requirements</span> <span class="optional" data-i18n="submit.optional">(optional)</span></label>
-              <textarea class="form-textarea" id="otherRequirements" name="otherRequirements" rows="2"></textarea>
-            </div>
-
-            <div class="form-group mt-6">
-              <label class="checkbox-label">
-                <input type="checkbox" id="resumeConfirm" required>
-                <span data-i18n="submit.resumeConfirm">Resume Agreement</span> *
-              </label>
+              <label class="form-label" for="otherRequirements"><span data-i18n="submit.otherReq">Other</span></label>
+              <textarea class="form-textarea" id="otherRequirements" rows="2"></textarea>
             </div>
           </div>
 
           <div id="errorMsg" class="form-error mb-4" style="display:none;"></div>
 
           <div style="display:flex; gap:var(--space-3); justify-content:flex-end;">
-            <a href="/employer/dashboard.html" class="btn btn--outline" data-i18n="submit.cancel">Cancel</a>
+            <a href="/employer/dashboard.html" class="btn btn--outline" data-i18n="adm.cancel">Cancel</a>
             <button type="submit" class="btn btn--primary btn--lg" id="submitBtn" data-i18n="submit.submitBtn">Submit</button>
           </div>
         </form>
@@ -322,187 +278,199 @@
       if (!user) return;
       I18N.init('langToggle');
 
-      document.getElementById('contactEmail').value = user.email;
+      // Populate Industry List
+      const industrySelect = document.getElementById('industry');
+      industrySelect.innerHTML = `<option value="">${I18N.t('adm.loading')}</option>`;
+      
+      // We need to wait for I18N to be ready if it's async, but here it's sync.
+      const inds = I18N.it().submit.industries; 
+      industrySelect.innerHTML = '<option value="">Select...</option>';
+      Object.keys(inds).forEach(key => {
+        const opt = document.createElement('option');
+        opt.value = key;
+        opt.textContent = inds[key];
+        industrySelect.appendChild(opt);
+      });
+
+      // Populate Dept Lists
+      const depts = I18N.it().depts;
+      const internshipList = document.getElementById('internshipList');
+      const deptList = document.getElementById('deptList');
+      
+      Object.keys(depts).forEach(key => {
+        const item = `
+          <label class="checkbox-label">
+            <input type="checkbox" value="${key}"> <span>${depts[key]}</span>
+          </label>`;
+        const internWrap = document.createElement('div'); internWrap.innerHTML = item;
+        const deptWrap = document.createElement('div'); deptWrap.innerHTML = item;
+        
+        internWrap.querySelector('input').setAttribute('name', 'internship_cooperation');
+        deptWrap.querySelector('input').setAttribute('name', 'target_departments');
+        
+        internshipList.appendChild(internWrap.firstElementChild);
+        deptList.appendChild(deptWrap.firstElementChild);
+      });
+
+      // Set default contact info
       document.getElementById('companyName').value = user.company_name;
 
       const params = new URLSearchParams(window.location.search);
       editId = params.get('edit');
       if (editId) {
-        document.getElementById('pageTitle').setAttribute('data-i18n', 'submit.titleEdit');
-        document.getElementById('pageTitle').textContent = I18N.t('submit.titleEdit');
         document.getElementById('submitBtn').setAttribute('data-i18n', 'submit.updateBtn');
-        document.getElementById('submitBtn').textContent = I18N.t('submit.updateBtn');
         await loadExisting(editId);
+      }
+      
+      toggleSections();
+    }
+
+    function toggleSections() {
+      const cat = document.querySelector('input[name="activity_category"]:checked')?.value;
+      const secRecruit = document.getElementById('sectionRecruit');
+      const secPublic = document.getElementById('sectionPublic');
+      
+      if (cat === 'PublicWelfare') {
+        secRecruit.style.display = 'none';
+        secPublic.style.display = 'block';
+      } else {
+        secRecruit.style.display = 'block';
+        secPublic.style.display = 'none';
       }
     }
 
     async function loadExisting(id) {
       try {
         const s = await API.get(`/api/submissions/${id}`);
-        // Core fields
-        document.getElementById('companyName').value = s.company_name || '';
-        document.getElementById('boothSignboardName').value = s.booth_signboard_name || '';
-        document.getElementById('ceoName').value = s.ceo_name || '';
-        document.getElementById('taxId').value = s.tax_id || '';
-        document.getElementById('industry').value = s.industry || '';
-        document.getElementById('companyIntro').value = s.company_intro || '';
-        document.getElementById('mainProducts').value = s.main_products || '';
-        document.getElementById('contactPerson').value = s.contact_person || '';
-        document.getElementById('contactEmail').value = s.contact_email || '';
-        document.getElementById('contactPhone').value = s.contact_phone || '';
-        document.getElementById('mailingAddress').value = s.mailing_address || '';
-        document.getElementById('jobPositions').value = s.job_positions || '';
-        document.getElementById('requirements').value = s.requirements || '';
-        document.getElementById('benefits').value = s.benefits || '';
         
-        // Logistics
-        document.getElementById('attendeeMainName').value = s.attendee_main_name || '';
-        document.getElementById('attendeeMainTitle').value = s.attendee_main_title || '';
-        document.getElementById('attendeeMainPhone').value = s.attendee_main_phone || '';
-        document.getElementById('attendeeCount').value = s.attendee_count || 1;
-        document.getElementById('lunchBoxNonVeg').value = s.lunch_box_non_veg || 0;
-        document.getElementById('lunchBoxVeg').value = s.lunch_box_veg || 0;
-        document.getElementById('parkingSpaces').value = s.parking_spaces || 0;
-        document.getElementById('shuttleDetails').value = s.shuttle_details || '';
-        document.getElementById('rafflePrizes').value = s.raffle_prizes || '';
-        document.getElementById('otherRequirements').value = s.other_requirements || '';
+        // Text/Select fields
+        const fields = [
+          'companyName', 'boothSignboardName', 'ceoName', 'taxId', 'industry',
+          'companyIntro', 'mainProducts', 'mailingAddress', 'jobPositions',
+          'requirements', 'benefits', 'rafflePrizes', 'otherRequirements',
+          'establishment_date', 'attendeeMain'
+        ];
+        fields.forEach(f => {
+          const el = document.getElementById(f);
+          if (el) el.value = s[f.replace(/[A-Z]/g, l => `_${l.toLowerCase()}`)] || s[f] || '';
+        });
+
+        // Combined contact info logic (approximate restore)
+        document.getElementById('contactInfoDetail').value = `${s.contact_person || ''} / ${s.contact_email || ''} / ${s.contact_phone || ''}`;
 
         // Radios
-        const setRadio = (name, value) => {
-          const el = document.querySelector(`input[name="${name}"][value="${value}"]`);
+        const radios = [
+          'activity_category', 'is_previous_participant', 'attendee_count',
+          'lunch_box_non_veg', 'lunch_box_veg', 'parking_spaces', 'group_type'
+        ];
+        radios.forEach(name => {
+          const val = s[name];
+          const el = document.querySelector(`input[name="${name}"][value="${val}"]`);
           if (el) el.checked = true;
-        };
-        setRadio('activity_category', s.activity_category);
-        setRadio('is_previous_participant', s.is_previous_participant);
-        setRadio('internship_cooperation', s.internship_cooperation);
-        setRadio('has_presentation_need', s.has_presentation_need);
-        setRadio('has_shuttle_need', s.has_shuttle_need);
+        });
 
-        // Checkboxes (Target Departments)
-        if (s.target_departments) {
-          const deps = s.target_departments.split(',');
-          deps.forEach(d => {
-            const el = document.querySelector(`input[name="target_departments"][value="${d}"]`);
-            if (el) el.checked = true;
-          });
-        }
+        // Checkboxes
+        const checkSets = ['target_departments', 'internship_cooperation'];
+        checkSets.forEach(name => {
+          if (s[name]) {
+            const vals = s[name].split(',');
+            vals.forEach(v => {
+              const el = document.querySelector(`input[name="${name}"][value="${v}"]`);
+              if (el) el.checked = true;
+            });
+          }
+        });
 
         if (s.logo_path) {
           document.getElementById('logoPreviewImg').src = s.logo_path;
           document.getElementById('logoPreview').style.display = 'block';
         }
       } catch (err) {
-        App.toast('Failed to load submission', 'error');
-        setTimeout(() => window.location.href = '/employer/dashboard.html', 1000);
+        App.toast('Failed to load', 'error');
       }
     }
 
-    // Logo compression logic remains same...
+    // Logo upload
     document.getElementById('logo').addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (file) {
         const reader = new FileReader();
-        reader.onload = function(ev) {
+        reader.onload = (ev) => {
           const img = new Image();
-          img.onload = function() {
-            const MAX_WIDTH = 500;
-            const MAX_HEIGHT = 500;
-            let width = img.width;
-            let height = img.height;
-            if (width > height) {
-              if (width > MAX_WIDTH) { height = Math.round(height *= MAX_WIDTH / width); width = MAX_WIDTH; }
-            } else {
-              if (height > MAX_HEIGHT) { width = Math.round(width *= MAX_HEIGHT / height); height = MAX_HEIGHT; }
-            }
+          img.onload = () => {
             const canvas = document.createElement('canvas');
-            canvas.width = width; canvas.height = height;
             const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, width, height);
-            canvas.toBlob((blob) => {
+            canvas.width = 400; canvas.height = 400;
+            ctx.drawImage(img, 0, 0, 400, 400);
+            canvas.toBlob(blob => {
               compressedLogoBlob = blob;
-              document.getElementById('logoPreviewImg').src = canvas.toDataURL('image/jpeg', 0.85);
+              document.getElementById('logoPreviewImg').src = canvas.toDataURL('image/jpeg');
               document.getElementById('logoPreview').style.display = 'block';
-            }, 'image/jpeg', 0.85);
+            }, 'image/jpeg', 0.82);
           };
           img.src = ev.target.result;
         };
         reader.readAsDataURL(file);
-      } else {
-        compressedLogoBlob = null;
-        document.getElementById('logoPreview').style.display = 'none';
       }
     });
 
     document.getElementById('submitForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const errorMsg = document.getElementById('errorMsg');
       const submitBtn = document.getElementById('submitBtn');
-      errorMsg.style.display = 'none';
-
-      // Validation: Lunch Box Limit (Total 3)
-      const nonVeg = parseInt(document.getElementById('lunchBoxNonVeg').value) || 0;
-      const veg = parseInt(document.getElementById('lunchBoxVeg').value) || 0;
-      if (nonVeg + veg > 3) {
-        App.toast(I18N.t('submit.lunchHint'), 'error');
-        return;
-      }
-
       submitBtn.disabled = true;
-      submitBtn.textContent = I18N.t('submit.submitting');
 
       const formData = new FormData();
       
-      // Basic Text/Select fields
-      const simpleFields = [
-        'companyName', 'boothSignboardName', 'ceoName', 'taxId', 'industry', 
-        'companyIntro', 'mainProducts', 'contactPerson', 'contactEmail', 
-        'contactPhone', 'mailingAddress', 'jobPositions', 'requirements', 
-        'benefits', 'attendeeMainName', 'attendeeMainTitle', 'attendeeMainPhone',
-        'attendeeCount', 'lunchBoxNonVeg', 'lunchBoxVeg', 'parkingSpaces',
-        'shuttleDetails', 'rafflePrizes', 'otherRequirements'
+      // Text inputs
+      const textFields = [
+        'companyName', 'boothSignboardName', 'ceoName', 'taxId', 'industry',
+        'companyIntro', 'mainProducts', 'mailingAddress', 'jobPositions',
+        'requirements', 'benefits', 'rafflePrizes', 'otherRequirements',
+        'establishment_date', 'attendeeMain'
       ];
-      
-      simpleFields.forEach(id => {
-        const val = document.getElementById(id).value;
-        // Map camelCase ID to snake_case for DB
-        const dbKey = id.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
-        formData.append(dbKey, val);
+      textFields.forEach(f => {
+        const dbKey = f.replace(/[A-Z]/g, l => `_${l.toLowerCase()}`);
+        formData.append(dbKey, document.getElementById(f).value);
       });
+
+      // Contact Parsing
+      const contactRaw = document.getElementById('contactInfoDetail').value;
+      const parts = contactRaw.split('/').map(p => p.trim());
+      formData.append('contact_person', parts[0] || '');
+      formData.append('contact_email', parts[1] || '');
+      formData.append('contact_phone', parts[2] || '');
 
       // Radios
       const radios = [
-        'activity_category', 'is_previous_participant', 
-        'internship_cooperation', 'has_presentation_need', 'has_shuttle_need'
+        'activity_category', 'is_previous_participant', 'attendee_count',
+        'lunch_box_non_veg', 'lunch_box_veg', 'parking_spaces', 'group_type'
       ];
       radios.forEach(name => {
-        const checked = document.querySelector(`input[name="${name}"]:checked`);
-        if (checked) formData.append(name, checked.value);
+        const sel = document.querySelector(`input[name="${name}"]:checked`);
+        if (sel) formData.append(name, sel.value);
       });
 
-      // Checkboxes (Target Departments)
-      const checkedDeps = Array.from(document.querySelectorAll('input[name="target_departments"]:checked'))
-        .map(cb => cb.value)
-        .join(',');
-      formData.append('target_departments', checkedDeps);
+      // Checkboxes
+      const checkSets = ['target_departments', 'internship_cooperation'];
+      checkSets.forEach(name => {
+        const vals = Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(c => c.value);
+        formData.append(name, vals.join(','));
+      });
 
-      if (compressedLogoBlob) {
-        formData.append('logo', compressedLogoBlob, 'logo.jpg');
-      }
+      if (compressedLogoBlob) formData.append('logo', compressedLogoBlob, 'logo.jpg');
 
       try {
         if (editId) {
           await API.upload(`/api/submissions/${editId}`, formData, 'PUT');
-          App.toast(I18N.t('msg.subUpdated'), 'success');
         } else {
           await API.upload('/api/submissions', formData);
-          App.toast(I18N.t('msg.subCreated'), 'success');
         }
-        setTimeout(() => window.location.href = '/employer/dashboard.html', 800);
+        App.toast('Success', 'success');
+        setTimeout(() => window.location.href = '/employer/dashboard.html', 1000);
       } catch (err) {
-        errorMsg.textContent = err.message;
-        errorMsg.style.display = 'block';
+        document.getElementById('errorMsg').textContent = err.message;
+        document.getElementById('errorMsg').style.display = 'block';
         submitBtn.disabled = false;
-        submitBtn.textContent = editId ? I18N.t('submit.updateBtn') : I18N.t('submit.submitBtn');
       }
     });
 

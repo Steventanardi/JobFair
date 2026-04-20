@@ -66,11 +66,12 @@ router.get('/submissions/export', async (req, res) => {
     // CSV Headers
     const headers = [
       'ID', 'Status', 'Booth No', 'Activity Category', 'Prev Participant',
+      'Group Type', 'Establishment Date',
       'Company Name', 'Booth Signboard', 'CEO Name', 'Tax ID', 'Industry', 
       'Introduction', 'Main Products', 'Internship', 'Target Depts',
       'Contact Person', 'Email', 'Phone', 'Mailing Address',
       'Job Positions', 'Requirements', 'Benefits',
-      'Main Attendee', 'Title', 'Phone (Attendee)', 'Attendee Count',
+      'Consolidated Attendee', 'Attendee Count',
       'Lunch (Non-Veg)', 'Lunch (Veg)', 'Presentation Need', 'Shuttle Need',
       'Shuttle Details', 'Raffle Prizes', 'Parking', 'Other Req', 'Submitted At'
     ];
@@ -89,6 +90,8 @@ router.get('/submissions/export', async (req, res) => {
         esc(row.booth_number),
         esc(row.activity_category),
         esc(row.is_previous_participant),
+        esc(row.group_type),
+        esc(row.establishment_date),
         esc(row.company_name),
         esc(row.booth_signboard_name),
         esc(row.ceo_name),
@@ -105,9 +108,7 @@ router.get('/submissions/export', async (req, res) => {
         esc(row.job_positions),
         esc(row.requirements),
         esc(row.benefits),
-        esc(row.attendee_main_name),
-        esc(row.attendee_main_title),
-        esc(row.attendee_main_phone),
+        esc(row.attendee_main),
         row.attendee_count,
         row.lunch_box_non_veg,
         row.lunch_box_veg,

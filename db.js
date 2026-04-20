@@ -86,6 +86,9 @@ const initDB = async () => {
         raffle_prizes           TEXT,
         parking_spaces          INTEGER,
         other_requirements      TEXT,
+        group_type              TEXT,
+        establishment_date      TEXT,
+        attendee_main          TEXT,
         status          TEXT DEFAULT 'pending' CHECK(status IN ('pending','approved','rejected')),
         admin_notes     TEXT,
         booth_number    TEXT,
@@ -137,7 +140,10 @@ const initDB = async () => {
       ['shuttle_details', 'TEXT'],
       ['raffle_prizes', 'TEXT'],
       ['parking_spaces', 'INTEGER'],
-      ['other_requirements', 'TEXT']
+      ['other_requirements', 'TEXT'],
+      ['group_type', 'TEXT'],
+      ['establishment_date', 'TEXT'],
+      ['attendee_main', 'TEXT']
     ];
 
     for (const [colName, colType] of newCols) {
