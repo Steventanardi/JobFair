@@ -13,9 +13,7 @@ router.get('/submissions', async (req, res) => {
   const { status, search } = req.query;
   let sql = `
     SELECT 
-      s.id, s.employer_id, s.company_name, s.industry, s.contact_person, 
-      s.contact_email, s.contact_phone, s.status, s.booth_number, 
-      s.submitted_at, s.reviewed_at, e.email as employer_email 
+      s.*, e.email as employer_email 
     FROM submissions s 
     LEFT JOIN employers e ON s.employer_id = e.id
   `;
@@ -55,10 +53,9 @@ router.get('/submissions/export', async (req, res) => {
   try {
     const { rows } = await db.query(`
       SELECT 
-        s.id, s.company_name, s.industry, s.contact_person, 
-        s.contact_email, s.contact_phone, s.status, s.booth_number, 
-        s.job_positions, s.submitted_at 
+        s.*, e.email as employer_email 
       FROM submissions s 
+      LEFT JOIN employers e ON s.employer_id = e.id
       ORDER BY s.company_name ASC
     `);
 
@@ -67,29 +64,69 @@ router.get('/submissions/export', async (req, res) => {
     }
 
     // CSV Headers
-    const headers = ['ID', 'Company Name', 'Industry', 'Contact Person', 'Email', 'Phone', 'Status', 'Booth Number', 'Job Positions', 'Submitted At'];
+    const headers = [
+      'ID', 'Status', 'Booth No', 'Activity Category', 'Prev Participant',
+      'Company Name', 'Booth Signboard', 'CEO Name', 'Tax ID', 'Industry', 
+      'Introduction', 'Main Products', 'Internship', 'Target Depts',
+      'Contact Person', 'Email', 'Phone', 'Mailing Address',
+      'Job Positions', 'Requirements', 'Benefits',
+      'Main Attendee', 'Title', 'Phone (Attendee)', 'Attendee Count',
+      'Lunch (Non-Veg)', 'Lunch (Veg)', 'Presentation Need', 'Shuttle Need',
+      'Shuttle Details', 'Raffle Prizes', 'Parking', 'Other Req', 'Submitted At'
+    ];
     
+    // Helper to sanitize CSV field
+    const esc = (val) => {
+      if (val === null || val === undefined) return '""';
+      return `"${String(val).replace(/"/g, '""')}"`;
+    };
+
     // CSV Rows
     const csvRows = rows.map(row => {
       return [
         row.id,
-        `"${(row.company_name || '').replace(/"/g, '""')}"`,
-        `"${(row.industry || '').replace(/"/g, '""')}"`,
-        `"${(row.contact_person || '').replace(/"/g, '""')}"`,
-        `"${(row.contact_email || '').replace(/"/g, '""')}"`,
-        `"${(row.contact_phone || '').replace(/"/g, '""')}"`,
         row.status,
-        `"${(row.booth_number || '').replace(/"/g, '""')}"`,
-        `"${(row.job_positions || '').replace(/"/g, '""')}"`,
+        esc(row.booth_number),
+        esc(row.activity_category),
+        esc(row.is_previous_participant),
+        esc(row.company_name),
+        esc(row.booth_signboard_name),
+        esc(row.ceo_name),
+        esc(row.tax_id),
+        esc(row.industry),
+        esc(row.company_intro),
+        esc(row.main_products),
+        esc(row.internship_cooperation),
+        esc(row.target_departments),
+        esc(row.contact_person),
+        esc(row.contact_email),
+        esc(row.contact_phone),
+        esc(row.mailing_address),
+        esc(row.job_positions),
+        esc(row.requirements),
+        esc(row.benefits),
+        esc(row.attendee_main_name),
+        esc(row.attendee_main_title),
+        esc(row.attendee_main_phone),
+        row.attendee_count,
+        row.lunch_box_non_veg,
+        row.lunch_box_veg,
+        esc(row.has_presentation_need),
+        esc(row.has_shuttle_need),
+        esc(row.shuttle_details),
+        esc(row.raffle_prizes),
+        row.parking_spaces,
+        esc(row.other_requirements),
         new Date(row.submitted_at).toISOString().split('T')[0]
       ].join(',');
     });
 
     const csvString = headers.join(',') + '\n' + csvRows.join('\n');
 
-    res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', 'attachment; filename="jobfair-submissions.csv"');
-    res.send(csvString);
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="jobfair-submissions-full.csv"');
+    // Add BOM for Excel UTF-8 support
+    res.send('\uFEFF' + csvString);
   } catch (err) {
     console.error('Export Error:', err);
     res.status(500).send('Server Error during export');

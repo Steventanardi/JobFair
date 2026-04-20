@@ -65,6 +65,27 @@ const initDB = async () => {
         job_positions   TEXT,
         requirements    TEXT,
         benefits        TEXT,
+        activity_category       TEXT,
+        is_previous_participant TEXT,
+        booth_signboard_name    TEXT,
+        ceo_name                TEXT,
+        tax_id                  TEXT,
+        main_products           TEXT,
+        internship_cooperation  TEXT,
+        target_departments      TEXT,
+        mailing_address         TEXT,
+        attendee_main_name      TEXT,
+        attendee_main_title     TEXT,
+        attendee_main_phone     TEXT,
+        attendee_count          INTEGER,
+        lunch_box_non_veg       INTEGER,
+        lunch_box_veg           INTEGER,
+        has_presentation_need   TEXT,
+        has_shuttle_need        TEXT,
+        shuttle_details         TEXT,
+        raffle_prizes           TEXT,
+        parking_spaces          INTEGER,
+        other_requirements      TEXT,
         status          TEXT DEFAULT 'pending' CHECK(status IN ('pending','approved','rejected')),
         admin_notes     TEXT,
         booth_number    TEXT,
@@ -93,6 +114,39 @@ const initDB = async () => {
     `);
 
     console.log('Tables created successfully.');
+
+    // Migration: Add columns if they don't exist
+    const newCols = [
+      ['activity_category', 'TEXT'],
+      ['is_previous_participant', 'TEXT'],
+      ['booth_signboard_name', 'TEXT'],
+      ['ceo_name', 'TEXT'],
+      ['tax_id', 'TEXT'],
+      ['main_products', 'TEXT'],
+      ['internship_cooperation', 'TEXT'],
+      ['target_departments', 'TEXT'],
+      ['mailing_address', 'TEXT'],
+      ['attendee_main_name', 'TEXT'],
+      ['attendee_main_title', 'TEXT'],
+      ['attendee_main_phone', 'TEXT'],
+      ['attendee_count', 'INTEGER'],
+      ['lunch_box_non_veg', 'INTEGER'],
+      ['lunch_box_veg', 'INTEGER'],
+      ['has_presentation_need', 'TEXT'],
+      ['has_shuttle_need', 'TEXT'],
+      ['shuttle_details', 'TEXT'],
+      ['raffle_prizes', 'TEXT'],
+      ['parking_spaces', 'INTEGER'],
+      ['other_requirements', 'TEXT']
+    ];
+
+    for (const [colName, colType] of newCols) {
+      try {
+        await db.query(`ALTER TABLE submissions ADD COLUMN IF NOT EXISTS ${colName} ${colType}`);
+      } catch (e) {
+        // Suppress errors if column already exists (pg 9.6+ has IF NOT EXISTS for ADD COLUMN, but just in case)
+      }
+    }
 
     // Seed default admin if not exists
     const { rows: admins } = await db.query('SELECT id FROM admins WHERE username = $1', ['admin']);

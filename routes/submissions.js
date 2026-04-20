@@ -28,7 +28,14 @@ router.post('/', requireEmployer, upload.single('logo'), async (req, res) => {
   const employer = req.session.user;
   const {
     company_name, industry, contact_person, contact_email,
-    contact_phone, company_intro, job_positions, requirements, benefits
+    contact_phone, company_intro, job_positions, requirements, benefits,
+    activity_category, is_previous_participant, booth_signboard_name,
+    ceo_name, tax_id, main_products, internship_cooperation,
+    target_departments, mailing_address, attendee_main_name,
+    attendee_main_title, attendee_main_phone, attendee_count,
+    lunch_box_non_veg, lunch_box_veg, has_presentation_need,
+    has_shuttle_need, shuttle_details, raffle_prizes,
+    parking_spaces, other_requirements
   } = req.body;
 
   if (!company_name || !contact_person || !contact_email) {
@@ -44,13 +51,27 @@ router.post('/', requireEmployer, upload.single('logo'), async (req, res) => {
     const result = await db.query(`
       INSERT INTO submissions 
       (employer_id, company_name, logo_path, industry, contact_person, contact_email, 
-       contact_phone, company_intro, job_positions, requirements, benefits)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+       contact_phone, company_intro, job_positions, requirements, benefits,
+       activity_category, is_previous_participant, booth_signboard_name,
+       ceo_name, tax_id, main_products, internship_cooperation,
+       target_departments, mailing_address, attendee_main_name,
+       attendee_main_title, attendee_main_phone, attendee_count,
+       lunch_box_non_veg, lunch_box_veg, has_presentation_need,
+       has_shuttle_need, shuttle_details, raffle_prizes,
+       parking_spaces, other_requirements)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32)
       RETURNING id
     `, [
       employer.id, company_name, logo_path, industry || null,
       contact_person, contact_email, contact_phone || null,
-      company_intro || null, job_positions || null, requirements || null, benefits || null
+      company_intro || null, job_positions || null, requirements || null, benefits || null,
+      activity_category || null, is_previous_participant || null, booth_signboard_name || null,
+      ceo_name || null, tax_id || null, main_products || null, internship_cooperation || null,
+      target_departments || null, mailing_address || null, attendee_main_name || null,
+      attendee_main_title || null, attendee_main_phone || null, parseInt(attendee_count) || null,
+      parseInt(lunch_box_non_veg) || 0, parseInt(lunch_box_veg) || 0, has_presentation_need || null,
+      has_shuttle_need || null, shuttle_details || null, raffle_prizes || null,
+      parseInt(parking_spaces) || 0, other_requirements || null
     ]);
 
     res.json({
@@ -110,7 +131,14 @@ router.put('/:id', requireEmployer, upload.single('logo'), async (req, res) => {
 
     const {
       company_name, industry, contact_person, contact_email,
-      contact_phone, company_intro, job_positions, requirements, benefits
+      contact_phone, company_intro, job_positions, requirements, benefits,
+      activity_category, is_previous_participant, booth_signboard_name,
+      ceo_name, tax_id, main_products, internship_cooperation,
+      target_departments, mailing_address, attendee_main_name,
+      attendee_main_title, attendee_main_phone, attendee_count,
+      lunch_box_non_veg, lunch_box_veg, has_presentation_need,
+      has_shuttle_need, shuttle_details, raffle_prizes,
+      parking_spaces, other_requirements
     } = req.body;
 
     let logo_path = submission.logo_path;
@@ -122,8 +150,15 @@ router.put('/:id', requireEmployer, upload.single('logo'), async (req, res) => {
       UPDATE submissions SET
         company_name = $1, logo_path = $2, industry = $3, contact_person = $4,
         contact_email = $5, contact_phone = $6, company_intro = $7,
-        job_positions = $8, requirements = $9, benefits = $10
-      WHERE id = $11
+        job_positions = $8, requirements = $9, benefits = $10,
+        activity_category = $11, is_previous_participant = $12, booth_signboard_name = $13,
+        ceo_name = $14, tax_id = $15, main_products = $16, internship_cooperation = $17,
+        target_departments = $18, mailing_address = $19, attendee_main_name = $20,
+        attendee_main_title = $21, attendee_main_phone = $22, attendee_count = $23,
+        lunch_box_non_veg = $24, lunch_box_veg = $25, has_presentation_need = $26,
+        has_shuttle_need = $27, shuttle_details = $28, raffle_prizes = $29,
+        parking_spaces = $30, other_requirements = $31
+      WHERE id = $32
     `, [
       company_name || submission.company_name,
       logo_path,
@@ -135,6 +170,27 @@ router.put('/:id', requireEmployer, upload.single('logo'), async (req, res) => {
       job_positions || submission.job_positions,
       requirements || submission.requirements,
       benefits || submission.benefits,
+      activity_category || submission.activity_category,
+      is_previous_participant || submission.is_previous_participant,
+      booth_signboard_name || submission.booth_signboard_name,
+      ceo_name || submission.ceo_name,
+      tax_id || submission.tax_id,
+      main_products || submission.main_products,
+      internship_cooperation || submission.internship_cooperation,
+      target_departments || submission.target_departments,
+      mailing_address || submission.mailing_address,
+      attendee_main_name || submission.attendee_main_name,
+      attendee_main_title || submission.attendee_main_title,
+      attendee_main_phone || submission.attendee_main_phone,
+      parseInt(attendee_count) || submission.attendee_count,
+      parseInt(lunch_box_non_veg) ?? submission.lunch_box_non_veg,
+      parseInt(lunch_box_veg) ?? submission.lunch_box_veg,
+      has_presentation_need || submission.has_presentation_need,
+      has_shuttle_need || submission.has_shuttle_need,
+      shuttle_details || submission.shuttle_details,
+      raffle_prizes || submission.raffle_prizes,
+      parseInt(parking_spaces) ?? submission.parking_spaces,
+      other_requirements || submission.other_requirements,
       req.params.id
     ]);
 

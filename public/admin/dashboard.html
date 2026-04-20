@@ -373,25 +373,62 @@
       API.get('/api/admin/submissions').then(subs => {
         const s = subs.find(x => x.id === id);
         if (!s) return;
+        
+        const esc = App.escapeHtml;
+        const translate = (key) => I18N.t(key);
+
         document.getElementById('reviewModalBody').innerHTML = `
-          <div style="display:grid; gap:var(--space-3);">
-            ${s.logo_path ? `
-              <div style="display:flex;align-items:flex-end;gap:var(--space-3);">
-                <img src="${s.logo_path}" class="logo-preview--lg" alt="">
-                <button class="btn btn--outline btn--sm" onclick="downloadLogo('${s.logo_path}', '${App.escapeHtml(s.company_name).replace(/'/g, "\\'")}')" style="white-space:nowrap;">⬇ ${I18N.t('adm.downloadLogo')}</button>
-              </div>
-            ` : ''}
-            <div><strong>Company:</strong> ${App.escapeHtml(s.company_name)}</div>
-            <div><strong>Industry:</strong> ${App.escapeHtml(s.industry || '—')}</div>
-            <div><strong>Contact:</strong> ${App.escapeHtml(s.contact_person)} (${App.escapeHtml(s.contact_email)})</div>
-            ${s.contact_phone ? `<div><strong>Phone:</strong> ${App.escapeHtml(s.contact_phone)}</div>` : ''}
-            ${s.company_intro ? `<div><strong>About:</strong> ${App.escapeHtml(s.company_intro)}</div>` : ''}
-            ${s.job_positions ? `<div><strong>Positions:</strong><br>${App.escapeHtml(s.job_positions)}</div>` : ''}
-            ${s.requirements ? `<div><strong>Requirements:</strong><br>${App.escapeHtml(s.requirements)}</div>` : ''}
-            ${s.benefits ? `<div><strong>Benefits:</strong><br>${App.escapeHtml(s.benefits)}</div>` : ''}
-            <div><strong>Status:</strong> ${App.statusBadge(s.status)}</div>
-            ${s.booth_number ? `<div><strong>Booth:</strong> ${App.escapeHtml(s.booth_number)}</div>` : ''}
-            ${s.admin_notes ? `<div><strong>Notes:</strong> ${App.escapeHtml(s.admin_notes)}</div>` : ''}
+          <div class="modal-detail-grid">
+            <div class="detail-section">
+              <h3 class="detail-section__title">${translate('submit.sectionParticipation')}</h3>
+              <div class="detail-item"><strong>${translate('submit.activityCategory')}:</strong> ${esc(s.activity_category || '—')}</div>
+              <div class="detail-item"><strong>${translate('submit.prevPartic')}:</strong> ${esc(s.is_previous_participant || '—')}</div>
+              <div class="detail-item"><strong>${translate('submit.presentNeed')}:</strong> ${esc(s.has_presentation_need || '—')}</div>
+              <div class="detail-item"><strong>${translate('submit.shuttleNeed')}:</strong> ${esc(s.has_shuttle_need || '—')}</div>
+              ${s.shuttle_details ? `<div class="detail-item"><strong>${translate('submit.shuttleDetails')}:</strong> ${esc(s.shuttle_details)}</div>` : ''}
+            </div>
+
+            <div class="detail-section">
+              <h3 class="detail-section__title">${translate('submit.sectionCompany')}</h3>
+              ${s.logo_path ? `
+                <div class="detail-item" style="margin-bottom:var(--space-4);">
+                  <img src="${s.logo_path}" class="logo-preview--lg" alt="" style="max-height:100px; width:auto; border:1px solid var(--color-border); padding:4px;">
+                  <button class="btn btn--outline btn--sm" onclick="downloadLogo('${s.logo_path}', '${esc(s.company_name).replace(/'/g, "\\'")}')" style="margin-top:4px;">⬇ ${translate('adm.downloadLogo')}</button>
+                </div>
+              ` : ''}
+              <div class="detail-item"><strong>${translate('submit.companyName')}:</strong> ${esc(s.company_name)}</div>
+              <div class="detail-item"><strong>${translate('submit.boothSignName')}:</strong> ${esc(s.booth_signboard_name || '—')}</div>
+              <div class="detail-item"><strong>${translate('submit.ceoName')}:</strong> ${esc(s.ceo_name || '—')}</div>
+              <div class="detail-item"><strong>${translate('submit.taxId')}:</strong> ${esc(s.tax_id || '—')}</div>
+              <div class="detail-item"><strong>${translate('submit.industry')}:</strong> ${esc(s.industry || '—')}</div>
+              <div class="detail-item"><strong>${translate('submit.mainProducts')}:</strong> ${esc(s.main_products || '—')}</div>
+              <div class="detail-item"><strong>${translate('submit.mailingAddress')}:</strong> ${esc(s.mailing_address || '—')}</div>
+            </div>
+
+            <div class="detail-section">
+              <h3 class="detail-section__title">${translate('submit.sectionStrategy')}</h3>
+              <div class="detail-item"><strong>${translate('submit.internship')}:</strong> ${esc(s.internship_cooperation || '—')}</div>
+              <div class="detail-item"><strong>${translate('submit.targetDepts')}:</strong> ${esc(s.target_departments || '—')}</div>
+              <div class="detail-item"><strong>${translate('submit.jobPositions')}:</strong><pre class="detail-text">${esc(s.job_positions || '—')}</pre></div>
+            </div>
+
+            <div class="detail-section">
+              <h3 class="detail-section__title">${translate('submit.sectionLogistics')}</h3>
+              <div class="detail-item"><strong>${translate('submit.attendeeMainName')}:</strong> ${esc(s.attendee_main_name || '—')} (${esc(s.attendee_main_title || '—')})</div>
+              <div class="detail-item"><strong>${translate('submit.attendeeMainPhone')}:</strong> ${esc(s.attendee_main_phone || '—')}</div>
+              <div class="detail-item"><strong>${translate('submit.attendeeCount')}:</strong> ${s.attendee_count}</div>
+              <div class="detail-item"><strong>${translate('submit.lunchNonVeg')}:</strong> ${s.lunch_box_non_veg} | <strong>${translate('submit.lunchVeg')}:</strong> ${s.lunch_box_veg}</div>
+              <div class="detail-item"><strong>${translate('submit.parking')}:</strong> ${s.parking_spaces}</div>
+              ${s.raffle_prizes ? `<div class="detail-item"><strong>${translate('submit.rafflePrizes')}:</strong> ${esc(s.raffle_prizes)}</div>` : ''}
+              ${s.other_requirements ? `<div class="detail-item"><strong>${translate('submit.otherReq')}:</strong> ${esc(s.other_requirements)}</div>` : ''}
+            </div>
+
+            <div class="detail-section" style="grid-column: 1 / -1;">
+              <h3 class="detail-section__title">${translate('adm.status')}</h3>
+              <div class="detail-item"><strong>Status:</strong> ${App.statusBadge(s.status)}</div>
+              ${s.booth_number ? `<div class="detail-item"><strong>${translate('adm.boothNumber')}:</strong> <span style="color:var(--color-gold-dark);font-weight:700;">${esc(s.booth_number)}</span></div>` : ''}
+              ${s.admin_notes ? `<div class="detail-item"><strong>${translate('adm.adminNotes')}:</strong> ${esc(s.admin_notes)}</div>` : ''}
+            </div>
           </div>`;
         App.showModal('reviewModal');
       });
