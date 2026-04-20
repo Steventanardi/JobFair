@@ -6,6 +6,7 @@
   <meta name="description" content="NQU Job Fair Admin Dashboard">
   <title>Admin Dashboard — NQU Job Fair</title>
   <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <div class="dashboard">
@@ -26,6 +27,12 @@
         </a></li>
         <li><a class="sidebar-link" data-tab="tab-announcements" onclick="switchTab(this)">
           <span class="sidebar-link__icon">📢</span> <span data-i18n="adm.announcements">Announcements</span>
+        </a></li>
+        <li><a class="sidebar-link" data-tab="tab-analytics" onclick="switchTab(this)">
+          <span class="sidebar-link__icon">📈</span> <span data-i18n="adm.analytics">Analytics</span>
+        </a></li>
+        <li><a class="sidebar-link" data-tab="tab-settings" onclick="switchTab(this)">
+          <span class="sidebar-link__icon">⚙️</span> <span data-i18n="adm.settings">Settings</span>
         </a></li>
       </ul>
 
@@ -55,6 +62,13 @@
           <div class="stat-card__label" data-i18n="adm.statApproved">Approved</div>
           <div class="stat-card__value" id="statApproved">—</div>
         </div>
+      
+      <div class="activity-overview" style="margin-top:var(--space-6); background:var(--color-bg-alt); padding:var(--space-4); border-radius:var(--radius-lg); border:1px solid var(--color-border);">
+        <h3 style="font-size:1rem; margin-bottom:1rem; display:flex; align-items:center; gap:8px;">🕒 <span data-i18n="adm.recentActivity">Recent Activity</span></h3>
+        <div id="quickLogsBody" class="text-xs">
+          <div class="text-muted" data-i18n="adm.loading">Loading...</div>
+        </div>
+      </div>
         <div class="stat-card stat-card--danger">
           <div class="stat-card__label" data-i18n="adm.statRejected">Rejected</div>
           <div class="stat-card__value" id="statRejected">—</div>
@@ -69,7 +83,14 @@
       <div class="tab-panel tab-panel--active" id="tab-submissions">
         <div class="dashboard__header">
           <h1 class="dashboard__title" data-i18n="adm.submissions">Submissions</h1>
-          <button class="btn btn--outline" onclick="window.location.href='/api/admin/submissions/export'">📥 Export CSV</button>
+          <div style="display:flex; gap:var(--space-2);">
+            <div id="bulkActions" style="display:none; gap:var(--space-2); align-items:center; background:rgba(0,0,0,0.05); padding:4px 12px; border-radius:8px;">
+              <span class="text-sm font-bold" id="selectedCount">0 selected</span>
+              <button class="btn btn--success btn--sm" onclick="bulkReview('approved')">Approve</button>
+              <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="bulkReview('rejected')">Reject</button>
+            </div>
+            <button class="btn btn--outline" onclick="window.location.href='/api/admin/submissions/export'">📥 Export CSV</button>
+          </div>
         </div>
 
         <div class="toolbar">
@@ -87,6 +108,7 @@
           <table class="data-table" id="submissionsTable">
             <thead>
               <tr>
+                <th style="width:40px;"><input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)"></th>
                 <th data-i18n="adm.thCompany">Company</th>
                 <th data-i18n="adm.thCategory">Category</th>
                 <th data-i18n="adm.thContact">Contact</th>
@@ -149,6 +171,70 @@
             <tbody id="announcementsBody">
               <tr><td colspan="5" class="text-center text-muted" style="padding:3rem;" data-i18n="adm.loading">Loading...</td></tr>
             </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══ TAB: ANALYTICS ═══ -->
+      <div class="tab-panel" id="tab-analytics">
+        <div class="dashboard__header">
+          <h1 class="dashboard__title" data-i18n="adm.analyticsTitle">Analytics</h1>
+        </div>
+        <div class="analytics-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:var(--space-6);">
+          <div class="stat-card">
+            <h3>Status Distribution</h3>
+            <div style="height:300px;"><canvas id="statusChart"></canvas></div>
+          </div>
+          <div class="stat-card">
+            <h3>Activity Categories</h3>
+            <div style="height:300px;"><canvas id="categoryChart"></canvas></div>
+          </div>
+          <div class="stat-card">
+            <h3>Logistics Overview</h3>
+            <div id="logisticsDisplay" style="padding-top:1rem;"></div>
+          </div>
+          <div class="stat-card">
+            <h3>Top 5 Industries</h3>
+            <div style="height:300px;"><canvas id="industryChart"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ TAB: SETTINGS ═══ -->
+      <div class="tab-panel" id="tab-settings">
+        <div class="dashboard__header">
+          <h1 class="dashboard__title" data-i18n="adm.settingsTitle">System Settings</h1>
+        </div>
+        <div class="card" style="max-width:600px; background:var(--color-bg-alt); padding:var(--space-6); border-radius:var(--radius-lg); border:1px solid var(--color-border);">
+          <div class="form-group">
+            <label class="form-label" data-i18n="adm.regStatus">Registration Status</label>
+            <select class="form-select" id="setting_registration_status" style="width:100%;">
+              <option value="open">Open (Accepting Submissions)</option>
+              <option value="closed">Closed (Maintenance Mode)</option>
+            </select>
+          </div>
+          <div class="form-group mt-4">
+            <label class="form-label" data-i18n="adm.regDeadline">Registration Deadline</label>
+            <input class="form-input" type="date" id="setting_registration_deadline" style="width:100%;">
+          </div>
+          <button class="btn btn--primary mt-6" onclick="saveSettings()">Save Configuration</button>
+        </div>
+
+        <div class="dashboard__header mt-10">
+          <h1 class="dashboard__title" data-i18n="adm.recentActivity">Recent Activity (Admin Logs)</h1>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Admin</th>
+                <th>Action</th>
+                <th>Target</th>
+                <th>Details</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody id="logsBody"></tbody>
           </table>
         </div>
       </div>
@@ -264,6 +350,7 @@
       if (!user) return;
       I18N.init('langToggle');
       loadStats();
+      loadLogs();
       // Only load the active tab on init; others load on first visit
       loadSubmissions();
       tabLoaded['tab-submissions'] = true;
@@ -279,6 +366,8 @@
         tabLoaded[tabId] = true;
         if (tabId === 'tab-employers') loadEmployers();
         if (tabId === 'tab-announcements') loadAnnouncements();
+        if (tabId === 'tab-analytics') loadAnalytics();
+        if (tabId === 'tab-settings') { loadSettingsDisplay(); loadLogs(); }
       }
     }
 
@@ -304,8 +393,11 @@
         if (params.toString()) url += '?' + params;
 
         const submissions = await API.get(url);
+        document.getElementById('selectAll').checked = false;
+        updateBulkUI();
+
         if (submissions.length === 0) {
-          body.innerHTML = `<tr><td colspan="7" class="text-center text-muted" style="padding:3rem;" data-i18n="adm.noSubs">No submissions found</td></tr>`;
+          body.innerHTML = `<tr><td colspan="8" class="text-center text-muted" style="padding:3rem;" data-i18n="adm.noSubs">No submissions found</td></tr>`;
           I18N.applyAll();
           return;
         }
@@ -318,6 +410,7 @@
 
         body.innerHTML = submissions.map(s => `
           <tr>
+            <td><input type="checkbox" class="sub-checkbox" value="${s.id}" onclick="updateBulkUI()"></td>
             <td><div style="font-weight:600;">${App.escapeHtml(s.company_name)}</div><div class="text-xs text-muted">${App.escapeHtml(s.employer_email || '')}</div></td>
             <td class="text-sm">${categoryBadge(s.activity_category)} <span class="text-xs text-muted">${App.escapeHtml(s.activity_category || '—')}</span></td>
             <td><div class="text-sm">${App.escapeHtml(s.contact_person)}</div><div class="text-xs text-muted">${App.escapeHtml(s.contact_email)}</div></td>
@@ -646,6 +739,145 @@
           // Fallback: open in new tab
           window.open(path, '_blank');
         });
+    }
+
+    // ── ANALYTICS ──
+    async function loadAnalytics() {
+      try {
+        const data = await API.get('/api/admin/analytics');
+        
+        // Status Chart
+        new Chart(document.getElementById('statusChart'), {
+          type: 'doughnut',
+          data: {
+            labels: data.statusDistribution.map(d => d.status),
+            datasets: [{
+              data: data.statusDistribution.map(d => d.count),
+              backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#3b82f6']
+            }]
+          },
+          options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        // Category Chart
+        new Chart(document.getElementById('categoryChart'), {
+          type: 'bar',
+          data: {
+            labels: data.categoryDistribution.map(d => d.activity_category || 'Other'),
+            datasets: [{
+              label: 'Companies',
+              data: data.categoryDistribution.map(d => d.count),
+              backgroundColor: '#8b5cf6'
+            }]
+          },
+          options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        // Industries Chart
+        new Chart(document.getElementById('industryChart'), {
+          type: 'pie',
+          data: {
+            labels: data.topIndustries.map(d => d.industry || 'Unknown'),
+            datasets: [{
+              data: data.topIndustries.map(d => d.count),
+              backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899']
+            }]
+          },
+          options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        // Logistics
+        const log = data.logistics;
+        document.getElementById('logisticsDisplay').innerHTML = `
+          <div style="font-size:1.5rem; font-weight:bold; margin-bottom:1rem;">
+            🍱 ${log.lunch_non_veg || 0} / ${log.lunch_veg || 0} <span style="font-size:0.9rem; font-weight:normal;">Lunch Boxes</span>
+          </div>
+          <div style="font-size:1.5rem; font-weight:bold;">
+            🚗 ${log.parking || 0} <span style="font-size:0.9rem; font-weight:normal;">Parking Spaces</span>
+          </div>
+        `;
+      } catch (err) { console.error(err); }
+    }
+
+    // ── SETTINGS ──
+    async function loadSettingsDisplay() {
+      try {
+        const settings = await API.get('/api/settings');
+        if (settings.registration_status) document.getElementById('setting_registration_status').value = settings.registration_status;
+        if (settings.registration_deadline) document.getElementById('setting_registration_deadline').value = settings.registration_deadline;
+      } catch (err) { console.error(err); }
+    }
+
+    async function saveSettings() {
+      const updates = {
+        registration_status: document.getElementById('setting_registration_status').value,
+        registration_deadline: document.getElementById('setting_registration_deadline').value
+      };
+      try {
+        await API.post('/api/admin/settings/admin', updates);
+        App.toast('Settings updated successfully', 'success');
+      } catch (err) { App.toast(err.message, 'error'); }
+    }
+
+    async function loadLogs() {
+      const body = document.getElementById('logsBody');
+      const quickBody = document.getElementById('quickLogsBody');
+      try {
+        const logs = await API.get('/api/admin/logs');
+        const rows = logs.map(l => `
+          <tr class="text-xs">
+            <td><strong>${App.escapeHtml(l.admin_name || 'System')}</strong></td>
+            <td>${App.escapeHtml(l.action)}</td>
+            <td>${App.escapeHtml(l.target_type)} #${l.target_id}</td>
+            <td class="text-muted">${App.escapeHtml(l.details || '—')}</td>
+            <td>${App.formatDate(l.created_at)}</td>
+          </tr>
+        `).join('');
+        if (body) body.innerHTML = rows;
+
+        if (quickBody) {
+          quickBody.innerHTML = logs.slice(0, 5).map(l => `
+            <div style="margin-bottom:8px; display:flex; justify-content:space-between; border-bottom:1px solid rgba(0,0,0,0.05); padding-bottom:4px;">
+              <span><strong>${l.admin_name || 'System'}</strong> ${l.action}</span>
+              <span class="text-muted">${App.formatDate(l.created_at)}</span>
+            </div>
+          `).join('') || '<div class="text-muted">No activity yet</div>';
+        }
+      } catch (err) { console.error(err); }
+    }
+
+    // ── BULK ACTIONS ──
+    function toggleSelectAll(el) {
+      document.querySelectorAll('.sub-checkbox').forEach(cb => cb.checked = el.checked);
+      updateBulkUI();
+    }
+
+    function updateBulkUI() {
+      const selected = document.querySelectorAll('.sub-checkbox:checked');
+      const bar = document.getElementById('bulkActions');
+      const count = document.getElementById('selectedCount');
+      if (selected.length > 0) {
+        bar.style.display = 'flex';
+        count.textContent = `${selected.length} selected`;
+      } else {
+        bar.style.display = 'none';
+      }
+    }
+
+    async function bulkReview(status) {
+      const selected = Array.from(document.querySelectorAll('.sub-checkbox:checked')).map(cb => cb.value);
+      if (selected.length === 0) return;
+      if (!App.confirm(`Approve/Reject ${selected.length} selected submissions?`)) return;
+
+      try {
+        // Send sequential or Promise.all requests
+        await Promise.all(selected.map(id => 
+          API.patch(`/api/admin/submissions/${id}/status`, { status, admin_notes: 'Bulk action' })
+        ));
+        App.toast(`Successfully processed ${selected.length} submissions`, 'success');
+        loadSubmissions();
+        loadStats();
+      } catch (err) { App.toast(err.message, 'error'); }
     }
 
     init();

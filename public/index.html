@@ -170,9 +170,38 @@
       }
     }
 
+    async function checkSettings() {
+      try {
+        const settings = await API.get('/api/settings');
+        const regBtn = document.querySelector('a[href="/employer/register.html"]');
+        
+        if (settings.registration_status === 'closed') {
+          if (regBtn) {
+            regBtn.textContent = 'Registration Closed';
+            regBtn.href = '#';
+            regBtn.classList.add('btn--disabled');
+            regBtn.style.opacity = '0.5';
+            regBtn.style.pointerEvents = 'none';
+          }
+        }
+
+        if (settings.registration_deadline) {
+          const deadlineDate = new Date(settings.registration_deadline);
+          const now = new Date();
+          if (now < deadlineDate) {
+            const deadlineInfo = document.createElement('div');
+            deadlineInfo.className = 'mt-4 text-sm text-gold';
+            deadlineInfo.innerHTML = `⏳ Registration Deadline: ${deadlineDate.toLocaleDateString()}`;
+            document.querySelector('.hero__actions').appendChild(deadlineInfo);
+          }
+        }
+      } catch (err) { console.error(err); }
+    }
+
     I18N.init('langToggle');
     loadAnnouncements();
     updateNav();
+    checkSettings();
   </script>
 </body>
 </html>
