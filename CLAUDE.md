@@ -2,6 +2,20 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## AI Tool Usage (rtk-ai)
+
+To optimize token usage and filter terminal noise, you MUST prefix all standard shell commands that produce outputs with `rtk`. 
+
+**Rules:**
+- **Standard Commands:** Instead of running `git status`, `git log`, or `npm start`, you must run `rtk git status`, `rtk git log`, or `rtk npm start`.
+- **Reading Files:** Avoid using your built-in Read or Grep tools if it will result in massive token usage. Instead, use standard bash commands prefixed with `rtk` (e.g., use `rtk cat server.js` or `rtk grep "employers" routes/auth.js`).
+
+## Commands
+
+```bash
+npm start        # Production server
+npm run dev      # Development server with --watch (auto-reload)
+
 ## Commands
 
 ```bash
