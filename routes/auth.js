@@ -76,8 +76,8 @@ router.post('/employer/login', authLimiter, async (req, res) => {
 
     res.json({ message: 'Login successful', user: req.session.user });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Server error' });
+    console.error('Employer login error:', err.message);
+    res.status(500).json({ error: 'Server error', detail: process.env.NODE_ENV !== 'production' ? err.message : undefined });
   }
 });
 

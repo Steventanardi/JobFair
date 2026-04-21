@@ -2,28 +2,32 @@ require('dotenv').config();
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 
-// Support all common Vercel/Supabase env var names
+// Support all common Vercel/Supabase/Neon env var names
 const connectionString =
   process.env.DATABASE_URL ||
+  process.env.DATABASE_SUPABASE_URL ||
   process.env.DATABASE_POSTGRES_URL ||
   process.env.DATABASE_POSTGRES_URL_NON_POOLING ||
   process.env.POSTGRES_URL ||
+  process.env.POSTGRES_PRISMA_URL ||
+  process.env.POSTGRES_URL_NON_POOLING ||
   process.env.SUPABASE_DB_URL ||
+  process.env.SUPABASE_URL ||
   process.env.STORAGE_URL ||
+  process.env.NEON_DATABASE_URL ||
   'postgresql://postgres:postgres@localhost:5432/jobfair';
 
+const isLocalhost = connectionString.includes('localhost') || connectionString.includes('127.0.0.1');
 console.log('DB init at:', new Date().toISOString());
-console.log('DB connecting to:', connectionString ? connectionString.substring(0, 40) + '...' : 'NO URL FOUND');
-
-// Always use SSL for remote databases (Supabase, Neon, etc.)
-const isRemote = !connectionString.includes('localhost');
+console.log('DB env var found:', Object.keys(process.env).filter(k => k.includes('DATABASE') || k.includes('POSTGRES') || k.includes('SUPABASE') || k.includes('NEON')).join(', ') || 'NONE');
+console.log('DB connecting to:', connectionString.substring(0, 50) + '...');
 
 const db = new Pool({
   connectionString,
-  ssl: isRemote ? { rejectUnauthorized: false } : false,
+  ssl: isLocalhost ? false : { rejectUnauthorized: false },
   max: 10,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 5000
+  connectionTimeoutMillis: 8000
 });
 
 const initDB = async () => {
