@@ -3,31 +3,41 @@ const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 
 // Support all common Vercel/Supabase/Neon env var names
-const connectionString =
+let connectionString =
   process.env.DATABASE_URL ||
   process.env.DATABASE_SUPABASE_URL ||
   process.env.DATABASE_POSTGRES_URL ||
-  process.env.DATABASE_POSTGRES_URL_NON_POOLING ||
   process.env.POSTGRES_URL ||
-  process.env.POSTGRES_PRISMA_URL ||
-  process.env.POSTGRES_URL_NON_POOLING ||
-  process.env.SUPABASE_DB_URL ||
   process.env.SUPABASE_URL ||
-  process.env.STORAGE_URL ||
-  process.env.NEON_DATABASE_URL ||
-  'postgresql://postgres:postgres@localhost:5432/jobfair';
+  process.env.NEON_DATABASE_URL;
+
+// If we don't have a combined URL, try to build one from components (common in some Vercel setups)
+if (!connectionString || connectionString.startsWith('http')) {
+  const host = process.env.DATABASE_POSTGRES_HOST || process.env.POSTGRES_HOST;
+  const user = process.env.DATABASE_POSTGRES_USER || process.env.POSTGRES_USER;
+  const password = process.env.DATABASE_POSTGRES_PASSWORD || process.env.POSTGRES_PASSWORD;
+  const database = process.env.DATABASE_POSTGRES_DATABASE || process.env.POSTGRES_DATABASE || 'jobfair';
+  const port = process.env.DATABASE_POSTGRES_PORT || process.env.POSTGRES_PORT || '5432';
+
+  if (host && user && password) {
+    connectionString = `postgresql://${user}:${password}@${host}:${port}/${database}`;
+  } else {
+    // Final fallback for local development
+    connectionString = connectionString || 'postgresql://postgres:postgres@localhost:5432/jobfair';
+  }
+}
 
 const isLocalhost = connectionString.includes('localhost') || connectionString.includes('127.0.0.1');
 console.log('DB init at:', new Date().toISOString());
 console.log('DB env var found:', Object.keys(process.env).filter(k => k.includes('DATABASE') || k.includes('POSTGRES') || k.includes('SUPABASE') || k.includes('NEON')).join(', ') || 'NONE');
-console.log('DB connecting to:', connectionString.substring(0, 50) + '...');
+console.log('DB connection candidate:', connectionString.split('@')[1] ? `...@${connectionString.split('@')[1]}` : connectionString.substring(0, 30) + '...');
 
 const db = new Pool({
   connectionString,
   ssl: isLocalhost ? false : { rejectUnauthorized: false },
   max: 10,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 8000
+  connectionTimeoutMillis: 10000 // Increased to 10s for slow cold starts
 });
 
 // Original query for internal use
