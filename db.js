@@ -18,11 +18,6 @@ console.log('DB connecting to:', connectionString ? connectionString.substring(0
 // Always use SSL for remote databases (Supabase, Neon, etc.)
 const isRemote = !connectionString.includes('localhost');
 
-// Workaround for Supabase self-signed certificate
-if (isRemote) {
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-}
-
 const db = new Pool({
   connectionString,
   ssl: isRemote ? { rejectUnauthorized: false } : false,
@@ -184,9 +179,14 @@ const initDB = async () => {
     // Seed default admin if not exists
     const { rows: admins } = await db.query('SELECT id FROM admins WHERE username = $1', ['admin']);
     if (admins.length === 0) {
-      const hash = bcrypt.hashSync('nqu2025', 10);
-      await db.query('INSERT INTO admins (username, password_hash) VALUES ($1, $2)', ['admin', hash]);
-      console.log('Default admin seeded: admin / nqu2025');
+      const adminPassword = process.env.ADMIN_PASSWORD;
+      if (!adminPassword) {
+        console.error('ERROR: ADMIN_PASSWORD env var not set — default admin account not created. Set ADMIN_PASSWORD and restart.');
+      } else {
+        const hash = bcrypt.hashSync(adminPassword, 10);
+        await db.query('INSERT INTO admins (username, password_hash) VALUES ($1, $2)', ['admin', hash]);
+        console.log('Default admin account created.');
+      }
     }
 
     // Seed sample announcements if empty

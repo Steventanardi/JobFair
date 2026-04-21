@@ -21,8 +21,14 @@
           <li><a href="#" class="nav__link" onclick="App.logout(); return false;" data-i18n="nav.logout">Logout</a></li>
           <li id="langToggle"></li>
         </ul>
+        <button class="nav__hamburger" aria-label="Toggle menu" aria-expanded="false">
+          <span class="nav__hamburger__line"></span>
+          <span class="nav__hamburger__line"></span>
+          <span class="nav__hamburger__line"></span>
+        </button>
       </div>
     </nav>
+    <div class="nav__overlay"></div>
 
     <div class="page-content">
       <div class="container" style="padding-top:var(--space-8); padding-bottom:var(--space-16);">

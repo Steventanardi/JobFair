@@ -1455,13 +1455,11 @@ img {
     font-size: var(--font-2xl);
   }
 
+  /* stats stay 2-col even on small phones — numbers are compact */
   .stats-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
   }
-
-  .nav__links {
-    display: none;
-  }
+  /* nav__links handled by hamburger drawer — no display:none here */
 }
 
 /* ── Utilities ───────────────────────────────────────────── */
@@ -1534,4 +1532,319 @@ img {
 .dashboard__sidebar .lang-btn:hover:not(.lang-btn--active) {
   color: rgba(255,255,255,0.8);
   background: var(--color-charcoal-80);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Mobile Enhancements
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Hamburger Button ─────────────────────────────────────── */
+.nav__hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 44px;
+  height: 44px;
+  background: transparent;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  padding: var(--space-2);
+  flex-shrink: 0;
+  transition: background var(--duration) var(--ease-out);
+}
+
+.nav__hamburger:hover { background: var(--color-surface-alt); }
+
+.nav__hamburger__line {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: var(--color-charcoal);
+  border-radius: 2px;
+  transition: transform 0.25s var(--ease-out), opacity 0.2s;
+}
+
+.nav__hamburger.is-open .nav__hamburger__line:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+.nav__hamburger.is-open .nav__hamburger__line:nth-child(2) {
+  opacity: 0;
+}
+.nav__hamburger.is-open .nav__hamburger__line:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* ── Nav backdrop ─────────────────────────────────────────── */
+.nav__overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(26,26,46,0.45);
+  backdrop-filter: blur(3px);
+  z-index: 290;
+}
+.nav__overlay.is-open { display: block; }
+
+/* ── Mobile nav drawer ────────────────────────────────────── */
+@media (max-width: 768px) {
+  .nav__hamburger { display: flex; }
+
+  .nav__links {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(280px, 85vw);
+    background: var(--color-surface);
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-1);
+    padding: var(--space-16) var(--space-6) var(--space-8);
+    box-shadow: var(--shadow-xl);
+    border-left: 1px solid var(--color-border);
+    z-index: 300;
+    overflow-y: auto;
+    /* hidden by default — slide in on open */
+    transform: translateX(100%);
+    visibility: hidden;
+    transition: transform var(--duration) var(--ease-out),
+                visibility 0s linear var(--duration);
+    display: flex !important;
+  }
+
+  .nav__links.is-open {
+    transform: translateX(0);
+    visibility: visible;
+    transition: transform var(--duration) var(--ease-out),
+                visibility 0s;
+  }
+
+  .nav__link {
+    font-size: var(--font-base);
+    padding: var(--space-3) var(--space-2);
+    border-radius: var(--radius-md);
+    display: block;
+    width: 100%;
+  }
+
+  .nav__link::after { display: none; }
+  .nav__link:hover { background: var(--color-surface-alt); }
+}
+
+/* ── Admin dashboard — mobile off-canvas sidebar ──────────── */
+.dashboard__mobile-header { display: none; }
+
+.sidebar__overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(26,26,46,0.5);
+  backdrop-filter: blur(3px);
+  z-index: 390;
+}
+.sidebar__overlay.is-open { display: block; }
+
+.dashboard__sidebar-toggle {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(255,255,255,0.1);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--duration) var(--ease-out);
+}
+.dashboard__sidebar-toggle:hover { background: rgba(255,255,255,0.2); }
+.dashboard__sidebar-toggle span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: #fff;
+  border-radius: 2px;
+}
+
+@media (max-width: 768px) {
+  .dashboard { flex-direction: column; }
+
+  .dashboard__mobile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: var(--space-4) var(--space-5);
+    background: var(--color-charcoal);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .dashboard__mobile-brand {
+    font-size: var(--font-base);
+    font-weight: 700;
+    color: #fff;
+    text-decoration: none;
+  }
+  .dashboard__mobile-brand .gold { color: var(--color-gold); }
+
+  /* override old horizontal-bar sidebar layout */
+  .dashboard__sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: min(280px, 85vw);
+    padding: var(--space-6);
+    z-index: 400;
+    transform: translateX(-100%);
+    transition: transform var(--duration) var(--ease-out);
+    overflow-y: auto;
+  }
+
+  .dashboard__sidebar.is-open { transform: translateX(0); }
+
+  .dashboard__sidebar-nav {
+    flex-direction: column;
+    overflow-x: visible;
+    gap: var(--space-1);
+  }
+
+  .sidebar-logout {
+    margin-top: auto;
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-charcoal-80);
+  }
+
+  .dashboard__main {
+    padding: var(--space-5) var(--space-4) var(--space-12);
+    min-height: 100vh;
+  }
+}
+
+/* ── Tables → card layout on mobile ──────────────────────── */
+@media (max-width: 600px) {
+  .table-wrapper {
+    border: none;
+    background: transparent;
+    overflow-x: visible;
+  }
+
+  .data-table { display: block; }
+  .data-table thead { display: none; }
+  .data-table tbody { display: block; }
+
+  .data-table tr {
+    display: block;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-3);
+    padding: var(--space-4);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .data-table td {
+    display: flex;
+    gap: var(--space-3);
+    align-items: flex-start;
+    padding: var(--space-2) 0;
+    border-bottom: 1px solid var(--color-surface-alt);
+    font-size: var(--font-sm);
+    vertical-align: top;
+  }
+
+  .data-table td:last-child {
+    border-bottom: none;
+    padding-top: var(--space-3);
+  }
+
+  .data-table td::before {
+    content: attr(data-label);
+    font-size: var(--font-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-text-muted);
+    min-width: 72px;
+    flex-shrink: 0;
+    padding-top: 2px;
+    line-height: 1.5;
+  }
+
+  /* cells with empty data-label (actions row) skip the prefix */
+  .data-table td[data-label=""]::before { display: none; min-width: 0; }
+
+  .table-actions { flex-wrap: wrap; }
+}
+
+/* ── Toast — full-width on mobile ─────────────────────────── */
+@media (max-width: 520px) {
+  .toast-container {
+    top: auto;
+    bottom: var(--space-5);
+    right: var(--space-3);
+    left: var(--space-3);
+  }
+  .toast { min-width: 0; width: 100%; max-width: 100%; }
+}
+
+/* ── Modal — bottom sheet on mobile ──────────────────────── */
+@media (max-width: 600px) {
+  .modal-overlay { align-items: flex-end; padding: 0; }
+
+  .modal {
+    max-width: 100%;
+    width: 100%;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    max-height: 92vh;
+    transform: translateY(100%);
+    transition: transform var(--duration) var(--ease-out);
+  }
+
+  .modal-overlay.active .modal { transform: translateY(0); }
+
+  .modal__actions { flex-direction: column-reverse; }
+  .modal__actions .btn { width: 100%; justify-content: center; }
+}
+
+/* ── Touch targets (touchscreen devices) ─────────────────── */
+@media (hover: none) and (pointer: coarse) {
+  .btn { min-height: 44px; }
+  .filter-btn { min-height: 44px; }
+  /* 16px prevents iOS from auto-zooming on input focus */
+  .form-input,
+  .form-textarea,
+  .form-select { font-size: 16px; min-height: 44px; }
+  .form-textarea { min-height: 80px; }
+  .sidebar-link { padding: var(--space-4) var(--space-4); }
+}
+
+/* ── Form submit action row — stack on mobile ─────────────── */
+@media (max-width: 480px) {
+  .form-submit-actions {
+    flex-direction: column-reverse !important;
+    align-items: stretch;
+    gap: var(--space-3);
+  }
+  .form-submit-actions .btn { width: 100%; justify-content: center; }
+}
+
+/* ── Submission cards on small phones ────────────────────── */
+@media (max-width: 420px) {
+  .submission-card__top { flex-direction: column; gap: var(--space-2); }
+  .submission-card__actions { flex-wrap: wrap; }
+}
+
+/* ── Hero — tighten padding on very small screens ────────── */
+@media (max-width: 360px) {
+  .hero { padding: var(--space-12) 0; }
+  .hero__title { font-size: var(--font-xl); }
+  .btn--lg { padding: var(--space-3) var(--space-5); font-size: var(--font-sm); }
 }
