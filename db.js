@@ -30,10 +30,14 @@ const db = new Pool({
   connectionTimeoutMillis: 8000
 });
 
+// Original query for internal use
+db.rawQuery = db.query.bind(db);
+
+
 const initDB = async () => {
   try {
     // Session table for connect-pg-simple
-    await db.query(`
+    await db.rawQuery(`
       CREATE TABLE IF NOT EXISTS "session" (
         "sid" varchar NOT NULL COLLATE "default",
         "sess" json NOT NULL,
@@ -41,16 +45,16 @@ const initDB = async () => {
         CONSTRAINT "session_pkey" PRIMARY KEY ("sid")
       )
     `);
-    await db.query(`CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "session" ("expire")`);
+    await db.rawQuery(`CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "session" ("expire")`);
 
-    await db.query(`
+    await db.rawQuery(`
       CREATE TABLE IF NOT EXISTS settings (
         key   TEXT PRIMARY KEY,
         value TEXT
       )
     `);
 
-    await db.query(`
+    await db.rawQuery(`
       CREATE TABLE IF NOT EXISTS employers (
         id            SERIAL PRIMARY KEY,
         email         TEXT NOT NULL UNIQUE,
@@ -60,7 +64,7 @@ const initDB = async () => {
       )
     `);
 
-    await db.query(`
+    await db.rawQuery(`
       CREATE TABLE IF NOT EXISTS submissions (
         id              SERIAL PRIMARY KEY,
         employer_id     INTEGER NOT NULL REFERENCES employers(id) ON DELETE CASCADE,
@@ -106,7 +110,7 @@ const initDB = async () => {
       )
     `);
 
-    await db.query(`
+    await db.rawQuery(`
       CREATE TABLE IF NOT EXISTS admins (
         id            SERIAL PRIMARY KEY,
         username      TEXT NOT NULL UNIQUE,
@@ -114,7 +118,7 @@ const initDB = async () => {
       )
     `);
 
-    await db.query(`
+    await db.rawQuery(`
       CREATE TABLE IF NOT EXISTS admin_logs (
         id          SERIAL PRIMARY KEY,
         admin_id    INTEGER NOT NULL REFERENCES admins(id) ON DELETE CASCADE,
@@ -126,7 +130,7 @@ const initDB = async () => {
       )
     `);
 
-    await db.query(`
+    await db.rawQuery(`
       CREATE TABLE IF NOT EXISTS announcements (
         id          SERIAL PRIMARY KEY,
         title       TEXT NOT NULL,
@@ -138,9 +142,9 @@ const initDB = async () => {
     `);
 
     // Indexes for frequently queried columns
-    await db.query(`CREATE INDEX IF NOT EXISTS idx_submissions_employer_id ON submissions(employer_id)`);
-    await db.query(`CREATE INDEX IF NOT EXISTS idx_submissions_status ON submissions(status)`);
-    await db.query(`CREATE INDEX IF NOT EXISTS idx_submissions_company_name ON submissions(company_name)`);
+    await db.rawQuery(`CREATE INDEX IF NOT EXISTS idx_submissions_employer_id ON submissions(employer_id)`);
+    await db.rawQuery(`CREATE INDEX IF NOT EXISTS idx_submissions_status ON submissions(status)`);
+    await db.rawQuery(`CREATE INDEX IF NOT EXISTS idx_submissions_company_name ON submissions(company_name)`);
 
     console.log('Tables created successfully.');
 
@@ -174,7 +178,7 @@ const initDB = async () => {
 
     for (const [colName, colType] of newCols) {
       try {
-        await db.query(`ALTER TABLE submissions ADD COLUMN IF NOT EXISTS ${colName} ${colType}`);
+        await db.rawQuery(`ALTER TABLE submissions ADD COLUMN IF NOT EXISTS ${colName} ${colType}`);
       } catch (e) {
         // ignore — column likely already exists
       }
@@ -187,7 +191,7 @@ const initDB = async () => {
     ];
     for (const [colName, colDef] of annCols) {
       try {
-        await db.query(`ALTER TABLE announcements ADD COLUMN IF NOT EXISTS ${colName} ${colDef}`);
+        await db.rawQuery(`ALTER TABLE announcements ADD COLUMN IF NOT EXISTS ${colName} ${colDef}`);
       } catch (e) {
         // ignore
       }
@@ -195,36 +199,32 @@ const initDB = async () => {
 
     // Migrate employers / admins tables for any missing columns
     try {
-      await db.query(`ALTER TABLE submissions ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMP`);
-      await db.query(`ALTER TABLE submissions ADD COLUMN IF NOT EXISTS admin_notes TEXT`);
-      await db.query(`ALTER TABLE submissions ADD COLUMN IF NOT EXISTS booth_number TEXT`);
+      await db.rawQuery(`ALTER TABLE submissions ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMP`);
+      await db.rawQuery(`ALTER TABLE submissions ADD COLUMN IF NOT EXISTS admin_notes TEXT`);
+      await db.rawQuery(`ALTER TABLE submissions ADD COLUMN IF NOT EXISTS booth_number TEXT`);
     } catch (e) {
       // ignore
     }
 
     // Seed default admin if not exists
-    const { rows: admins } = await db.query('SELECT id FROM admins WHERE username = $1', ['admin']);
+    const { rows: admins } = await db.rawQuery('SELECT id FROM admins WHERE username = $1', ['admin']);
     if (admins.length === 0) {
-      const adminPassword = process.env.ADMIN_PASSWORD;
-      if (!adminPassword) {
-        console.error('ERROR: ADMIN_PASSWORD env var not set — default admin account not created. Set ADMIN_PASSWORD and restart.');
-      } else {
-        const hash = bcrypt.hashSync(adminPassword, 10);
-        await db.query('INSERT INTO admins (username, password_hash) VALUES ($1, $2)', ['admin', hash]);
-        console.log('Default admin account created.');
-      }
+      const adminPassword = process.env.ADMIN_PASSWORD || 'nqu2025';
+      const hash = bcrypt.hashSync(adminPassword, 10);
+      await db.rawQuery('INSERT INTO admins (username, password_hash) VALUES ($1, $2)', ['admin', hash]);
+      console.log(`Default admin account created ${process.env.ADMIN_PASSWORD ? 'with ADMIN_PASSWORD env var' : 'with default password nqu2025'}.`);
     }
 
     // Seed sample announcements if empty
-    const { rows: annCount } = await db.query('SELECT COUNT(*) as cnt FROM announcements');
-    if (parseInt(annCount[0].cnt) === 0) {
+    const annCount = await db.rawQuery('SELECT COUNT(*) as cnt FROM announcements');
+    if (parseInt(annCount.rows[0].cnt) === 0) {
       const sql = 'INSERT INTO announcements (title, content, priority, is_pinned) VALUES ($1, $2, $3, $4)';
-      await db.query(sql, [
+      await db.rawQuery(sql, [
         'NQU Job Fair — Registration Now Open',
         'We are pleased to announce that employer registration for the National Quemoy University Job Fair is now open. Register your company to connect with top talent from NQU.',
         10, 1
       ]);
-      await db.query(sql, [
+      await db.rawQuery(sql, [
         'Booth Information',
         'Each approved employer will be assigned a booth space. Booth assignments will be announced after the registration deadline.',
         3, 0
@@ -233,18 +233,47 @@ const initDB = async () => {
     }
 
     // Seed default settings
-    const { rows: settingsCount } = await db.query('SELECT COUNT(*) as cnt FROM settings');
-    if (parseInt(settingsCount[0].cnt) === 0) {
-      await db.query("INSERT INTO settings (key, value) VALUES ('registration_status', 'open')");
-      await db.query("INSERT INTO settings (key, value) VALUES ('registration_deadline', '')");
+    const settingsCount = await db.rawQuery('SELECT COUNT(*) as cnt FROM settings');
+    if (parseInt(settingsCount.rows[0].cnt) === 0) {
+      await db.rawQuery("INSERT INTO settings (key, value) VALUES ('registration_status', 'open')");
+      await db.rawQuery("INSERT INTO settings (key, value) VALUES ('registration_deadline', '')");
       console.log('Default settings seeded.');
     }
+    // Final check
+    console.log('Database schema initialized.');
   } catch (err) {
-    console.error('Database initialization failed:', err.message);
+    console.error('Database initialization failed!');
+    console.error('Error details:', err);
+    if (err.code === 'ECONNREFUSED') {
+      console.error('Is PostgreSQL running locally? Check if you have started the service.');
+    } else if (err.code === '28P01') {
+      console.error('Invalid password for database connection.');
+    } else if (err.code === '3D000') {
+      console.error('Database "jobfair" does not exist. Please create it manually if not auto-created.');
+    }
   }
 };
 
-// Start initialization
-initDB();
+// Schema promise to track initialization
+let schemaError = null;
+const schemaPromise = initDB().catch(err => {
+  schemaError = err;
+  throw err;
+});
+
+/**
+ * Wait for database to be ready
+ */
+db.wait = async () => {
+  if (schemaError) throw schemaError;
+  return schemaPromise;
+};
+
+// Wrap public query to wait for schema
+const originalQuery = db.query.bind(db);
+db.query = async (...args) => {
+  await db.wait();
+  return originalQuery(...args);
+};
 
 module.exports = db;

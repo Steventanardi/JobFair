@@ -46,8 +46,11 @@ router.post('/employer/register', authLimiter, async (req, res) => {
 
     res.json({ message: 'Registration successful', user: req.session.user });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Server error' });
+    console.error('Employer register error:', err);
+    res.status(500).json({ 
+      error: 'Server error',
+      detail: err.message
+    });
   }
 });
 
@@ -77,7 +80,7 @@ router.post('/employer/login', authLimiter, async (req, res) => {
     res.json({ message: 'Login successful', user: req.session.user });
   } catch (err) {
     console.error('Employer login error:', err.message);
-    res.status(500).json({ error: 'Server error', detail: process.env.NODE_ENV !== 'production' ? err.message : undefined });
+    res.status(500).json({ error: 'Server error', detail: err.message });
   }
 });
 
@@ -105,8 +108,11 @@ router.post('/admin/login', authLimiter, async (req, res) => {
 
     res.json({ message: 'Login successful', user: req.session.user });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Server error' });
+    console.error('Admin login error:', err);
+    res.status(500).json({ 
+      error: 'Server error', 
+      detail: err.message 
+    });
   }
 });
 
