@@ -26,11 +26,10 @@ app.use(session({
     createTableIfMissing: true
   }),
   secret: (() => {
-    if (!process.env.SESSION_SECRET && process.env.NODE_ENV === 'production') {
-      console.error('FATAL: SESSION_SECRET env var is not set in production!');
-      process.exit(1);
+    if (!process.env.SESSION_SECRET) {
+      console.warn('WARNING: SESSION_SECRET env var not set — sessions will be invalidated on restart. Set it in Vercel env vars.');
     }
-    return process.env.SESSION_SECRET || 'nqu-jobfair-secret-default-dev';
+    return process.env.SESSION_SECRET || 'nqu-jobfair-fallback-secret-change-me';
   })(),
   resave: false,
   saveUninitialized: false,
