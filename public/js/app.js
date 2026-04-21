@@ -152,5 +152,58 @@ const App = {
    */
   confirm(message) {
     return window.confirm(message);
+  },
+
+  /**
+   * Initialize hamburger nav drawer (for pages using .nav)
+   */
+  initNav() {
+    const hamburger = document.querySelector('.nav__hamburger');
+    const navLinks  = document.querySelector('.nav__links');
+    const overlay   = document.querySelector('.nav__overlay');
+    if (!hamburger || !navLinks) return;
+
+    function toggle(open) {
+      hamburger.classList.toggle('is-open', open);
+      navLinks.classList.toggle('is-open', open);
+      if (overlay) overlay.classList.toggle('is-open', open);
+      document.body.style.overflow = open ? 'hidden' : '';
+    }
+
+    hamburger.addEventListener('click', () => toggle(!navLinks.classList.contains('is-open')));
+    if (overlay) overlay.addEventListener('click', () => toggle(false));
+    navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => toggle(false)));
+  },
+
+  /**
+   * Initialize off-canvas sidebar (for admin dashboard)
+   */
+  initSidebar() {
+    const toggle  = document.querySelector('.dashboard__sidebar-toggle');
+    const sidebar = document.querySelector('.dashboard__sidebar');
+    const overlay = document.querySelector('.sidebar__overlay');
+    if (!toggle || !sidebar) return;
+
+    function open(state) {
+      sidebar.classList.toggle('is-open', state);
+      if (overlay) overlay.classList.toggle('is-open', state);
+      document.body.style.overflow = state ? 'hidden' : '';
+    }
+
+    toggle.addEventListener('click', () => open(!sidebar.classList.contains('is-open')));
+    if (overlay) overlay.addEventListener('click', () => open(false));
+
+    // Close sidebar when a tab is switched on mobile
+    sidebar.querySelectorAll('.sidebar-link').forEach(link => {
+      link.addEventListener('click', () => {
+        if (window.innerWidth <= 768) open(false);
+      });
+    });
   }
 };
+
+// Auto-initialize nav and sidebar on DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+  App.initNav();
+  App.initSidebar();
+});

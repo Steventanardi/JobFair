@@ -10,6 +10,17 @@
 <body>
   <div class="dashboard">
 
+    <!-- Mobile header (visible only on small screens) -->
+    <header class="dashboard__mobile-header">
+      <a href="/" class="dashboard__mobile-brand">NQU <span class="gold" data-i18n="nav.brand">Job Fair</span></a>
+      <button class="dashboard__sidebar-toggle" aria-label="Toggle sidebar">
+        <span></span><span></span><span></span>
+      </button>
+    </header>
+
+    <!-- Sidebar backdrop -->
+    <div class="sidebar__overlay"></div>
+
     <!-- Sidebar -->
     <aside class="dashboard__sidebar">
       <a href="/" class="dashboard__sidebar-brand" style="text-decoration:none; display:block; color:inherit;">
@@ -300,19 +311,19 @@
 
         body.innerHTML = submissions.map(s => `
           <tr>
-            <td><div style="font-weight:600;">${App.escapeHtml(s.company_name)}</div><div class="text-xs text-muted">${App.escapeHtml(s.employer_email || '')}</div></td>
-            <td class="text-sm">${App.escapeHtml(s.industry || '—')}</td>
-            <td><div class="text-sm">${App.escapeHtml(s.contact_person)}</div><div class="text-xs text-muted">${App.escapeHtml(s.contact_email)}</div></td>
-            <td>${App.statusBadge(s.status)}</td>
-            <td class="text-sm">${s.booth_number ? `<span style="color:var(--color-gold-dark);font-weight:600;">${App.escapeHtml(s.booth_number)}</span>` : '—'}</td>
-            <td class="text-xs text-muted">${App.formatDate(s.submitted_at)}</td>
-            <td><div class="table-actions">
+            <td data-label="Company"><div style="font-weight:600;">${App.escapeHtml(s.company_name)}</div><div class="text-xs text-muted">${App.escapeHtml(s.employer_email || '')}</div></td>
+            <td data-label="Industry" class="text-sm">${App.escapeHtml(s.industry || '—')}</td>
+            <td data-label="Contact"><div class="text-sm">${App.escapeHtml(s.contact_person)}</div><div class="text-xs text-muted">${App.escapeHtml(s.contact_email)}</div></td>
+            <td data-label="Status">${App.statusBadge(s.status)}</td>
+            <td data-label="Booth" class="text-sm">${s.booth_number ? `<span style="color:var(--color-gold-dark);font-weight:600;">${App.escapeHtml(s.booth_number)}</span>` : '—'}</td>
+            <td data-label="Date" class="text-xs text-muted">${App.formatDate(s.submitted_at)}</td>
+            <td data-label=""><div class="table-actions">
               ${s.status === 'pending' ? `
-                <button class="btn btn--success btn--sm" onclick="openReviewModal(${s.id})" title="Approve">✓</button>
-                <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="openReviewModalReject(${s.id})" title="Reject">✕</button>
+                <button class="btn btn--success btn--sm" onclick="openReviewModal(${s.id})" title="Approve">✓ Approve</button>
+                <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="openReviewModalReject(${s.id})" title="Reject">✕ Reject</button>
               ` : ''}
-              ${s.status === 'approved' ? `<button class="btn btn--outline btn--sm" onclick="openBoothModal(${s.id}, '${App.escapeHtml(s.booth_number || '')}')">🎪</button>` : ''}
-              <button class="btn btn--ghost btn--sm" onclick="viewDetail(${s.id})">👁</button>
+              ${s.status === 'approved' ? `<button class="btn btn--outline btn--sm" onclick="openBoothModal(${s.id}, '${App.escapeHtml(s.booth_number || '')}')">🎪 Booth</button>` : ''}
+              <button class="btn btn--ghost btn--sm" onclick="viewDetail(${s.id})">👁 View</button>
               <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="deleteSubmission(${s.id})">🗑</button>
             </div></td>
           </tr>
@@ -469,12 +480,12 @@
         const resetLabel = I18N.t('adm.resetPassword');
         body.innerHTML = employers.map(e => `
           <tr>
-            <td class="text-sm text-muted">#${e.id}</td>
-            <td style="font-weight:600;">${App.escapeHtml(e.company_name)}</td>
-            <td class="text-sm">${App.escapeHtml(e.email)}</td>
-            <td class="text-center">${e.submission_count}</td>
-            <td class="text-xs text-muted">${App.formatDate(e.created_at)}</td>
-            <td><div class="table-actions">
+            <td data-label="ID" class="text-sm text-muted">#${e.id}</td>
+            <td data-label="Company" style="font-weight:600;">${App.escapeHtml(e.company_name)}</td>
+            <td data-label="Email" class="text-sm">${App.escapeHtml(e.email)}</td>
+            <td data-label="Subs" class="text-center">${e.submission_count}</td>
+            <td data-label="Reg'd" class="text-xs text-muted">${App.formatDate(e.created_at)}</td>
+            <td data-label=""><div class="table-actions">
               <button class="btn btn--outline btn--sm" onclick="openResetPwModal(${e.id}, '${App.escapeHtml(e.company_name).replace(/'/g,"\\'")}', '${App.escapeHtml(e.email).replace(/'/g,"\\'")}')">🔑 ${resetLabel}</button>
               <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="deleteEmployer(${e.id}, '${App.escapeHtml(e.company_name).replace(/'/g,"\\'")}')">🗑 ${delLabel}</button>
             </div></td>
@@ -505,12 +516,12 @@
         const editLabel = I18N.t('adm.edit');
         body.innerHTML = list.map(a => `
           <tr>
-            <td><div style="font-weight:600; max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${App.escapeHtml(a.title)}</div>
+            <td data-label="Title"><div style="font-weight:600; max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${App.escapeHtml(a.title)}</div>
               <div class="text-xs text-muted" style="max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${App.escapeHtml(a.content).substring(0,60)}...</div></td>
-            <td>${a.is_pinned ? '<span class="badge badge--pinned">📌</span>' : '<span class="text-muted text-xs">—</span>'}</td>
-            <td class="text-sm">${a.priority}</td>
-            <td class="text-xs text-muted">${App.formatDate(a.created_at)}</td>
-            <td><div class="table-actions">
+            <td data-label="Pinned">${a.is_pinned ? '<span class="badge badge--pinned">📌</span>' : '<span class="text-muted text-xs">—</span>'}</td>
+            <td data-label="Priority" class="text-sm">${a.priority}</td>
+            <td data-label="Created" class="text-xs text-muted">${App.formatDate(a.created_at)}</td>
+            <td data-label=""><div class="table-actions">
               <button class="btn btn--ghost btn--sm" onclick='editAnnouncement(${a.id}, ${JSON.stringify(a.title)}, ${JSON.stringify(a.content)}, ${a.priority}, ${a.is_pinned})'>✏️ ${editLabel}</button>
               <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="deleteAnnouncement(${a.id})">🗑</button>
             </div></td>

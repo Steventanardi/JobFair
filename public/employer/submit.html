@@ -48,8 +48,14 @@
           <li><a href="#" class="nav__link" onclick="App.logout(); return false;" data-i18n="nav.logout">Logout</a></li>
           <li id="langToggle"></li>
         </ul>
+        <button class="nav__hamburger" aria-label="Toggle menu" aria-expanded="false">
+          <span class="nav__hamburger__line"></span>
+          <span class="nav__hamburger__line"></span>
+          <span class="nav__hamburger__line"></span>
+        </button>
       </div>
     </nav>
+    <div class="nav__overlay"></div>
 
     <div class="page-content">
       <div class="container container--medium" style="padding-top:var(--space-8); padding-bottom:var(--space-16);">
@@ -513,7 +519,7 @@
           <!-- Error message + Submit Button -->
           <div id="errorMsg" class="form-error mb-4" style="display:none;"></div>
 
-          <div style="display:flex; gap:var(--space-3); justify-content:flex-end;">
+          <div class="form-submit-actions" style="display:flex; gap:var(--space-3); justify-content:flex-end;">
             <a href="/employer/dashboard.html" class="btn btn--outline" data-i18n="btn.cancel">Cancel</a>
             <button type="submit" class="btn btn--primary btn--lg" id="submitBtn" data-i18n="btn.submit">Submit Registration</button>
           </div>
