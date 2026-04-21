@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(rtk gain *)",
-      "mcp__plugin_claude-mem_mcp-search__smart_outline"
+      "mcp__plugin_claude-mem_mcp-search__smart_outline",
+      "Bash(rtk git *)",
+      "WebFetch(domain:job-fair-rho.vercel.app)"
     ]
   }
 }
