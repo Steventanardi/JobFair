@@ -1592,6 +1592,15 @@ img {
 
 /* ── Mobile nav drawer ────────────────────────────────────── */
 @media (max-width: 768px) {
+  /* Remove backdrop-filter so .nav does NOT become a containing block for
+     position:fixed children — otherwise the drawer's top/right/bottom coords
+     are relative to the nav bar height (~60px) instead of the viewport. */
+  .nav {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: rgba(255,255,255,0.97);
+  }
+
   .nav__hamburger { display: flex; }
 
   .nav__links {
@@ -1599,21 +1608,23 @@ img {
     top: 0;
     right: 0;
     bottom: 0;
+    height: 100dvh;           /* iOS dynamic viewport height */
     width: min(280px, 85vw);
-    background: var(--color-surface);
+    background: #fff;
     flex-direction: column;
     align-items: stretch;
-    gap: var(--space-1);
-    padding: 5rem var(--space-6) var(--space-8);
-    box-shadow: var(--shadow-xl);
-    border-left: 1px solid var(--color-border);
+    gap: 4px;
+    padding: 80px 20px 40px;
+    box-shadow: -4px 0 24px rgba(0,0,0,0.15);
+    border-left: 1px solid #e5e7eb;
     z-index: 410;
     overflow-y: auto;
-    /* hidden by default — slide in on open */
     transform: translateX(100%);
     visibility: hidden;
     transition: transform 0.3s ease, visibility 0s linear 0.3s;
     display: flex !important;
+    list-style: none;
+    margin: 0;
   }
 
   .nav__links.is-open {
@@ -1623,15 +1634,19 @@ img {
   }
 
   .nav__link {
-    font-size: var(--font-base);
-    padding: var(--space-3) var(--space-2);
-    border-radius: var(--radius-md);
+    font-size: 1rem;
+    font-weight: 500;
+    color: #1a1a2e;
+    padding: 14px 12px;
+    border-radius: 8px;
     display: block;
     width: 100%;
+    text-decoration: none;
   }
 
   .nav__link::after { display: none; }
-  .nav__link:hover { background: var(--color-surface-alt); }
+  .nav__link:hover,
+  .nav__link:active { background: #f3f4f6; color: #1a1a2e; }
 }
 
 /* ── Admin dashboard — mobile off-canvas sidebar ──────────── */
