@@ -3,15 +3,20 @@ const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 
 // Support all common Vercel/Supabase/Neon env var names
+// Note: SUPABASE_URL is excluded — it's always an HTTP project URL, not a postgres connection string
 let connectionString =
   process.env.DATABASE_URL ||
   process.env.DATABASE_SUPABASE_URL ||
   process.env.DATABASE_POSTGRES_URL ||
+  process.env.DATABASE_POSTGRES_URL_NON_POOLING ||
   process.env.POSTGRES_URL ||
-  process.env.SUPABASE_URL ||
+  process.env.POSTGRES_PRISMA_URL ||
+  process.env.POSTGRES_URL_NON_POOLING ||
+  process.env.SUPABASE_DB_URL ||
+  process.env.STORAGE_URL ||
   process.env.NEON_DATABASE_URL;
 
-// If we don't have a combined URL, try to build one from components (common in some Vercel setups)
+// If we don't have a valid postgres URL, try to build one from components (common in some Vercel setups)
 if (!connectionString || connectionString.startsWith('http')) {
   const host = process.env.DATABASE_POSTGRES_HOST || process.env.POSTGRES_HOST;
   const user = process.env.DATABASE_POSTGRES_USER || process.env.POSTGRES_USER;
@@ -23,7 +28,7 @@ if (!connectionString || connectionString.startsWith('http')) {
     connectionString = `postgresql://${user}:${password}@${host}:${port}/${database}`;
   } else {
     // Final fallback for local development
-    connectionString = connectionString || 'postgresql://postgres:postgres@localhost:5432/jobfair';
+    connectionString = 'postgresql://postgres:postgres@localhost:5432/jobfair';
   }
 }
 
