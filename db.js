@@ -3,16 +3,18 @@ const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 
 // Support all common Vercel/Supabase/Neon env var names
-// Note: SUPABASE_URL is excluded — it's always an HTTP project URL, not a postgres connection string
+// Postgres connection strings (postgresql://) are checked before HTTP-only URLs (SUPABASE_URL, DATABASE_SUPABASE_URL)
 let connectionString =
   process.env.DATABASE_URL ||
-  process.env.DATABASE_SUPABASE_URL ||
   process.env.DATABASE_POSTGRES_URL ||
   process.env.DATABASE_POSTGRES_URL_NON_POOLING ||
+  process.env.DATABASE_POSTGRES_PRISMA_URL ||
   process.env.POSTGRES_URL ||
   process.env.POSTGRES_PRISMA_URL ||
   process.env.POSTGRES_URL_NON_POOLING ||
   process.env.SUPABASE_DB_URL ||
+  process.env.DATABASE_SUPABASE_URL ||
+  process.env.SUPABASE_URL ||
   process.env.STORAGE_URL ||
   process.env.NEON_DATABASE_URL;
 
