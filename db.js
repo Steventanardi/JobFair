@@ -39,6 +39,18 @@ console.log('DB init at:', new Date().toISOString());
 console.log('DB env var found:', Object.keys(process.env).filter(k => k.includes('DATABASE') || k.includes('POSTGRES') || k.includes('SUPABASE') || k.includes('NEON')).join(', ') || 'NONE');
 console.log('DB connection candidate:', connectionString.split('@')[1] ? `...@${connectionString.split('@')[1]}` : connectionString.substring(0, 30) + '...');
 
+// Remove sslmode=require if present because it overrides pg's ssl connection properties 
+// and triggers "self-signed certificate in certificate chain" errors on Vercel Postgres endpoints
+if (connectionString) {
+  try {
+    const parsed = new URL(connectionString);
+    parsed.searchParams.delete('sslmode');
+    connectionString = parsed.toString();
+  } catch (e) {
+    // Ignore invalid URL
+  }
+}
+
 const db = new Pool({
   connectionString,
   ssl: isLocalhost ? false : { rejectUnauthorized: false },

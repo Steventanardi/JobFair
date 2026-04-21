@@ -4,7 +4,8 @@
       "Bash(rtk gain *)",
       "mcp__plugin_claude-mem_mcp-search__smart_outline",
       "Bash(rtk git *)",
-      "WebFetch(domain:job-fair-rho.vercel.app)"
+      "WebFetch(domain:job-fair-rho.vercel.app)",
+      "Bash(npx vercel *)"
     ]
   }
 }
