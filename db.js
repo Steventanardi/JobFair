@@ -172,8 +172,30 @@ const initDB = async () => {
       try {
         await db.query(`ALTER TABLE submissions ADD COLUMN IF NOT EXISTS ${colName} ${colType}`);
       } catch (e) {
-        // Suppress errors if column already exists (pg 9.6+ has IF NOT EXISTS for ADD COLUMN, but just in case)
+        // ignore — column likely already exists
       }
+    }
+
+    // Migrate announcements table — add columns that may be missing from older deployments
+    const annCols = [
+      ['priority',  'INTEGER DEFAULT 0'],
+      ['is_pinned', 'INTEGER DEFAULT 0'],
+    ];
+    for (const [colName, colDef] of annCols) {
+      try {
+        await db.query(`ALTER TABLE announcements ADD COLUMN IF NOT EXISTS ${colName} ${colDef}`);
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    // Migrate employers / admins tables for any missing columns
+    try {
+      await db.query(`ALTER TABLE submissions ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMP`);
+      await db.query(`ALTER TABLE submissions ADD COLUMN IF NOT EXISTS admin_notes TEXT`);
+      await db.query(`ALTER TABLE submissions ADD COLUMN IF NOT EXISTS booth_number TEXT`);
+    } catch (e) {
+      // ignore
     }
 
     // Seed default admin if not exists
