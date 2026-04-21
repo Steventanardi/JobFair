@@ -147,7 +147,8 @@ img {
   padding: var(--space-4) 0;
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 400;
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   background: rgba(255,255,255,0.92);
 }
@@ -1584,7 +1585,8 @@ img {
   inset: 0;
   background: rgba(26,26,46,0.45);
   backdrop-filter: blur(3px);
-  z-index: 290;
+  -webkit-backdrop-filter: blur(3px);
+  z-index: 390;
 }
 .nav__overlay.is-open { display: block; }
 
@@ -1602,24 +1604,22 @@ img {
     flex-direction: column;
     align-items: stretch;
     gap: var(--space-1);
-    padding: var(--space-16) var(--space-6) var(--space-8);
+    padding: 5rem var(--space-6) var(--space-8);
     box-shadow: var(--shadow-xl);
     border-left: 1px solid var(--color-border);
-    z-index: 300;
+    z-index: 410;
     overflow-y: auto;
     /* hidden by default — slide in on open */
     transform: translateX(100%);
     visibility: hidden;
-    transition: transform var(--duration) var(--ease-out),
-                visibility 0s linear var(--duration);
+    transition: transform 0.3s ease, visibility 0s linear 0.3s;
     display: flex !important;
   }
 
   .nav__links.is-open {
     transform: translateX(0);
     visibility: visible;
-    transition: transform var(--duration) var(--ease-out),
-                visibility 0s;
+    transition: transform 0.3s ease, visibility 0s;
   }
 
   .nav__link {
