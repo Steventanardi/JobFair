@@ -172,7 +172,10 @@ const App = {
 
     hamburger.addEventListener('click', () => toggle(!navLinks.classList.contains('is-open')));
     if (overlay) overlay.addEventListener('click', () => toggle(false));
-    navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => toggle(false)));
+    // Use event delegation so this survives dynamic nav replacements (e.g. updateNav())
+    navLinks.addEventListener('click', (e) => {
+      if (e.target.closest('a')) toggle(false);
+    });
   },
 
   /**
