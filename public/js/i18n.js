@@ -183,6 +183,7 @@ const I18N = {
     // ── Error messages ────────────────────────────────────
     'err.selectCategory': { en: 'Please select a registration category first.', zh: '請先選擇報名類別。' },
     'err.general': { en: 'An error occurred. Please try again.', zh: '發生錯誤，請重試。' },
+    'err.pwTooShort': { en: 'Password must be at least 6 characters', zh: '密碼至少6個字元' },
 
     // ── NQU Departments (Official 2026 Full Names) ────────
     'dep.none': { en: 'None (No internship cooperation)', zh: '無（未有合作）' },
@@ -246,6 +247,7 @@ const I18N = {
     'adm.statPending': { en: 'Pending', zh: '待審核' },
     'adm.statApproved': { en: 'Approved', zh: '已通過' },
     'adm.statRejected': { en: 'Rejected', zh: '已拒絕' },
+    'adm.statEmployers': { en: 'Employers', zh: '企業數' },
     'adm.searchPlace': { en: 'Search company, contact...', zh: '搜尋公司、聯絡人...' },
     'adm.all': { en: 'All', zh: '全部' },
     'adm.pending': { en: 'Pending', zh: '待審' },
@@ -253,6 +255,7 @@ const I18N = {
     'adm.rejected': { en: 'Rejected', zh: '拒絕' },
     'adm.thLogo': { en: 'Logo', zh: '標誌' },
     'adm.thCompany': { en: 'Company', zh: '公司' },
+    'adm.thCategory': { en: 'Category', zh: '類別' },
     'adm.thIndustry': { en: 'Industry', zh: '產業' },
     'adm.thContact': { en: 'Contact', zh: '聯絡人' },
     'adm.thStatus': { en: 'Status', zh: '狀態' },
@@ -304,6 +307,34 @@ const I18N = {
     'adm.resetBtn': { en: 'Reset Password', zh: '重設密碼' },
     'empLogin.forgot': { en: 'Forgot your password?', zh: '忘記密碼？' },
     'empLogin.forgotTip': { en: 'Contact the admin to reset it.', zh: '請聯繫管理員重設密碼。' },
+    'adm.analytics': { en: 'Analytics', zh: '數據分析' },
+    'adm.analyticsTitle': { en: 'Analytics Overview', zh: '數據分析總覽' },
+    'adm.settings': { en: 'Settings', zh: '系統設定' },
+    'adm.settingsTitle': { en: 'System Settings', zh: '系統設定' },
+    'adm.regStatus': { en: 'Registration Status', zh: '報名狀態' },
+    'adm.regDeadline': { en: 'Registration Deadline', zh: '報名截止日期' },
+    'adm.regStatusOpen': { en: 'Open (accepting registrations)', zh: '開放（接受報名中）' },
+    'adm.regStatusClosed': { en: 'Closed (maintenance mode)', zh: '關閉（維護模式）' },
+    'adm.saveConfig': { en: 'Save Settings', zh: '儲存設定' },
+    'adm.settingsUpdated': { en: 'Settings saved!', zh: '設定已儲存！' },
+    'adm.recentActivity': { en: 'Recent Activity', zh: '最近活動' },
+    'adm.chartStatus': { en: 'Status Distribution', zh: '狀態分佈' },
+    'adm.chartCategory': { en: 'Activity Category', zh: '活動類別分佈' },
+    'adm.chartLogistics': { en: 'Logistics Overview', zh: '後勤概覽' },
+    'adm.chartIndustry': { en: 'Top 5 Industries', zh: '前5大產業' },
+    'adm.lunchBoxes': { en: 'Lunch Boxes', zh: '便當' },
+    'adm.parkingSpaces': { en: 'Parking Spaces', zh: '停車位' },
+    'adm.bulkApprove': { en: 'Bulk Approve', zh: '批次通過' },
+    'adm.bulkReject': { en: 'Bulk Reject', zh: '批次拒絕' },
+    'adm.selected': { en: 'selected', zh: '已選取' },
+    'adm.bulkActionNote': { en: 'Bulk action', zh: '批次操作' },
+    'adm.bulkSuccess': { en: 'Processed {n} submission(s)', zh: '已處理 {n} 筆報名' },
+    'adm.logAdmin': { en: 'Admin', zh: '管理員' },
+    'adm.logAction': { en: 'Action', zh: '動作' },
+    'adm.logTarget': { en: 'Target', zh: '對象' },
+    'adm.logDetails': { en: 'Details', zh: '詳情' },
+    'adm.logTime': { en: 'Time', zh: '時間' },
+    'adm.noActivity': { en: 'No activity yet', zh: '尚無活動記錄' },
 
     // ── Toasts / Messages ─────────────────────────────────
     'msg.loginSuccess': { en: 'Login successful!', zh: '登入成功！' },
@@ -329,7 +360,10 @@ const I18N = {
    */
   t(key) {
     const entry = this.translations[key];
-    if (!entry) return key;
+    if (!entry) {
+      console.warn(`[i18n] Missing translation key: "${key}"`);
+      return key;
+    }
     return entry[this.currentLang] || entry['en'] || key;
   },
 

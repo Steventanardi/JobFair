@@ -6,6 +6,7 @@
   <meta name="description" content="NQU Job Fair Admin Dashboard">
   <title>Admin Dashboard — NQU Job Fair</title>
   <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <div class="dashboard">
@@ -37,6 +38,12 @@
         </a></li>
         <li><a class="sidebar-link" data-tab="tab-announcements" onclick="switchTab(this)">
           <span class="sidebar-link__icon">📢</span> <span data-i18n="adm.announcements">Announcements</span>
+        </a></li>
+        <li><a class="sidebar-link" data-tab="tab-analytics" onclick="switchTab(this)">
+          <span class="sidebar-link__icon">📈</span> <span data-i18n="adm.analytics">Analytics</span>
+        </a></li>
+        <li><a class="sidebar-link" data-tab="tab-settings" onclick="switchTab(this)">
+          <span class="sidebar-link__icon">⚙️</span> <span data-i18n="adm.settings">Settings</span>
         </a></li>
       </ul>
 
@@ -70,13 +77,32 @@
           <div class="stat-card__label" data-i18n="adm.statRejected">Rejected</div>
           <div class="stat-card__value" id="statRejected">—</div>
         </div>
+        <div class="stat-card">
+          <div class="stat-card__label" data-i18n="adm.statEmployers">Employers</div>
+          <div class="stat-card__value" id="statEmployers">—</div>
+        </div>
+      </div>
+
+      <!-- Recent Activity widget -->
+      <div class="activity-overview" style="margin-top:var(--space-6); background:var(--color-bg-alt); padding:var(--space-4); border-radius:var(--radius-lg); border:1px solid var(--color-border);">
+        <h3 style="font-size:1rem; margin-bottom:1rem; display:flex; align-items:center; gap:8px;">🕒 <span data-i18n="adm.recentActivity">Recent Activity</span></h3>
+        <div id="quickLogsBody" class="text-xs">
+          <div class="text-muted" data-i18n="adm.loading">Loading...</div>
+        </div>
       </div>
 
       <!-- ═══ TAB: SUBMISSIONS ═══ -->
       <div class="tab-panel tab-panel--active" id="tab-submissions">
         <div class="dashboard__header">
           <h1 class="dashboard__title" data-i18n="adm.submissions">Submissions</h1>
-          <button class="btn btn--outline" onclick="window.location.href='/api/admin/submissions/export'">📥 Export CSV</button>
+          <div style="display:flex; gap:var(--space-2);">
+            <div id="bulkActions" style="display:none; gap:var(--space-2); align-items:center; background:rgba(0,0,0,0.05); padding:4px 12px; border-radius:8px;">
+              <span class="text-sm font-bold" id="selectedCount">0 selected</span>
+              <button class="btn btn--success btn--sm" onclick="bulkReview('approved')" data-i18n="adm.bulkApprove">Approve Selected</button>
+              <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="bulkReview('rejected')" data-i18n="adm.bulkReject">Reject Selected</button>
+            </div>
+            <button class="btn btn--outline" onclick="window.location.href='/api/admin/submissions/export'">📥 Export CSV</button>
+          </div>
         </div>
 
         <div class="toolbar">
@@ -94,8 +120,9 @@
           <table class="data-table" id="submissionsTable">
             <thead>
               <tr>
+                <th style="width:40px;"><input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)"></th>
                 <th data-i18n="adm.thCompany">Company</th>
-                <th data-i18n="adm.thIndustry">Industry</th>
+                <th data-i18n="adm.thCategory">Category</th>
                 <th data-i18n="adm.thContact">Contact</th>
                 <th data-i18n="adm.thStatus">Status</th>
                 <th data-i18n="adm.thBooth">Booth</th>
@@ -156,6 +183,70 @@
             <tbody id="announcementsBody">
               <tr><td colspan="5" class="text-center text-muted" style="padding:3rem;" data-i18n="adm.loading">Loading...</td></tr>
             </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══ TAB: ANALYTICS ═══ -->
+      <div class="tab-panel" id="tab-analytics">
+        <div class="dashboard__header">
+          <h1 class="dashboard__title" data-i18n="adm.analyticsTitle">Analytics</h1>
+        </div>
+        <div class="analytics-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:var(--space-6);">
+          <div class="stat-card">
+            <h3 data-i18n="adm.chartStatus">Status Distribution</h3>
+            <div style="height:300px;"><canvas id="statusChart"></canvas></div>
+          </div>
+          <div class="stat-card">
+            <h3 data-i18n="adm.chartCategory">Activity Categories</h3>
+            <div style="height:300px;"><canvas id="categoryChart"></canvas></div>
+          </div>
+          <div class="stat-card">
+            <h3 data-i18n="adm.chartLogistics">Logistics Overview</h3>
+            <div id="logisticsDisplay" style="padding-top:1rem;"></div>
+          </div>
+          <div class="stat-card">
+            <h3 data-i18n="adm.chartIndustry">Top 5 Industries</h3>
+            <div style="height:300px;"><canvas id="industryChart"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ TAB: SETTINGS ═══ -->
+      <div class="tab-panel" id="tab-settings">
+        <div class="dashboard__header">
+          <h1 class="dashboard__title" data-i18n="adm.settingsTitle">System Settings</h1>
+        </div>
+        <div class="card" style="max-width:600px; background:var(--color-bg-alt); padding:var(--space-6); border-radius:var(--radius-lg); border:1px solid var(--color-border);">
+          <div class="form-group">
+            <label class="form-label" data-i18n="adm.regStatus">Registration Status</label>
+            <select class="form-select" id="setting_registration_status" style="width:100%;">
+              <option value="open" data-i18n="adm.regStatusOpen">Open (Accepting Submissions)</option>
+              <option value="closed" data-i18n="adm.regStatusClosed">Closed (Maintenance Mode)</option>
+            </select>
+          </div>
+          <div class="form-group mt-4">
+            <label class="form-label" data-i18n="adm.regDeadline">Registration Deadline</label>
+            <input class="form-input" type="date" id="setting_registration_deadline" style="width:100%;">
+          </div>
+          <button class="btn btn--primary mt-6" onclick="saveSettings()" data-i18n="adm.saveConfig">Save Configuration</button>
+        </div>
+
+        <div class="dashboard__header mt-10">
+          <h1 class="dashboard__title" data-i18n="adm.recentActivity">Recent Activity (Admin Logs)</h1>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th data-i18n="adm.logAdmin">Admin</th>
+                <th data-i18n="adm.logAction">Action</th>
+                <th data-i18n="adm.logTarget">Target</th>
+                <th data-i18n="adm.logDetails">Details</th>
+                <th data-i18n="adm.logTime">Time</th>
+              </tr>
+            </thead>
+            <tbody id="logsBody"></tbody>
           </table>
         </div>
       </div>
@@ -246,7 +337,7 @@
       <div id="resetPwInfo" class="text-sm text-muted mb-4"></div>
       <div class="form-group">
         <label class="form-label" for="newPassword" data-i18n="adm.newPassword">New Password</label>
-        <input class="form-input" type="text" id="newPassword" data-i18n-placeholder="adm.newPwPlace" placeholder="Enter new password (min 6 chars)" minlength="6">
+        <input class="form-input" type="password" id="newPassword" data-i18n-placeholder="adm.newPwPlace" placeholder="Enter new password (min 6 chars)" minlength="6">
       </div>
       <div class="modal__actions">
         <button class="btn btn--outline" onclick="App.hideModal('resetPwModal')" data-i18n="adm.cancel">Cancel</button>
@@ -264,22 +355,32 @@
     let boothAssignId = null;
     let editingAnnouncementId = null;
     let resetPwEmployerId = null;
+    const tabLoaded = {};
 
     async function init() {
       const user = await App.requireAuth('admin');
       if (!user) return;
       I18N.init('langToggle');
       loadStats();
+      loadLogs();
+      // Only load the active tab on init; others load on first visit
       loadSubmissions();
-      loadEmployers();
-      loadAnnouncements();
+      tabLoaded['tab-submissions'] = true;
     }
 
     function switchTab(el) {
       document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('sidebar-link--active'));
       document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('tab-panel--active'));
       el.classList.add('sidebar-link--active');
-      document.getElementById(el.dataset.tab)?.classList.add('tab-panel--active');
+      const tabId = el.dataset.tab;
+      document.getElementById(tabId)?.classList.add('tab-panel--active');
+      if (!tabLoaded[tabId]) {
+        tabLoaded[tabId] = true;
+        if (tabId === 'tab-employers') loadEmployers();
+        if (tabId === 'tab-announcements') loadAnnouncements();
+        if (tabId === 'tab-analytics') loadAnalytics();
+        if (tabId === 'tab-settings') { loadSettingsDisplay(); loadLogs(); }
+      }
     }
 
     async function loadStats() {
@@ -289,6 +390,7 @@
         document.getElementById('statPending').textContent = s.pending;
         document.getElementById('statApproved').textContent = s.approved;
         document.getElementById('statRejected').textContent = s.rejected;
+        document.getElementById('statEmployers').textContent = s.employerCount;
       } catch (err) { console.error(err); }
     }
 
@@ -303,16 +405,26 @@
         if (params.toString()) url += '?' + params;
 
         const submissions = await API.get(url);
+        document.getElementById('selectAll').checked = false;
+        updateBulkUI();
+
         if (submissions.length === 0) {
           body.innerHTML = `<tr><td colspan="8" class="text-center text-muted" style="padding:3rem;" data-i18n="adm.noSubs">No submissions found</td></tr>`;
           I18N.applyAll();
           return;
         }
 
+        const categoryBadge = (cat) => {
+          const map = { Recruitment: ['#3b82f6','R'], Resume: ['#8b5cf6','C'], PublicWelfare: ['#10b981','P'] };
+          const [color, letter] = map[cat] || ['#6b7280','?'];
+          return `<span style="display:inline-block;width:20px;height:20px;border-radius:4px;background:${color};color:#fff;font-size:10px;font-weight:700;text-align:center;line-height:20px;" title="${App.escapeHtml(cat||'')}">${letter}</span>`;
+        };
+
         body.innerHTML = submissions.map(s => `
           <tr>
+            <td data-label=""><input type="checkbox" class="sub-checkbox" value="${s.id}" onclick="updateBulkUI()"></td>
             <td data-label="Company"><div style="font-weight:600;">${App.escapeHtml(s.company_name)}</div><div class="text-xs text-muted">${App.escapeHtml(s.employer_email || '')}</div></td>
-            <td data-label="Industry" class="text-sm">${App.escapeHtml(s.industry || '—')}</td>
+            <td data-label="Category" class="text-sm">${categoryBadge(s.activity_category)} <span class="text-xs text-muted">${App.escapeHtml(s.activity_category || '—')}</span></td>
             <td data-label="Contact"><div class="text-sm">${App.escapeHtml(s.contact_person)}</div><div class="text-xs text-muted">${App.escapeHtml(s.contact_email)}</div></td>
             <td data-label="Status">${App.statusBadge(s.status)}</td>
             <td data-label="Booth" class="text-sm">${s.booth_number ? `<span style="color:var(--color-gold-dark);font-weight:600;">${App.escapeHtml(s.booth_number)}</span>` : '—'}</td>
@@ -322,7 +434,7 @@
                 <button class="btn btn--success btn--sm" onclick="openReviewModal(${s.id})" title="Approve">✓ Approve</button>
                 <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="openReviewModalReject(${s.id})" title="Reject">✕ Reject</button>
               ` : ''}
-              ${s.status === 'approved' ? `<button class="btn btn--outline btn--sm" onclick="openBoothModal(${s.id}, '${App.escapeHtml(s.booth_number || '')}')">🎪 Booth</button>` : ''}
+              ${s.status === 'approved' ? `<button class="btn btn--outline btn--sm" onclick="openBoothModal(${s.id}, ${JSON.stringify(s.booth_number || '')})">🎪 Booth</button>` : ''}
               <button class="btn btn--ghost btn--sm" onclick="viewDetail(${s.id})">👁 View</button>
               <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="deleteSubmission(${s.id})">🗑</button>
             </div></td>
@@ -380,9 +492,10 @@
       document.getElementById('reviewNotesGroup').style.display = 'none';
       document.getElementById('rejectBtn').style.display = 'none';
       document.getElementById('approveBtn').style.display = 'none';
+      document.getElementById('reviewModalBody').innerHTML = `<div style="text-align:center;padding:2rem;"><div class="spinner" style="margin:0 auto;"></div></div>`;
+      App.showModal('reviewModal');
 
-      API.get('/api/admin/submissions').then(subs => {
-        const s = subs.find(x => x.id === id);
+      API.get(`/api/admin/submissions/${id}`).then(s => {
         if (!s) return;
         
         const esc = App.escapeHtml;
@@ -403,7 +516,7 @@
               ${s.logo_path ? `
                 <div class="detail-item" style="margin-bottom:var(--space-4);">
                   <img src="${s.logo_path}" class="logo-preview--lg" alt="" style="max-height:100px; width:auto; border:1px solid var(--color-border); padding:4px;">
-                  <button class="btn btn--outline btn--sm" onclick="downloadLogo('${s.logo_path}', '${esc(s.company_name).replace(/'/g, "\\'")}')" style="margin-top:4px;">⬇ ${translate('adm.downloadLogo')}</button>
+                  <button class="btn btn--outline btn--sm" onclick="downloadLogo(${JSON.stringify(s.logo_path)}, ${JSON.stringify(s.company_name)})" style="margin-top:4px;">⬇ ${translate('adm.downloadLogo')}</button>
                 </div>
               ` : ''}
               <div class="detail-item"><strong>${translate('submit.companyName')}:</strong> ${esc(s.company_name)}</div>
@@ -438,7 +551,6 @@
               ${s.admin_notes ? `<div class="detail-item"><strong>${translate('adm.adminNotes')}:</strong> ${esc(s.admin_notes)}</div>` : ''}
             </div>
           </div>`;
-        App.showModal('reviewModal');
       });
     }
 
@@ -456,6 +568,7 @@
         App.hideModal('boothModal');
         App.toast(I18N.t('msg.boothAssigned'), 'success');
         loadSubmissions();
+        loadStats();
       } catch (err) { App.toast(err.message, 'error'); }
     }
 
@@ -486,8 +599,8 @@
             <td data-label="Subs" class="text-center">${e.submission_count}</td>
             <td data-label="Reg'd" class="text-xs text-muted">${App.formatDate(e.created_at)}</td>
             <td data-label=""><div class="table-actions">
-              <button class="btn btn--outline btn--sm" onclick="openResetPwModal(${e.id}, '${App.escapeHtml(e.company_name).replace(/'/g,"\\'")}', '${App.escapeHtml(e.email).replace(/'/g,"\\'")}')">🔑 ${resetLabel}</button>
-              <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="deleteEmployer(${e.id}, '${App.escapeHtml(e.company_name).replace(/'/g,"\\'")}')">🗑 ${delLabel}</button>
+              <button class="btn btn--outline btn--sm" onclick="openResetPwModal(${e.id}, ${JSON.stringify(e.company_name)}, ${JSON.stringify(e.email)})">🔑 ${resetLabel}</button>
+              <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="deleteEmployer(${e.id}, ${JSON.stringify(e.company_name)})">🗑 ${delLabel}</button>
             </div></td>
           </tr>
         `).join('');
@@ -597,7 +710,7 @@
     async function resetPassword() {
       const pw = document.getElementById('newPassword').value;
       if (!pw || pw.length < 6) {
-        App.toast(I18N.currentLang === 'zh' ? '密碼至少6個字元' : 'Password must be at least 6 characters', 'error');
+        App.toast(I18N.t('err.pwTooShort'), 'error');
         return;
       }
       try {
@@ -638,6 +751,138 @@
           // Fallback: open in new tab
           window.open(path, '_blank');
         });
+    }
+
+    // ── ANALYTICS ──
+    const chartInstances = {};
+    async function loadAnalytics() {
+      try {
+        const data = await API.get('/api/admin/analytics');
+
+        const makeChart = (id, config) => {
+          if (chartInstances[id]) chartInstances[id].destroy();
+          chartInstances[id] = new Chart(document.getElementById(id), config);
+        };
+
+        makeChart('statusChart', {
+          type: 'doughnut',
+          data: {
+            labels: data.statusDistribution.map(d => d.status),
+            datasets: [{ data: data.statusDistribution.map(d => parseInt(d.count)), backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#3b82f6'] }]
+          },
+          options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        makeChart('categoryChart', {
+          type: 'bar',
+          data: {
+            labels: data.categoryDistribution.map(d => d.activity_category || 'Other'),
+            datasets: [{ label: I18N.t('adm.statTotal'), data: data.categoryDistribution.map(d => parseInt(d.count)), backgroundColor: '#8b5cf6' }]
+          },
+          options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        makeChart('industryChart', {
+          type: 'pie',
+          data: {
+            labels: data.topIndustries.map(d => d.industry || '—'),
+            datasets: [{ data: data.topIndustries.map(d => parseInt(d.count)), backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'] }]
+          },
+          options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        const log = data.logistics;
+        document.getElementById('logisticsDisplay').innerHTML = `
+          <div style="font-size:1.5rem; font-weight:bold; margin-bottom:1rem;">
+            🍱 ${log.lunch_non_veg || 0} / ${log.lunch_veg || 0} <span style="font-size:0.9rem; font-weight:normal;" data-i18n="adm.lunchBoxes">Lunch Boxes</span>
+          </div>
+          <div style="font-size:1.5rem; font-weight:bold;">
+            🚗 ${log.parking || 0} <span style="font-size:0.9rem; font-weight:normal;" data-i18n="adm.parkingSpaces">Parking Spaces</span>
+          </div>
+        `;
+        I18N.applyAll();
+      } catch (err) { console.error(err); }
+    }
+
+    // ── SETTINGS ──
+    async function loadSettingsDisplay() {
+      try {
+        const settings = await API.get('/api/admin/settings');
+        if (settings.registration_status) document.getElementById('setting_registration_status').value = settings.registration_status;
+        if (settings.registration_deadline) document.getElementById('setting_registration_deadline').value = settings.registration_deadline;
+      } catch (err) { console.error(err); }
+    }
+
+    async function saveSettings() {
+      const updates = {
+        registration_status: document.getElementById('setting_registration_status').value,
+        registration_deadline: document.getElementById('setting_registration_deadline').value
+      };
+      try {
+        await API.post('/api/admin/settings', updates);
+        App.toast(I18N.t('adm.settingsUpdated'), 'success');
+      } catch (err) { App.toast(err.message, 'error'); }
+    }
+
+    async function loadLogs() {
+      const body = document.getElementById('logsBody');
+      const quickBody = document.getElementById('quickLogsBody');
+      try {
+        const logs = await API.get('/api/admin/logs');
+        const rows = logs.map(l => `
+          <tr class="text-xs">
+            <td><strong>${App.escapeHtml(l.admin_name || 'System')}</strong></td>
+            <td>${App.escapeHtml(l.action)}</td>
+            <td>${App.escapeHtml(l.target_type)} #${l.target_id}</td>
+            <td class="text-muted">${App.escapeHtml(l.details || '—')}</td>
+            <td>${App.formatDate(l.created_at)}</td>
+          </tr>
+        `).join('');
+        if (body) body.innerHTML = rows;
+
+        if (quickBody) {
+          quickBody.innerHTML = logs.slice(0, 5).map(l => `
+            <div style="margin-bottom:8px; display:flex; justify-content:space-between; border-bottom:1px solid rgba(0,0,0,0.05); padding-bottom:4px;">
+              <span><strong>${l.admin_name || 'System'}</strong> ${l.action}</span>
+              <span class="text-muted">${App.formatDate(l.created_at)}</span>
+            </div>
+          `).join('') || `<div class="text-muted">${I18N.t('adm.noActivity')}</div>`;
+        }
+      } catch (err) { console.error(err); }
+    }
+
+    // ── BULK ACTIONS ──
+    function toggleSelectAll(el) {
+      document.querySelectorAll('.sub-checkbox').forEach(cb => cb.checked = el.checked);
+      updateBulkUI();
+    }
+
+    function updateBulkUI() {
+      const selected = document.querySelectorAll('.sub-checkbox:checked');
+      const bar = document.getElementById('bulkActions');
+      const count = document.getElementById('selectedCount');
+      if (selected.length > 0) {
+        bar.style.display = 'flex';
+        count.textContent = `${selected.length} ${I18N.t('adm.selected')}`;
+      } else {
+        bar.style.display = 'none';
+      }
+    }
+
+    async function bulkReview(status) {
+      const selected = Array.from(document.querySelectorAll('.sub-checkbox:checked')).map(cb => cb.value);
+      if (selected.length === 0) return;
+      const actionLabel = status === 'approved' ? I18N.t('adm.bulkApprove') : I18N.t('adm.bulkReject');
+      if (!App.confirm(`${actionLabel}: ${selected.length} ${I18N.t('adm.selected')}?`)) return;
+
+      try {
+        await Promise.all(selected.map(id =>
+          API.patch(`/api/admin/submissions/${id}/status`, { status, admin_notes: I18N.t('adm.bulkActionNote') })
+        ));
+        App.toast(I18N.t('adm.bulkSuccess').replace('{n}', selected.length), 'success');
+        loadSubmissions();
+        loadStats();
+      } catch (err) { App.toast(err.message, 'error'); }
     }
 
     init();

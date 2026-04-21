@@ -20,7 +20,10 @@ const isRemote = !connectionString.includes('localhost');
 
 const db = new Pool({
   connectionString,
-  ssl: isRemote ? { rejectUnauthorized: false } : false
+  ssl: isRemote ? { rejectUnauthorized: false } : false,
+  max: 10,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 5000
 });
 
 const initDB = async () => {
@@ -35,6 +38,13 @@ const initDB = async () => {
       )
     `);
     await db.query(`CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "session" ("expire")`);
+
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS settings (
+        key   TEXT PRIMARY KEY,
+        value TEXT
+      )
+    `);
 
     await db.query(`
       CREATE TABLE IF NOT EXISTS employers (
@@ -101,6 +111,18 @@ const initDB = async () => {
     `);
 
     await db.query(`
+      CREATE TABLE IF NOT EXISTS admin_logs (
+        id          SERIAL PRIMARY KEY,
+        admin_id    INTEGER NOT NULL REFERENCES admins(id) ON DELETE CASCADE,
+        action      TEXT NOT NULL,
+        target_type TEXT,
+        target_id   INTEGER,
+        details     TEXT,
+        created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    await db.query(`
       CREATE TABLE IF NOT EXISTS announcements (
         id          SERIAL PRIMARY KEY,
         title       TEXT NOT NULL,
@@ -110,6 +132,11 @@ const initDB = async () => {
         created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
+    // Indexes for frequently queried columns
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_submissions_employer_id ON submissions(employer_id)`);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_submissions_status ON submissions(status)`);
+    await db.query(`CREATE INDEX IF NOT EXISTS idx_submissions_company_name ON submissions(company_name)`);
 
     console.log('Tables created successfully.');
 
@@ -177,6 +204,14 @@ const initDB = async () => {
         3, 0
       ]);
       console.log('Sample announcements seeded.');
+    }
+
+    // Seed default settings
+    const { rows: settingsCount } = await db.query('SELECT COUNT(*) as cnt FROM settings');
+    if (parseInt(settingsCount[0].cnt) === 0) {
+      await db.query("INSERT INTO settings (key, value) VALUES ('registration_status', 'open')");
+      await db.query("INSERT INTO settings (key, value) VALUES ('registration_deadline', '')");
+      console.log('Default settings seeded.');
     }
   } catch (err) {
     console.error('Database initialization failed:', err.message);

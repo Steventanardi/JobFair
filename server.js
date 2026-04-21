@@ -8,6 +8,7 @@ const authRoutes = require('./routes/auth');
 const submissionRoutes = require('./routes/submissions');
 const adminRoutes = require('./routes/admin');
 const announcementRoutes = require('./routes/announcements');
+const settingsRoutes = require('./routes/settings');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -25,8 +26,9 @@ app.use(session({
     createTableIfMissing: true
   }),
   secret: (() => {
-    if (!process.env.SESSION_SECRET) {
-      console.warn('WARNING: SESSION_SECRET env var not set — using insecure default. Set it in production.');
+    if (!process.env.SESSION_SECRET && process.env.NODE_ENV === 'production') {
+      console.error('FATAL: SESSION_SECRET env var is not set in production!');
+      process.exit(1);
     }
     return process.env.SESSION_SECRET || 'nqu-jobfair-secret-default-dev';
   })(),
@@ -40,6 +42,22 @@ app.use(session({
   }
 }));
 
+// ── CSRF protection — reject cross-origin state-changing requests ──
+app.use((req, res, next) => {
+  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
+  const origin = req.headers.origin || req.headers.referer;
+  if (!origin) return next(); // same-origin requests don't send Origin
+  const host = req.headers.host;
+  try {
+    if (new URL(origin).host !== host) {
+      return res.status(403).json({ error: 'Cross-origin request rejected' });
+    }
+  } catch {
+    return res.status(403).json({ error: 'Invalid origin' });
+  }
+  next();
+});
+
 // Static files
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -49,6 +67,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/submissions', submissionRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/announcements', announcementRoutes);
+app.use('/api/settings', settingsRoutes);
 
 // ── Global API Error Handler ───────────────────────────────
 app.use('/api', (err, req, res, next) => {
@@ -79,7 +98,6 @@ if (process.env.NODE_ENV !== 'production') {
     console.log(`\n  ┌──────────────────────────────────────────┐`);
     console.log(`  │  NQU Job Fair System                     │`);
     console.log(`  │  Running at http://localhost:${PORT}        │`);
-    console.log(`  │  Admin: admin / [see ADMIN_PASSWORD env] │`);
     console.log(`  └──────────────────────────────────────────┘\n`);
   });
 }

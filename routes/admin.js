@@ -1,11 +1,21 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const rateLimit = require('express-rate-limit');
 const db = require('../db');
 const { requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
-// All routes require admin authentication
+const adminLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 120,
+  message: { error: 'Too many requests, please slow down.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// All routes require admin authentication + rate limiting
+router.use(adminLimiter);
 router.use(requireAdmin);
 
 // GET /api/admin/submissions — list all submissions with optional filters
@@ -79,12 +89,9 @@ router.get('/submissions/export', async (req, res) => {
     // Sanitize a CSV field: escape quotes, strip newlines, block formula injection
     const esc = (val) => {
       if (val === null || val === undefined) return '""';
-      let str = String(val)
-        .replace(/\r?\n|\r/g, ' ')  // collapse newlines to spaces
-        .replace(/"/g, '""');        // escape double-quotes
-      // Prefix formula-injection triggers so spreadsheets don't execute them
-      if (/^[=+\-@|]/.test(str)) str = "'" + str;
-      return `"${str}"`;
+      let str = String(val).replace(/\r?\n|\r/g, ' ');
+      if (/^[=+\-@|\t\r]/.test(str)) str = "'" + str;
+      return `"${str.replace(/"/g, '""')}"`;
     };
 
     // CSV Rows
@@ -139,6 +146,23 @@ router.get('/submissions/export', async (req, res) => {
   }
 });
 
+// GET /api/admin/submissions/:id — get single submission
+router.get('/submissions/:id', async (req, res) => {
+  try {
+    const { rows } = await db.query(`
+      SELECT s.*, e.email as employer_email
+      FROM submissions s
+      LEFT JOIN employers e ON s.employer_id = e.id
+      WHERE s.id = $1
+    `, [req.params.id]);
+    if (rows.length === 0) return res.status(404).json({ error: 'Submission not found' });
+    res.json(rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // PATCH /api/admin/submissions/:id/status — approve or reject
 router.patch('/submissions/:id/status', async (req, res) => {
   const { status, admin_notes } = req.body;
@@ -156,6 +180,8 @@ router.patch('/submissions/:id/status', async (req, res) => {
       WHERE id = $3
     `, [status, admin_notes || null, req.params.id]);
 
+    await logAction(req.session.user.id, `Changed status to ${status}`, 'submission', req.params.id, admin_notes);
+
     res.json({ message: `Submission ${status}` });
   } catch (err) {
     console.error(err);
@@ -167,6 +193,12 @@ router.patch('/submissions/:id/status', async (req, res) => {
 router.patch('/submissions/:id/booth', async (req, res) => {
   const { booth_number } = req.body;
 
+  if (booth_number !== undefined && booth_number !== null && booth_number !== '') {
+    if (!/^[A-Za-z0-9\-]{1,10}$/.test(booth_number)) {
+      return res.status(400).json({ error: 'Booth number must be 1–10 alphanumeric characters' });
+    }
+  }
+
   try {
     const { rows } = await db.query('SELECT id, status FROM submissions WHERE id = $1', [req.params.id]);
     if (rows.length === 0) return res.status(404).json({ error: 'Submission not found' });
@@ -174,8 +206,18 @@ router.patch('/submissions/:id/booth', async (req, res) => {
       return res.status(400).json({ error: 'Can only assign booth to approved submissions' });
     }
 
-    await db.query('UPDATE submissions SET booth_number = $1 WHERE id = $2', [booth_number || null, req.params.id]);
+    if (booth_number) {
+      const { rows: dup } = await db.query(
+        'SELECT id FROM submissions WHERE booth_number = $1 AND id != $2',
+        [booth_number, req.params.id]
+      );
+      if (dup.length > 0) {
+        return res.status(409).json({ error: `Booth ${booth_number} is already assigned to another submission` });
+      }
+    }
 
+    await db.query('UPDATE submissions SET booth_number = $1 WHERE id = $2', [booth_number || null, req.params.id]);
+    await logAction(req.session.user.id, `Assigned booth ${booth_number || 'NULL'}`, 'submission', req.params.id);
     res.json({ message: 'Booth assigned' });
   } catch (err) {
     console.error(err);
@@ -190,6 +232,7 @@ router.delete('/submissions/:id', async (req, res) => {
     if (rows.length === 0) return res.status(404).json({ error: 'Submission not found' });
 
     await db.query('DELETE FROM submissions WHERE id = $1', [req.params.id]);
+    await logAction(req.session.user.id, 'Deleted submission', 'submission', req.params.id);
     res.json({ message: 'Submission deleted' });
   } catch (err) {
     console.error(err);
@@ -226,6 +269,7 @@ router.delete('/employers/:id', async (req, res) => {
     await client.query('DELETE FROM submissions WHERE employer_id = $1', [req.params.id]);
     await client.query('DELETE FROM employers WHERE id = $1', [req.params.id]);
     await client.query('COMMIT');
+    await logAction(req.session.user.id, 'Deleted employer and their submissions', 'employer', req.params.id);
     res.json({ message: 'Employer and their submissions deleted' });
   } catch (err) {
     await client.query('ROLLBACK');
@@ -261,21 +305,120 @@ router.patch('/employers/:id/reset-password', async (req, res) => {
 // GET /api/admin/stats — dashboard statistics
 router.get('/stats', async (req, res) => {
   try {
-    const [{ rows: totalRows }, { rows: pendingRows }, { rows: approvedRows }, { rows: rejectedRows }, { rows: employerRows }] = await Promise.all([
-      db.query('SELECT COUNT(*) as cnt FROM submissions'),
-      db.query("SELECT COUNT(*) as cnt FROM submissions WHERE status = 'pending'"),
-      db.query("SELECT COUNT(*) as cnt FROM submissions WHERE status = 'approved'"),
-      db.query("SELECT COUNT(*) as cnt FROM submissions WHERE status = 'rejected'"),
-      db.query('SELECT COUNT(*) as cnt FROM employers')
+    const [{ rows: subRows }, { rows: empRows }] = await Promise.all([
+      db.query(`
+        SELECT
+          COUNT(*) AS total,
+          COUNT(*) FILTER (WHERE status = 'pending')  AS pending,
+          COUNT(*) FILTER (WHERE status = 'approved') AS approved,
+          COUNT(*) FILTER (WHERE status = 'rejected') AS rejected
+        FROM submissions
+      `),
+      db.query('SELECT COUNT(*) AS cnt FROM employers')
+    ]);
+
+    const s = subRows[0];
+    res.json({
+      total:         parseInt(s.total),
+      pending:       parseInt(s.pending),
+      approved:      parseInt(s.approved),
+      rejected:      parseInt(s.rejected),
+      employerCount: parseInt(empRows[0].cnt)
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// GET /api/admin/settings — get all settings as key-value object
+router.get('/settings', async (req, res) => {
+  try {
+    const { rows } = await db.query('SELECT key, value FROM settings');
+    const result = {};
+    rows.forEach(r => { result[r.key] = r.value; });
+    res.json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/admin/settings — upsert settings
+router.post('/settings', async (req, res) => {
+  const allowed = ['registration_status', 'registration_deadline'];
+  try {
+    for (const [key, value] of Object.entries(req.body)) {
+      if (!allowed.includes(key)) continue;
+      await db.query(
+        'INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value',
+        [key, value ?? '']
+      );
+    }
+    await logAction(req.session.user.id, 'Updated settings', 'settings', null, JSON.stringify(req.body));
+    res.json({ message: 'Settings saved' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Log action for audit trail
+async function logAction(adminId, action, targetType, targetId, details) {
+  try {
+    await db.query(`
+      INSERT INTO admin_logs (admin_id, action, target_type, target_id, details)
+      VALUES ($1, $2, $3, $4, $5)
+    `, [adminId, action, targetType, targetId, details]);
+  } catch (err) {
+    console.error('Audit Log Error:', err);
+  }
+}
+
+// GET /api/admin/analytics — aggregated data for charts
+router.get('/analytics', async (req, res) => {
+  try {
+    const [
+      { rows: statusRows },
+      { rows: categoryRows },
+      { rows: logisticRows },
+      { rows: industryRows }
+    ] = await Promise.all([
+      db.query(`SELECT status, COUNT(*) as count FROM submissions GROUP BY status`),
+      db.query(`SELECT activity_category, COUNT(*) as count FROM submissions GROUP BY activity_category`),
+      db.query(`
+        SELECT 
+          SUM(lunch_box_non_veg) as lunch_non_veg, 
+          SUM(lunch_box_veg) as lunch_veg, 
+          SUM(parking_spaces) as parking
+        FROM submissions
+      `),
+      db.query(`SELECT industry, COUNT(*) as count FROM submissions GROUP BY industry ORDER BY count DESC LIMIT 5`)
     ]);
 
     res.json({
-      total: parseInt(totalRows[0].cnt),
-      pending: parseInt(pendingRows[0].cnt),
-      approved: parseInt(approvedRows[0].cnt),
-      rejected: parseInt(rejectedRows[0].cnt),
-      employerCount: parseInt(employerRows[0].cnt)
+      statusDistribution: statusRows,
+      categoryDistribution: categoryRows,
+      logistics: logisticRows[0],
+      topIndustries: industryRows
     });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// GET /api/admin/logs — recent audit logs
+router.get('/logs', async (req, res) => {
+  try {
+    const { rows } = await db.query(`
+      SELECT l.*, a.username as admin_name
+      FROM admin_logs l
+      LEFT JOIN admins a ON l.admin_id = a.id
+      ORDER BY l.created_at DESC
+      LIMIT 50
+    `);
+    res.json(rows);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
