@@ -1,4 +1,8 @@
+// Load .env first, then .env.local with override so it takes precedence (Next.js style)
 require('dotenv').config();
+require('dotenv').config({ path: '.env.local', override: true });
+
+
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 
