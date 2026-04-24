@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="NQU Job Fair CMS Admin">
+  <title>CMS Admin — NQU Job Fair</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .cms-tabs { display: flex; gap: 4px; margin-bottom: var(--space-6); border-bottom: 1px solid var(--color-border); overflow-x: auto; }
+    .cms-tab { padding: 12px 20px; background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; font-size: 0.95rem; color: var(--text-muted); white-space: nowrap; transition: color 0.15s, border-color 0.15s; }
+    .cms-tab:hover { color: var(--text-color); }
+    .cms-tab--active { color: var(--color-primary); border-bottom-color: var(--color-primary); font-weight: 600; }
+    .cms-section { display: none; }
+    .cms-section--active { display: block; }
+    .cms-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-4); }
+    .cms-card { background: var(--color-bg-alt); padding: var(--space-4); border-radius: var(--radius-md); border: 1px solid var(--color-border); }
+    .cms-card__header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3); }
+    .cms-card__title { font-weight: 600; font-size: 1rem; }
+    .cms-card__badge { font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; background: var(--color-primary); color: #fff; }
+    .cms-card__badge--inactive { background: var(--text-muted); }
+    .cms-item { padding: var(--space-3); background: var(--color-bg); border-radius: var(--radius-sm); margin-bottom: var(--space-2); border: 1px solid var(--color-border); }
+    .cms-item:hover { border-color: var(--color-primary); }
+    .cms-item__title { font-weight: 600; margin-bottom: 4px; }
+    .cms-item__meta { font-size: 0.8rem; color: var(--text-muted); }
+    .cms-settings-group { margin-bottom: var(--space-6); }
+    .cms-settings-group__title { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: var(--space-3); padding-bottom: 8px; border-bottom: 1px solid var(--color-border); }
+    .cms-media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--space-3); }
+    .cms-media-item { aspect-ratio: 1; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--color-border); position: relative; background: var(--color-bg); }
+    .cms-media-item img { width: 100%; height: 100%; object-fit: cover; }
+    .cms-media-item__overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; gap: 8px; opacity: 0; transition: opacity 0.15s; }
+    .cms-media-item:hover .cms-media-item__overlay { opacity: 1; }
+    .editor-wrap { min-height: 300px; }
+    .editor { width: 100%; min-height: 300px; padding: 16px; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-bg); font-family: inherit; font-size: 0.95rem; line-height: 1.6; resize: vertical; }
+    .editor:focus { outline: none; border-color: var(--color-primary); }
+    .nav-sortable { list-style: none; padding: 0; margin: 0; }
+    .nav-sortable li { padding: 12px 16px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-sm); margin-bottom: 8px; cursor: grab; display: flex; align-items: center; gap: 12px; }
+    .nav-sortable li:active { cursor: grabbing; }
+    .nav-handle { color: var(--text-muted); font-size: 1.2rem; }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <header class="dashboard__mobile-header">
+      <a href="/" class="dashboard__mobile-brand">NQU <span class="gold">CMS</span></a>
+      <button class="dashboard__sidebar-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+    </header>
+
+    <div class="sidebar__overlay"></div>
+
+    <aside class="dashboard__sidebar">
+      <a href="/" class="dashboard__sidebar-brand">
+        NQU <span class="gold">CMS</span>
+        <div style="font-size:var(--font-xs); color:rgba(255,255,255,0.4); font-weight:400; margin-top:4px;">Content Manager</div>
+      </a>
+
+      <ul class="dashboard__sidebar-nav">
+        <li><a class="sidebar-link sidebar-link--active" data-tab="tab-pages" onclick="switchTab(this)">
+          <span class="sidebar-link__icon">📄</span> <span data-i18n="cms.pages">Pages</span>
+        </a></li>
+        <li><a class="sidebar-link" data-tab="tab-media" onclick="switchTab(this)">
+          <span class="sidebar-link__icon">🖼️</span> <span data-i18n="cms.media">Media</span>
+        </a></li>
+        <li><a class="sidebar-link" data-tab="tab-navigation" onclick="switchTab(this)">
+          <span class="sidebar-link__icon">🔗</span> <span data-i18n="cms.navigation">Navigation</span>
+        </a></li>
+        <li><a class="sidebar-link" data-tab="tab-settings" onclick="switchTab(this)">
+          <span class="sidebar-link__icon">⚙️</span> <span data-i18n="cms.settings">Settings</span>
+        </a></li>
+        <li><a class="sidebar-link" href="/admin/dashboard.html" onclick="switchTab(this)">
+          <span class="sidebar-link__icon">←</span> <span data-i18n="cms.back">Back to Admin</span>
+        </a></li>
+      </ul>
+
+      <div class="sidebar-logout">
+        <div id="langToggle"></div>
+        <a class="sidebar-link" onclick="App.logout()">
+          <span class="sidebar-link__icon">🚪</span> <span data-i18n="adm.logout">Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <main class="dashboard__main">
+      <div class="dashboard__header">
+        <h1 class="dashboard__title" data-i18n="cms.title">Content Management System</h1>
+        <div class="text-sm text-muted" id="cmsStats"></div>
+      </div>
+
+      <!-- PAGES TAB -->
+      <div class="tab-panel tab-panel--active" id="tab-pages">
+        <div class="cms-toolbar" style="display:flex; gap:var(--space-3); margin-bottom:var(--space-4);">
+          <button class="btn btn--primary" onclick="openPageModal()" data-i18n="cms.newPage">+ New Page</button>
+        </div>
+        <div id="pagesList" class="cms-grid">
+          <div class="text-muted text-center" style="padding:3rem;" data-i18n="cms.loading">Loading...</div>
+        </div>
+      </div>
+
+      <!-- MEDIA TAB -->
+      <div class="tab-panel" id="tab-media">
+        <div class="cms-toolbar" style="display:flex; gap:var(--space-3); margin-bottom:var(--space-4); align-items:center;">
+          <button class="btn btn--primary" onclick="document.getElementById('mediaUpload').click()" data-i18n="cms.uploadMedia">+ Upload</button>
+          <input type="file" id="mediaUpload" style="display:none;" accept="image/*,application/pdf" onchange="handleMediaUpload(this)">
+          <div class="text-sm text-muted" id="mediaCount"></div>
+        </div>
+        <div id="mediaList" class="cms-media-grid">
+          <div class="text-muted text-center" style="padding:3rem; grid-column:1/-1;" data-i18n="cms.loading">Loading...</div>
+        </div>
+      </div>
+
+      <!-- NAVIGATION TAB -->
+      <div class="tab-panel" id="tab-navigation">
+        <div class="cms-toolbar" style="display:flex; gap:var(--space-3); margin-bottom:var(--space-4);">
+          <button class="btn btn--primary" onclick="openNavModal()" data-i18n="cms.newNav">+ Add Link</button>
+        </div>
+        <ul class="nav-sortable" id="navList">
+          <div class="text-muted text-center" style="padding:3rem;" data-i18n="cms.loading">Loading...</div>
+        </ul>
+      </div>
+
+      <!-- SETTINGS TAB -->
+      <div class="tab-panel" id="tab-settings">
+        <div class="cms-settings-group">
+          <div class="cms-settings-group__title" data-i18n="cms.groupGeneral">General</div>
+          <div class="card" style="max-width:600px;">
+            <div class="form-group">
+              <label class="form-label" data-i18n="cms.siteName">Site Name</label>
+              <input class="form-input" type="text" id="cms_site_name">
+            </div>
+            <div class="form-group">
+              <label class="form-label" data-i18n="cms.siteTagline">Tagline</label>
+              <input class="form-input" type="text" id="cms_site_tagline">
+            </div>
+          </div>
+        </div>
+
+        <div class="cms-settings-group">
+          <div class="cms-settings-group__title" data-i18n="cms.groupEvent">Event Info</div>
+          <div class="card" style="max-width:600px;">
+            <div class="form-group">
+              <label class="form-label" data-i18n="cms.eventDate">Event Date</label>
+              <input class="form-input" type="text" id="cms_event_date">
+            </div>
+            <div class="form-group">
+              <label class="form-label" data-i18n="cms.eventVenue">Venue</label>
+              <input class="form-input" type="text" id="cms_event_venue">
+            </div>
+            <div class="form-group">
+              <label class="form-label" data-i18n="cms.regDeadline">Registration Deadline</label>
+              <input class="form-input" type="text" id="cms_registration_deadline">
+            </div>
+          </div>
+        </div>
+
+        <div class="cms-settings-group">
+          <div class="cms-settings-group__title" data-i18n="cms.groupContact">Contact</div>
+          <div class="card" style="max-width:600px;">
+            <div class="form-group">
+              <label class="form-label" data-i18n="cms.contactEmail">Email</label>
+              <input class="form-input" type="email" id="cms_contact_email">
+            </div>
+            <div class="form-group">
+              <label class="form-label" data-i18n="cms.contactPhone">Phone</label>
+              <input class="form-input" type="text" id="cms_contact_phone">
+            </div>
+          </div>
+        </div>
+
+        <div class="cms-settings-group">
+          <div class="cms-settings-group__title" data-i18n="cms.groupSocial">Social Links</div>
+          <div class="card" style="max-width:600px;">
+            <div class="form-group">
+              <label class="form-label">Facebook</label>
+              <input class="form-input" type="text" id="cms_social_facebook">
+            </div>
+            <div class="form-group">
+              <label class="form-label">LinkedIn</label>
+              <input class="form-input" type="text" id="cms_social_linkedin">
+            </div>
+          </div>
+        </div>
+
+        <div class="cms-settings-group">
+          <div class="cms-settings-group__title" data-i18n="cms.groupBranding">Branding</div>
+          <div class="card" style="max-width:600px;">
+            <div class="form-group">
+              <label class="form-label" data-i18n="cms.logoUrl">Logo URL</label>
+              <input class="form-input" type="text" id="cms_logo_url">
+            </div>
+            <div class="form-group">
+              <label class="form-label" data-i18n="cms.faviconUrl">Favicon URL</label>
+              <input class="form-input" type="text" id="cms_favicon_url">
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn--primary" onclick="saveSettings()" data-i18n="cms.saveSettings">Save Settings</button>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- PAGE MODAL -->
+  <div class="modal-overlay" id="pageModal">
+    <div class="modal" style="max-width:800px; width:90%;">
+      <div class="modal__header">
+        <h2 class="modal__title" id="pageModalTitle" data-i18n="cms.editPage">Edit Page</h2>
+        <button class="modal__close" onclick="App.hideModal('pageModal')">✕</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="cms.slug">Slug</label>
+        <input class="form-input" type="text" id="pageSlug" placeholder="e.g. hero, about, contact">
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="cms.pageTitle">Title</label>
+        <input class="form-input" type="text" id="pageTitle">
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="cms.content">Content (HTML)</label>
+        <textarea class="editor" id="pageContent" rows="10"></textarea>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-4);">
+        <div class="form-group">
+          <label class="form-label" data-i18n="cms.metaTitle">Meta Title</label>
+          <input class="form-input" type="text" id="pageMetaTitle">
+        </div>
+        <div class="form-group">
+          <label class="form-label" data-i18n="cms.sortOrder">Sort Order</label>
+          <input class="form-input" type="number" id="pageSortOrder" value="0">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="cms.metaDesc">Meta Description</label>
+        <textarea class="form-textarea" id="pageMetaDesc" rows="2"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="pageActive" checked> <span data-i18n="cms.active">Active</span>
+        </label>
+      </div>
+      <div class="modal__actions">
+        <button class="btn btn--outline" onclick="App.hideModal('pageModal')" data-i18n="adm.cancel">Cancel</button>
+        <button class="btn btn--danger" id="pageDeleteBtn" style="margin-right:auto;" onclick="deletePage()" data-i18n="adm.delete">Delete</button>
+        <button class="btn btn--primary" onclick="savePage()" data-i18n="adm.save">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAV MODAL -->
+  <div class="modal-overlay" id="navModal">
+    <div class="modal">
+      <div class="modal__header">
+        <h2 class="modal__title" id="navModalTitle" data-i18n="cms.editNav">Edit Navigation</h2>
+        <button class="modal__close" onclick="App.hideModal('navModal')">✕</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="cms.label">Label</label>
+        <input class="form-input" type="text" id="navLabel">
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="cms.url">URL</label>
+        <input class="form-input" type="text" id="navUrl" placeholder="/page or https://...">
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-i18n="cms.icon">Icon (emoji)</label>
+        <input class="form-input" type="text" id="navIcon" placeholder="🏠">
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-4);">
+        <div class="form-group">
+          <label class="form-label" data-i18n="cms.position">Position</label>
+          <input class="form-input" type="number" id="navPosition" value="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label" data-i18n="cms.parentPage">Parent</label>
+          <select class="form-select" id="navParent">
+            <option value="">— None —</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="navActive" checked> <span data-i18n="cms.active">Active</span>
+        </label>
+        <br>
+        <label class="checkbox-label">
+          <input type="checkbox" id="navBlank"> <span data-i18n="cms.newTab">Open in new tab</span>
+        </label>
+      </div>
+      <div class="modal__actions">
+        <button class="btn btn--outline" onclick="App.hideModal('navModal')" data-i18n="adm.cancel">Cancel</button>
+        <button class="btn btn--danger" id="navDeleteBtn" style="margin-right:auto;" onclick="deleteNav()" data-i18n="adm.delete">Delete</button>
+        <button class="btn btn--primary" onclick="saveNav()" data-i18n="adm.save">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/i18n.js"></script>
+  <script>
+    let editingPageId = null;
+    let editingNavId = null;
+    const tabLoaded = {};
+
+    async function init() {
+      const user = await App.requireAuth('admin');
+      if (!user) return;
+      I18N.init('langToggle');
+      loadStats();
+      loadPages();
+      loadMedia();
+      loadNavigation();
+      loadSettings();
+      tabLoaded['tab-pages'] = true;
+    }
+
+    function switchTab(el) {
+      document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('sidebar-link--active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('tab-panel--active'));
+      if (el) {
+        el.classList.add('sidebar-link--active');
+        const tabId = el.dataset.tab;
+        document.getElementById(tabId)?.classList.add('tab-panel--active');
+      }
+      if (!tabLoaded[document.querySelector('.sidebar-link--active')?.dataset.tab]) {
+        tabLoaded[document.querySelector('.sidebar-link--active')?.dataset.tab] = true;
+        const tab = document.querySelector('.sidebar-link--active')?.dataset.tab;
+        if (tab === 'tab-pages') loadPages();
+        if (tab === 'tab-media') loadMedia();
+        if (tab === 'tab-navigation') loadNavigation();
+        if (tab === 'tab-settings') loadSettings();
+      }
+    }
+
+    async function loadStats() {
+      try {
+        const s = await API.get('/api/cms/admin/stats');
+        document.getElementById('cmsStats').textContent = `${s.pages} pages | ${s.media} files | ${s.navigation} links`;
+      } catch (err) { console.error(err); }
+    }
+
+    async function loadPages() {
+      const list = document.getElementById('pagesList');
+      try {
+        const pages = await API.get('/api/cms/admin/pages');
+        if (pages.length === 0) {
+          list.innerHTML = `<div class="text-muted text-center" style="padding:3rem;" data-i18n="cms.noPages">No pages yet</div>`;
+          return;
+        }
+        list.innerHTML = pages.map(p => `
+          <div class="cms-item" onclick="openPageModal(${p.id})" style="cursor:pointer;">
+            <div class="cms-item__title">${App.escapeHtml(p.title)}</div>
+            <div class="cms-item__meta">/${App.escapeHtml(p.slug)} · Order: ${p.sort_order || 0}</div>
+          </div>
+        `).join('');
+      } catch (err) { list.innerHTML = `<div class="text-danger">Error loading pages</div>`; }
+    }
+
+    function openPageModal(id = null) {
+      editingPageId = id;
+      document.getElementById('pageModalTitle').textContent = id ? I18N.t('cms.editPage') : I18N.t('cms.newPage');
+      document.getElementById('pageDeleteBtn').style.display = id ? '' : 'none';
+      
+      if (!id) {
+        document.getElementById('pageSlug').value = '';
+        document.getElementById('pageTitle').value = '';
+        document.getElementById('pageContent').value = '';
+        document.getElementById('pageMetaTitle').value = '';
+        document.getElementById('pageMetaDesc').value = '';
+        document.getElementById('pageSortOrder').value = '0';
+        document.getElementById('pageActive').checked = true;
+      } else {
+        const page = window.__cachedPages?.find(p => p.id === id);
+        if (page) {
+          document.getElementById('pageSlug').value = page.slug || '';
+          document.getElementById('pageTitle').value = page.title || '';
+          document.getElementById('pageContent').value = page.content || '';
+          document.getElementById('pageMetaTitle').value = page.meta_title || '';
+          document.getElementById('pageMetaDesc').value = page.meta_desc || '';
+          document.getElementById('pageSortOrder').value = page.sort_order || 0;
+          document.getElementById('pageActive').checked = page.is_active !== 0;
+        }
+      }
+      App.showModal('pageModal');
+    }
+
+    async function savePage() {
+      const data = {
+        slug: document.getElementById('pageSlug').value.trim(),
+        title: document.getElementById('pageTitle').value.trim(),
+        content: document.getElementById('pageContent').value,
+        meta_title: document.getElementById('pageMetaTitle').value,
+        meta_desc: document.getElementById('pageMetaDesc').value,
+        sort_order: parseInt(document.getElementById('pageSortOrder').value) || 0,
+        is_active: document.getElementById('pageActive').checked
+      };
+      if (!data.slug || !data.title) {
+        App.toast(I18N.t('msg.required'), 'error');
+        return;
+      }
+      try {
+        if (editingPageId) {
+          await API.put(`/api/cms/admin/pages/${editingPageId}`, data);
+          App.toast(I18N.t('msg.pageUpdated'), 'success');
+        } else {
+          await API.post('/api/cms/admin/pages', data);
+          App.toast(I18N.t('msg.pageCreated'), 'success');
+        }
+        App.hideModal('pageModal');
+        loadPages();
+        loadStats();
+      } catch (err) { App.toast(err.message, 'error'); }
+    }
+
+    async function deletePage() {
+      if (!App.confirm(I18N.t('cms.confirmDelPage'))) return;
+      try {
+        await API.delete(`/api/cms/admin/pages/${editingPageId}`);
+        App.toast(I18N.t('msg.pageDeleted'), 'success');
+        App.hideModal('pageModal');
+        loadPages();
+        loadStats();
+      } catch (err) { App.toast(err.message, 'error'); }
+    }
+
+    async function loadMedia() {
+      const list = document.getElementById('mediaList');
+      try {
+        const { items, total } = await API.get('/api/cms/media');
+        document.getElementById('mediaCount').textContent = `${total} files`;
+        if (items.length === 0) {
+          list.innerHTML = `<div class="text-muted text-center" style="grid-column:1/-1; padding:3rem;" data-i18n="cms.noMedia">No media yet</div>`;
+          return;
+        }
+        const isImage = m => /jpeg|jpg|png|gif|webp|svg/.test(m.mime_type || '');
+        list.innerHTML = items.map(m => `
+          <div class="cms-media-item">
+            ${isImage(m) ? `<img src="${m.url_path}" alt="${App.escapeHtml(m.alt_text || '')}">` : `
+              <div style="display:flex; align-items:center; justify-content:center; height:100%; padding:8px;">
+                <span class="text-sm">${App.escapeHtml(m.original_name || m.filename)}</span>
+              </div>
+            `}
+            <div class="cms-media-item__overlay">
+              <button class="btn btn--ghost btn--sm" onclick="copyUrl('${m.url_path}')" title="Copy URL">📋</button>
+              <button class="btn btn--ghost btn--sm" style="color:#fff;" onclick="viewMedia(${m.id})" title="View">👁</button>
+              <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="deleteMedia(${m.id})" title="Delete">🗑</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) { list.innerHTML = `<div class="text-danger">Error</div>`; }
+    }
+
+    async function handleMediaUpload(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const formData = new FormData();
+      formData.append('file', file);
+      try {
+        const res = await fetch('/api/cms/admin/media', {
+          method: 'POST',
+          headers: { 'Accept': 'application/json' },
+          body: formData,
+          credentials: 'include'
+        });
+        const data = await res.json();
+        if (data.url) {
+          App.toast(I18N.t('msg.uploaded'), 'success');
+          loadMedia();
+          loadStats();
+        } else {
+          throw new Error(data.error || 'Upload failed');
+        }
+      } catch (err) { App.toast(err.message, 'error'); }
+      input.value = '';
+    }
+
+    function copyUrl(url) {
+      navigator.clipboard.writeText(window.location.origin + url);
+      App.toast(I18N.t('msg.copied'), 'success');
+    }
+
+    async function deleteMedia(id) {
+      if (!App.confirm(I18N.t('cms.confirmDelMedia'))) return;
+      try {
+        await API.delete(`/api/cms/admin/media/${id}`);
+        App.toast(I18N.t('msg.mediaDeleted'), 'success');
+        loadMedia();
+        loadStats();
+      } catch (err) { App.toast(err.message, 'error'); }
+    }
+
+    async function loadNavigation() {
+      const list = document.getElementById('navList');
+      try {
+        const navs = await API.get('/api/cms/admin/navigation');
+        if (navs.length === 0) {
+          list.innerHTML = `<div class="text-muted text-center" data-i18n="cms.noNav">No navigation items</div>`;
+          return;
+        }
+        window.__cachedNavs = navs;
+        list.innerHTML = navs.map(n => `
+          <li onclick="openNavModal(${n.id})" style="cursor:pointer;">
+            <span class="nav-handle">☰</span>
+            <span>${App.escapeHtml(n.icon || '')} ${App.escapeHtml(n.label)}</span>
+            <span class="text-muted text-sm" style="margin-left:auto;">${App.escapeHtml(n.url)}</span>
+          </li>
+        `).join('');
+      } catch (err) { list.innerHTML = `<div class="text-danger">Error</div>`; }
+    }
+
+    function openNavModal(id = null) {
+      editingNavId = id;
+      document.getElementById('navModalTitle').textContent = id ? I18N.t('cms.editNav') : I18N.t('cms.newNav');
+      document.getElementById('navDeleteBtn').style.display = id ? '' : 'none';
+      
+      if (!id) {
+        document.getElementById('navLabel').value = '';
+        document.getElementById('navUrl').value = '';
+        document.getElementById('navIcon').value = '';
+        document.getElementById('navPosition').value = '0';
+        document.getElementById('navParent').value = '';
+        document.getElementById('navActive').checked = true;
+        document.getElementById('navBlank').checked = false;
+      } else {
+        const nav = window.__cachedNavs?.find(n => n.id === id);
+        if (nav) {
+          document.getElementById('navLabel').value = nav.label || '';
+          document.getElementById('navUrl').value = nav.url || '';
+          document.getElementById('navIcon').value = nav.icon || '';
+          document.getElementById('navPosition').value = nav.position || 0;
+          document.getElementById('navParent').value = nav.parent_id || '';
+          document.getElementById('navActive').checked = nav.is_active !== 0;
+          document.getElementById('navBlank').checked = nav.target_blank === 1;
+        }
+      }
+      App.showModal('navModal');
+    }
+
+    async function saveNav() {
+      const data = {
+        label: document.getElementById('navLabel').value.trim(),
+        url: document.getElementById('navUrl').value.trim(),
+        icon: document.getElementById('navIcon').value,
+        position: parseInt(document.getElementById('navPosition').value) || 0,
+        parent_id: document.getElementById('navParent').value || null,
+        is_active: document.getElementById('navActive').checked,
+        target_blank: document.getElementById('navBlank').checked
+      };
+      if (!data.label || !data.url) {
+        App.toast(I18N.t('msg.required'), 'error');
+        return;
+      }
+      try {
+        if (editingNavId) {
+          await API.put(`/api/cms/admin/navigation/${editingNavId}`, data);
+          App.toast(I18N.t('msg.navUpdated'), 'success');
+        } else {
+          await API.post('/api/cms/admin/navigation', data);
+          App.toast(I18N.t('msg.navCreated'), 'success');
+        }
+        App.hideModal('navModal');
+        loadNavigation();
+        loadStats();
+      } catch (err) { App.toast(err.message, 'error'); }
+    }
+
+    async function deleteNav() {
+      if (!App.confirm(I18N.t('cms.confirmDelNav'))) return;
+      try {
+        await API.delete(`/api/cms/admin/navigation/${editingNavId}`);
+        App.toast(I18N.t('msg.navDeleted'), 'success');
+        App.hideModal('navModal');
+        loadNavigation();
+        loadStats();
+      } catch (err) { App.toast(err.message, 'error'); }
+    }
+
+    async function loadSettings() {
+      try {
+        const s = await API.get('/api/cms/settings');
+        const mapping = {
+          'cms_site_name': 'site_name',
+          'cms_site_tagline': 'site_tagline',
+          'cms_event_date': 'event_date',
+          'cms_event_venue': 'event_venue',
+          'cms_registration_deadline': 'registration_deadline',
+          'cms_contact_email': 'contact_email',
+          'cms_contact_phone': 'contact_phone',
+          'cms_social_facebook': 'social_facebook',
+          'cms_social_linkedin': 'social_linkedin',
+          'cms_logo_url': 'logo_url',
+          'cms_favicon_url': 'favicon_url'
+        };
+        for (const [elId, key] of Object.entries(mapping)) {
+          const el = document.getElementById(elId);
+          if (el) el.value = s[key] || '';
+        }
+      } catch (err) { console.error(err); }
+    }
+
+    async function saveSettings() {
+      const updates = {
+        site_name: document.getElementById('cms_site_name').value,
+        site_tagline: document.getElementById('cms_site_tagline').value,
+        event_date: document.getElementById('cms_event_date').value,
+        event_venue: document.getElementById('cms_event_venue').value,
+        registration_deadline: document.getElementById('cms_registration_deadline').value,
+        contact_email: document.getElementById('cms_contact_email').value,
+        contact_phone: document.getElementById('cms_contact_phone').value,
+        social_facebook: document.getElementById('cms_social_facebook').value,
+        social_linkedin: document.getElementById('cms_social_linkedin').value,
+        logo_url: document.getElementById('cms_logo_url').value,
+        favicon_url: document.getElementById('cms_favicon_url').value
+      };
+      try {
+        await API.put('/api/cms/admin/settings', updates);
+        App.toast(I18N.t('msg.cmsSaved'), 'success');
+      } catch (err) { App.toast(err.message, 'error'); }
+    }
+
+    // Cache pages for editing
+    async function openPageModal(id) {
+      if (id) {
+        try {
+          window.__cachedPages = await API.get('/api/cms/admin/pages');
+        } catch (e) {}
+      }
+      openPageModal(id);
+    }
+
+    init();
+  </script>
+</body>
+</html>

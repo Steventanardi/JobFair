@@ -9,6 +9,7 @@ const submissionRoutes = require('./routes/submissions');
 const adminRoutes = require('./routes/admin');
 const announcementRoutes = require('./routes/announcements');
 const settingsRoutes = require('./routes/settings');
+const cmsRoutes = require('./routes/cms');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -67,6 +68,7 @@ app.use('/api/submissions', submissionRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/cms', cmsRoutes);
 
 // ── Global API Error Handler ───────────────────────────────
 app.use('/api', (err, req, res, next) => {

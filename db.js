@@ -170,6 +170,61 @@ const initDB = async () => {
       )
     `);
 
+    await db.rawQuery(`
+      CREATE TABLE IF NOT EXISTS cms_pages (
+        id          SERIAL PRIMARY KEY,
+        slug        TEXT NOT NULL UNIQUE,
+        title       TEXT NOT NULL,
+        content     TEXT,
+        meta_title  TEXT,
+        meta_desc   TEXT,
+        sort_order  INTEGER DEFAULT 0,
+        is_active   INTEGER DEFAULT 1,
+        created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    await db.rawQuery(`
+      CREATE TABLE IF NOT EXISTS cms_media (
+        id          SERIAL PRIMARY KEY,
+        filename    TEXT NOT NULL,
+        original_name TEXT,
+        mime_type   TEXT,
+        file_size   INTEGER,
+        url_path    TEXT NOT NULL,
+        alt_text    TEXT,
+        caption     TEXT,
+        width       INTEGER,
+        height      INTEGER,
+        created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    await db.rawQuery(`
+      CREATE TABLE IF NOT EXISTS cms_navigation (
+        id          SERIAL PRIMARY KEY,
+        label       TEXT NOT NULL,
+        url         TEXT NOT NULL,
+        icon        TEXT,
+        position    INTEGER DEFAULT 0,
+        is_active   INTEGER DEFAULT 1,
+        target_blank INTEGER DEFAULT 0,
+        parent_id   INTEGER REFERENCES cms_navigation(id) ON DELETE SET NULL,
+        created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    await db.rawQuery(`
+      CREATE TABLE IF NOT EXISTS cms_settings (
+        id          SERIAL PRIMARY KEY,
+        key         TEXT NOT NULL UNIQUE,
+        value       TEXT,
+        group_name  TEXT DEFAULT 'general',
+        updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     // Indexes for frequently queried columns
     await db.rawQuery(`CREATE INDEX IF NOT EXISTS idx_submissions_employer_id ON submissions(employer_id)`);
     await db.rawQuery(`CREATE INDEX IF NOT EXISTS idx_submissions_status ON submissions(status)`);
@@ -267,6 +322,48 @@ const initDB = async () => {
       await db.rawQuery("INSERT INTO settings (key, value) VALUES ('registration_status', 'open')");
       await db.rawQuery("INSERT INTO settings (key, value) VALUES ('registration_deadline', '')");
       console.log('Default settings seeded.');
+    }
+
+    // Seed CMS default pages
+    const pagesCount = await db.rawQuery('SELECT COUNT(*) as cnt FROM cms_pages');
+    if (parseInt(pagesCount.rows[0].cnt) === 0) {
+      await db.rawQuery(`
+        INSERT INTO cms_pages (slug, title, content, sort_order) VALUES
+        ('hero', 'Hero Section', '<h1>National Quemoy University</h1><h2>Job Fair</h2><p>Connecting top employers with exceptional NQU talent.</p>', 1),
+        ('how-it-works', 'How It Works', 'Registration → Submit → Approval', 2),
+        ('event-info', 'Event Information', 'Date: To Be Announced\nVenue: NQU Student Activity Center', 3)
+      `);
+      console.log('Default CMS pages seeded.');
+    }
+
+    // Seed CMS default settings
+    const cmsSettingsCount = await db.rawQuery('SELECT COUNT(*) as cnt FROM cms_settings');
+    if (parseInt(cmsSettingsCount.rows[0].cnt) === 0) {
+      await db.rawQuery(`INSERT INTO cms_settings (key, value, group_name) VALUES
+        ('site_name', 'NQU Job Fair', 'general'),
+        ('site_tagline', 'Connecting talent with opportunity', 'general'),
+        ('contact_email', 'career@mail.nqu.edu.tw', 'contact'),
+        ('contact_phone', '+886-82-312- ext. ', 'contact'),
+        ('event_date', '', 'event'),
+        ('event_venue', 'NQU Student Activity Center', 'event'),
+        ('registration_deadline', '', 'event'),
+        ('social_facebook', '', 'social'),
+        ('social_linkedin', '', 'social'),
+        ('logo_url', '', 'branding'),
+        ('favicon_url', '', 'branding')
+      `);
+      console.log('Default CMS settings seeded.');
+    }
+
+    // Seed CMS default navigation
+    const navCount = await db.rawQuery('SELECT COUNT(*) as cnt FROM cms_navigation');
+    if (parseInt(navCount.rows[0].cnt) === 0) {
+      await db.rawQuery(`INSERT INTO cms_navigation (label, url, icon, position, is_active) VALUES
+        ('Home', '/', '🏠', 1, 1),
+        ('Employer', '/employer/login.html', '🏢', 2, 1),
+        ('Admin', '/admin/login.html', '⚙️', 3, 1)
+      `);
+      console.log('Default CMS navigation seeded.');
     }
     // Final check
     console.log('Database schema initialized.');
