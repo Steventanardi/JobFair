@@ -2,6 +2,8 @@ const express = require('express');
 const path = require('path');
 const session = require('express-session');
 const pgSession = require('connect-pg-simple')(session);
+const helmet = require('helmet');
+const compression = require('compression');
 const db = require('./db'); // triggers table creation on require
 
 const authRoutes = require('./routes/auth');
@@ -19,6 +21,8 @@ const PORT = process.env.PORT || 3000;
 app.set('trust proxy', 1);
 
 // ── Middleware ──────────────────────────────────────────────
+app.use(helmet({ contentSecurityPolicy: false })); // CSP disabled — inline scripts used throughout
+app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -63,6 +67,16 @@ app.use((req, res, next) => {
 // Static files
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// ── Health Check ───────────────────────────────────────────
+app.get('/api/health', async (req, res) => {
+  try {
+    await db.rawQuery('SELECT 1');
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  } catch {
+    res.status(503).json({ status: 'error', timestamp: new Date().toISOString() });
+  }
+});
 
 // ── API Routes ─────────────────────────────────────────────
 app.use('/api/auth', authRoutes);

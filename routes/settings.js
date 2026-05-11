@@ -17,16 +17,18 @@ router.get('/', async (req, res) => {
   }
 });
 
-// POST /api/admin/settings — Update settings (Admin only)
+const ALLOWED_SETTINGS_KEYS = ['registration_status', 'registration_deadline'];
+
+// POST /api/settings/admin — Update settings (Admin only)
 router.post('/admin', requireAdmin, async (req, res) => {
-  const updates = req.body; // { key: value }
+  const updates = req.body;
   try {
     for (const [key, value] of Object.entries(updates)) {
-      await db.query(`
-        INSERT INTO settings (key, value)
-        VALUES ($1, $2)
-        ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value
-      `, [key, String(value)]);
+      if (!ALLOWED_SETTINGS_KEYS.includes(key)) continue;
+      await db.query(
+        'INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value',
+        [key, String(value)]
+      );
     }
     res.json({ message: 'Settings updated' });
   } catch (err) {

@@ -180,7 +180,7 @@
       try {
         const settings = await API.get('/api/settings');
         const regBtn = document.querySelector('a[href="/employer/register.html"]');
-        
+
         if (settings.registration_status === 'closed') {
           if (regBtn) {
             regBtn.textContent = 'Registration Closed';
@@ -197,17 +197,52 @@
           if (now < deadlineDate) {
             const deadlineInfo = document.createElement('div');
             deadlineInfo.className = 'mt-4 text-sm text-gold';
-            deadlineInfo.innerHTML = `⏳ Registration Deadline: ${deadlineDate.toLocaleDateString()}`;
+            deadlineInfo.textContent = `⏳ Registration Deadline: ${deadlineDate.toLocaleDateString()}`;
             document.querySelector('.hero__actions').appendChild(deadlineInfo);
           }
         }
       } catch (err) { console.error(err); }
     }
 
+    async function loadCMSContent() {
+      try {
+        const cms = await API.get('/api/cms/settings');
+
+        // Update hero badge if event_date is set in CMS
+        if (cms.event_date) {
+          const badge = document.querySelector('.hero__badge');
+          if (badge) badge.textContent = cms.event_date;
+        }
+
+        // Show event date / venue strip below hero buttons
+        const heroActions = document.querySelector('.hero__actions');
+        if (heroActions && (cms.event_date || cms.event_venue)) {
+          const strip = document.createElement('div');
+          strip.className = 'mt-4 text-sm';
+          strip.style.color = 'rgba(255,255,255,0.75)';
+          const parts = [];
+          if (cms.event_date)  parts.push(`📅 ${App.escapeHtml(cms.event_date)}`);
+          if (cms.event_venue) parts.push(`📍 ${App.escapeHtml(cms.event_venue)}`);
+          strip.innerHTML = parts.join('&nbsp;&nbsp;·&nbsp;&nbsp;');
+          heroActions.appendChild(strip);
+        }
+
+        // Update site name in nav brand if set
+        if (cms.site_name) {
+          document.querySelectorAll('[data-i18n="nav.brand"]').forEach(el => {
+            el.textContent = cms.site_name;
+          });
+        }
+      } catch (err) {
+        // CMS not critical — page works with hardcoded defaults
+      }
+    }
+
     I18N.init('langToggle');
     loadAnnouncements();
     updateNav();
     checkSettings();
+    loadCMSContent();
   </script>
 </body>
 </html>

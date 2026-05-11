@@ -18,13 +18,16 @@ const adminLimiter = rateLimit({
 router.use(adminLimiter);
 router.use(requireAdmin);
 
-// GET /api/admin/submissions — list all submissions with optional filters
+// GET /api/admin/submissions — list all submissions with optional filters + pagination
 router.get('/submissions', async (req, res) => {
   const { status, search } = req.query;
+  const limit = Math.min(parseInt(req.query.limit) || 100, 500);
+  const offset = Math.max(parseInt(req.query.offset) || 0, 0);
+
   let sql = `
-    SELECT 
-      s.*, e.email as employer_email 
-    FROM submissions s 
+    SELECT
+      s.*, e.email as employer_email
+    FROM submissions s
     LEFT JOIN employers e ON s.employer_id = e.id
   `;
   const conditions = [];
@@ -47,7 +50,8 @@ router.get('/submissions', async (req, res) => {
     sql += ' WHERE ' + conditions.join(' AND ');
   }
 
-  sql += ' ORDER BY s.submitted_at DESC';
+  sql += ` ORDER BY s.submitted_at DESC LIMIT $${paramCounter++} OFFSET $${paramCounter++}`;
+  params.push(limit, offset);
 
   try {
     const { rows } = await db.query(sql, params);
@@ -167,8 +171,8 @@ router.get('/submissions/:id', async (req, res) => {
 router.patch('/submissions/:id/status', async (req, res) => {
   const { status, admin_notes } = req.body;
 
-  if (!status || !['approved', 'rejected'].includes(status)) {
-    return res.status(400).json({ error: 'Status must be "approved" or "rejected"' });
+  if (!status || !['pending', 'approved', 'rejected'].includes(status)) {
+    return res.status(400).json({ error: 'Status must be "pending", "approved", or "rejected"' });
   }
 
   try {
@@ -292,8 +296,9 @@ router.patch('/employers/:id/reset-password', async (req, res) => {
     const { rows } = await db.query('SELECT id, company_name FROM employers WHERE id = $1', [req.params.id]);
     if (rows.length === 0) return res.status(404).json({ error: 'Employer not found' });
 
-    const hash = bcrypt.hashSync(new_password, 10);
+    const hash = await bcrypt.hash(new_password, 10);
     await db.query('UPDATE employers SET password_hash = $1 WHERE id = $2', [hash, req.params.id]);
+    await logAction(req.session.user.id, 'Reset employer password', 'employer', req.params.id);
 
     res.json({ message: `Password reset for ${rows[0].company_name}` });
   } catch (err) {

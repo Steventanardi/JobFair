@@ -17,7 +17,7 @@ const upload = multer({
     const allowedTypes = /jpeg|jpg|png|gif|svg|webp/;
     const extOk = allowedTypes.test(path.extname(file.originalname).toLowerCase());
     const mimeOk = allowedTypes.test(file.mimetype.split('/')[1]);
-    if (extOk || mimeOk) return cb(null, true);
+    if (extOk && mimeOk) return cb(null, true);
     cb(new Error('Only image files are allowed'));
   }
 });
@@ -63,6 +63,15 @@ router.post('/', requireEmployer, submitLimiter, upload.single('logo'), async (r
   const veg = parsePositiveInt(lunch_box_veg) ?? 0;
   if (nonVeg + veg > 3) {
     return res.status(400).json({ error: 'Total lunch boxes cannot exceed 3' });
+  }
+
+  // One submission per employer
+  const { rows: existing } = await db.query(
+    'SELECT id FROM submissions WHERE employer_id = $1',
+    [employer.id]
+  );
+  if (existing.length > 0) {
+    return res.status(409).json({ error: 'You already have a submission. Edit or delete it before creating a new one.' });
   }
 
   let logo_path = null;

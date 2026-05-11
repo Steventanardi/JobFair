@@ -8,9 +8,7 @@ const { requireAdmin } = require('../middleware/auth');
 const router = express.Router();
 
 const uploadsDir = path.join(__dirname, '..', 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
+fs.mkdirSync(uploadsDir, { recursive: true });
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadsDir),
@@ -91,8 +89,8 @@ router.get('/navigation', async (req, res) => {
   }
 });
 
-// GET /api/cms/media - List all media files
-router.get('/media', async (req, res) => {
+// GET /api/cms/media - List all media files (admin only)
+router.get('/media', requireAdmin, async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 50;
     const offset = parseInt(req.query.offset) || 0;
@@ -222,8 +220,10 @@ router.delete('/admin/media/:id', requireAdmin, async (req, res) => {
     if (rows.length === 0) return res.status(404).json({ error: 'Media not found' });
 
     const filePath = path.join(uploadsDir, rows[0].filename);
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
+    try {
+      await fs.promises.unlink(filePath);
+    } catch {
+      // File may not exist on disk (e.g. serverless), continue
     }
 
     await db.query('DELETE FROM cms_media WHERE id = $1', [req.params.id]);

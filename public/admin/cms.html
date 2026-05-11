@@ -356,33 +356,6 @@
       } catch (err) { list.innerHTML = `<div class="text-danger">Error loading pages</div>`; }
     }
 
-    function openPageModal(id = null) {
-      editingPageId = id;
-      document.getElementById('pageModalTitle').textContent = id ? I18N.t('cms.editPage') : I18N.t('cms.newPage');
-      document.getElementById('pageDeleteBtn').style.display = id ? '' : 'none';
-      
-      if (!id) {
-        document.getElementById('pageSlug').value = '';
-        document.getElementById('pageTitle').value = '';
-        document.getElementById('pageContent').value = '';
-        document.getElementById('pageMetaTitle').value = '';
-        document.getElementById('pageMetaDesc').value = '';
-        document.getElementById('pageSortOrder').value = '0';
-        document.getElementById('pageActive').checked = true;
-      } else {
-        const page = window.__cachedPages?.find(p => p.id === id);
-        if (page) {
-          document.getElementById('pageSlug').value = page.slug || '';
-          document.getElementById('pageTitle').value = page.title || '';
-          document.getElementById('pageContent').value = page.content || '';
-          document.getElementById('pageMetaTitle').value = page.meta_title || '';
-          document.getElementById('pageMetaDesc').value = page.meta_desc || '';
-          document.getElementById('pageSortOrder').value = page.sort_order || 0;
-          document.getElementById('pageActive').checked = page.is_active !== 0;
-        }
-      }
-      App.showModal('pageModal');
-    }
 
     async function savePage() {
       const data = {
@@ -618,15 +591,41 @@
       } catch (err) { App.toast(err.message, 'error'); }
     }
 
-    // Cache pages for editing
-    async function openPageModal(id) {
-      if (id) {
+    async function openPageModal(id = null) {
+      editingPageId = id;
+      document.getElementById('pageModalTitle').textContent = id ? I18N.t('cms.editPage') : I18N.t('cms.newPage');
+      document.getElementById('pageDeleteBtn').style.display = id ? '' : 'none';
+      
+      if (!id) {
+        document.getElementById('pageSlug').value = '';
+        document.getElementById('pageTitle').value = '';
+        document.getElementById('pageContent').value = '';
+        document.getElementById('pageMetaTitle').value = '';
+        document.getElementById('pageMetaDesc').value = '';
+        document.getElementById('pageSortOrder').value = '0';
+        document.getElementById('pageActive').checked = true;
+      } else {
+        // Fetch/refresh cache if editing
         try {
           window.__cachedPages = await API.get('/api/cms/admin/pages');
-        } catch (e) {}
+        } catch (e) {
+          console.error('Failed to fetch pages for editing:', e);
+        }
+
+        const page = window.__cachedPages?.find(p => p.id === id);
+        if (page) {
+          document.getElementById('pageSlug').value = page.slug || '';
+          document.getElementById('pageTitle').value = page.title || '';
+          document.getElementById('pageContent').value = page.content || '';
+          document.getElementById('pageMetaTitle').value = page.meta_title || '';
+          document.getElementById('pageMetaDesc').value = page.meta_desc || '';
+          document.getElementById('pageSortOrder').value = page.sort_order || 0;
+          document.getElementById('pageActive').checked = page.is_active !== 0;
+        }
       }
-      openPageModal(id);
+      App.showModal('pageModal');
     }
+
 
     init();
   </script>

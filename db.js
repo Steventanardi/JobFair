@@ -58,9 +58,9 @@ if (connectionString) {
 const db = new Pool({
   connectionString,
   ssl: isLocalhost ? false : { rejectUnauthorized: false },
-  max: 10,
+  max: isLocalhost ? 10 : 2, // Keep pool small on serverless to avoid connection exhaustion
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000 // Increased to 10s for slow cold starts
+  connectionTimeoutMillis: 10000
 });
 
 // Original query for internal use
