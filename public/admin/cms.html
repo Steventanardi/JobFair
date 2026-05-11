@@ -19,9 +19,10 @@
     .cms-card__title { font-weight: 600; font-size: 1rem; }
     .cms-card__badge { font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; background: var(--color-primary); color: #fff; }
     .cms-card__badge--inactive { background: var(--text-muted); }
-    .cms-item { padding: var(--space-3); background: var(--color-bg); border-radius: var(--radius-sm); margin-bottom: var(--space-2); border: 1px solid var(--color-border); }
+    .cms-item { padding: var(--space-3); background: var(--color-bg); border-radius: var(--radius-sm); margin-bottom: var(--space-2); border: 1px solid var(--color-border); cursor: pointer; transition: border-color 0.15s; }
     .cms-item:hover { border-color: var(--color-primary); }
-    .cms-item__title { font-weight: 600; margin-bottom: 4px; }
+    .cms-item__header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
+    .cms-item__title { font-weight: 600; }
     .cms-item__meta { font-size: 0.8rem; color: var(--text-muted); }
     .cms-settings-group { margin-bottom: var(--space-6); }
     .cms-settings-group__title { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: var(--space-3); padding-bottom: 8px; border-bottom: 1px solid var(--color-border); }
@@ -30,16 +31,40 @@
     .cms-media-item img { width: 100%; height: 100%; object-fit: cover; }
     .cms-media-item__overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; gap: 8px; opacity: 0; transition: opacity 0.15s; }
     .cms-media-item:hover .cms-media-item__overlay { opacity: 1; }
+    .cms-media-item__label { position: absolute; bottom: 0; left: 0; right: 0; padding: 4px 6px; background: rgba(0,0,0,0.6); color: #fff; font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .editor-wrap { min-height: 300px; }
-    .editor { width: 100%; min-height: 300px; padding: 16px; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-bg); font-family: inherit; font-size: 0.95rem; line-height: 1.6; resize: vertical; }
+    .editor { width: 100%; min-height: 300px; padding: 16px; border: 1px solid var(--color-border); border-radius: 0 0 var(--radius-md) var(--radius-md); background: var(--color-bg); font-family: inherit; font-size: 0.95rem; line-height: 1.6; resize: vertical; box-sizing: border-box; }
     .editor:focus { outline: none; border-color: var(--color-primary); }
+    .rich-toolbar { display: flex; flex-wrap: wrap; gap: 3px; padding: 8px; background: var(--color-bg-alt); border: 1px solid var(--color-border); border-radius: var(--radius-md) var(--radius-md) 0 0; border-bottom: none; }
+    .rich-btn { padding: 3px 10px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: 4px; cursor: pointer; font-size: 13px; color: var(--color-text); transition: background 0.1s; }
+    .rich-btn:hover { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+    .rich-sep { width: 1px; height: 24px; background: var(--color-border); margin: 2px 4px; align-self: center; }
     .nav-sortable { list-style: none; padding: 0; margin: 0; }
-    .nav-sortable li { padding: 12px 16px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-sm); margin-bottom: 8px; cursor: grab; display: flex; align-items: center; gap: 12px; }
-    .nav-sortable li:active { cursor: grabbing; }
-    .nav-handle { color: var(--text-muted); font-size: 1.2rem; }
+    .nav-sortable li { padding: 12px 16px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-sm); margin-bottom: 8px; cursor: grab; display: flex; align-items: center; gap: 12px; user-select: none; transition: background 0.1s; }
+    .nav-sortable li.drag-over { border-color: var(--color-primary); background: rgba(37,99,235,0.06); }
+    .nav-sortable li.dragging { opacity: 0.4; }
+    .nav-handle { color: var(--text-muted); font-size: 1.2rem; flex-shrink: 0; }
+    .nav-status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .nav-status-dot--active { background: #10b981; }
+    .nav-status-dot--inactive { background: #9ca3af; }
+    .media-drop-overlay { position: fixed; inset: 0; background: rgba(37,99,235,0.08); border: 3px dashed var(--color-primary); z-index: 500; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 700; color: var(--color-primary); pointer-events: none; opacity: 0; transition: opacity 0.15s; border-radius: 0; }
+    .media-drop-overlay.visible { opacity: 1; }
+    .settings-dirty-badge { display: none; padding: 3px 10px; background: #fef3c7; color: #92400e; border-radius: 6px; font-size: 0.78rem; margin-left: 10px; }
+    .settings-dirty-badge.visible { display: inline-block; }
+    .stats-bar { display: flex; gap: var(--space-3); margin-bottom: var(--space-4); flex-wrap: wrap; }
+    .stat-pill { padding: 8px 18px; background: var(--color-bg-alt); border: 1px solid var(--color-border); border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+    .media-view__img-wrap { text-align: center; background: #000; border-radius: var(--radius-md); overflow: hidden; max-height: 320px; }
+    .media-view__img-wrap img { max-width: 100%; max-height: 320px; object-fit: contain; }
+    .media-view__doc { display: flex; align-items: center; justify-content: center; height: 120px; font-size: 3rem; }
+    .media-view__meta { font-size: 0.82rem; color: var(--text-muted); margin: 8px 0 12px; }
+    .page-search { width: 100%; padding: 8px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-bg); font-size: 0.95rem; margin-bottom: var(--space-4); }
+    .page-search:focus { outline: none; border-color: var(--color-primary); }
   </style>
 </head>
 <body>
+  <!-- Drag-and-drop overlay for media -->
+  <div class="media-drop-overlay" id="mediaDropOverlay">📁 Drop files to upload</div>
+
   <div class="dashboard">
     <header class="dashboard__mobile-header">
       <a href="/" class="dashboard__mobile-brand">NQU <span class="gold">CMS</span></a>
@@ -67,14 +92,14 @@
         <li><a class="sidebar-link" data-tab="tab-settings" onclick="switchTab(this)">
           <span class="sidebar-link__icon">⚙️</span> <span data-i18n="cms.settings">Settings</span>
         </a></li>
-        <li><a class="sidebar-link" href="/admin/dashboard.html" onclick="switchTab(this)">
+        <li><a class="sidebar-link" href="/admin/dashboard.html">
           <span class="sidebar-link__icon">←</span> <span data-i18n="cms.back">Back to Admin</span>
         </a></li>
       </ul>
 
       <div class="sidebar-logout">
         <div id="langToggle"></div>
-        <a class="sidebar-link" onclick="App.logout()">
+        <a class="sidebar-link" onclick="App.logout()" style="margin-top:var(--space-2);">
           <span class="sidebar-link__icon">🚪</span> <span data-i18n="adm.logout">Logout</span>
         </a>
       </div>
@@ -83,195 +108,300 @@
     <main class="dashboard__main">
       <div class="dashboard__header">
         <h1 class="dashboard__title" data-i18n="cms.title">Content Management System</h1>
-        <div class="text-sm text-muted" id="cmsStats"></div>
       </div>
 
-      <!-- PAGES TAB -->
+      <!-- Stats bar -->
+      <div class="stats-bar" id="statsBar">
+        <div class="stat-pill">📄 <span id="statPages">—</span> Pages</div>
+        <div class="stat-pill">🖼️ <span id="statMedia">—</span> Media</div>
+        <div class="stat-pill">🔗 <span id="statNav">—</span> Nav Links</div>
+        <div class="stat-pill">⚙️ <span id="statSettings">—</span> Settings</div>
+      </div>
+
+      <!-- ═══ TAB: PAGES ═══ -->
       <div class="tab-panel tab-panel--active" id="tab-pages">
-        <div class="cms-toolbar" style="display:flex; gap:var(--space-3); margin-bottom:var(--space-4);">
+        <div style="display:flex; gap:var(--space-3); margin-bottom:var(--space-4); align-items:center;">
           <button class="btn btn--primary" onclick="openPageModal()" data-i18n="cms.newPage">+ New Page</button>
         </div>
+        <input class="page-search" type="text" id="pageSearch" placeholder="🔍 Search pages..." oninput="filterPages()">
         <div id="pagesList" class="cms-grid">
           <div class="text-muted text-center" style="padding:3rem;" data-i18n="cms.loading">Loading...</div>
         </div>
       </div>
 
-      <!-- MEDIA TAB -->
+      <!-- ═══ TAB: MEDIA ═══ -->
       <div class="tab-panel" id="tab-media">
-        <div class="cms-toolbar" style="display:flex; gap:var(--space-3); margin-bottom:var(--space-4); align-items:center;">
-          <button class="btn btn--primary" onclick="document.getElementById('mediaUpload').click()" data-i18n="cms.uploadMedia">+ Upload</button>
-          <input type="file" id="mediaUpload" style="display:none;" accept="image/*,application/pdf" onchange="handleMediaUpload(this)">
-          <div class="text-sm text-muted" id="mediaCount"></div>
+        <div style="display:flex; gap:var(--space-3); margin-bottom:var(--space-4); align-items:center; flex-wrap:wrap;">
+          <button class="btn btn--primary" onclick="document.getElementById('mediaUpload').click()" data-i18n="cms.uploadMedia">+ Upload Files</button>
+          <input type="file" id="mediaUpload" style="display:none;" accept="image/*,application/pdf,.doc,.docx" multiple onchange="handleMediaUpload(this.files)">
+          <span class="text-sm text-muted">or drag &amp; drop files anywhere</span>
+          <div class="text-sm text-muted" id="mediaCount" style="margin-left:auto;"></div>
         </div>
         <div id="mediaList" class="cms-media-grid">
           <div class="text-muted text-center" style="padding:3rem; grid-column:1/-1;" data-i18n="cms.loading">Loading...</div>
         </div>
+        <div id="mediaLoadMore" style="display:none; text-align:center; margin-top:var(--space-4);">
+          <button class="btn btn--outline" onclick="loadMoreMedia()">Load More</button>
+        </div>
       </div>
 
-      <!-- NAVIGATION TAB -->
+      <!-- ═══ TAB: NAVIGATION ═══ -->
       <div class="tab-panel" id="tab-navigation">
-        <div class="cms-toolbar" style="display:flex; gap:var(--space-3); margin-bottom:var(--space-4);">
+        <div style="display:flex; gap:var(--space-3); margin-bottom:var(--space-4); align-items:center;">
           <button class="btn btn--primary" onclick="openNavModal()" data-i18n="cms.newNav">+ Add Link</button>
+          <span class="text-sm text-muted">Drag items to reorder</span>
         </div>
         <ul class="nav-sortable" id="navList">
           <div class="text-muted text-center" style="padding:3rem;" data-i18n="cms.loading">Loading...</div>
         </ul>
       </div>
 
-      <!-- SETTINGS TAB -->
+      <!-- ═══ TAB: SETTINGS ═══ -->
       <div class="tab-panel" id="tab-settings">
+
         <div class="cms-settings-group">
-          <div class="cms-settings-group__title" data-i18n="cms.groupGeneral">General</div>
-          <div class="card" style="max-width:600px;">
+          <div class="cms-settings-group__title">General</div>
+          <div class="card" style="max-width:650px;">
             <div class="form-group">
-              <label class="form-label" data-i18n="cms.siteName">Site Name</label>
-              <input class="form-input" type="text" id="cms_site_name">
+              <label class="form-label">Site Name</label>
+              <input class="form-input" type="text" id="cms_site_name" oninput="markDirty()">
             </div>
             <div class="form-group">
-              <label class="form-label" data-i18n="cms.siteTagline">Tagline</label>
-              <input class="form-input" type="text" id="cms_site_tagline">
+              <label class="form-label">Tagline</label>
+              <input class="form-input" type="text" id="cms_site_tagline" oninput="markDirty()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Hero Title</label>
+              <input class="form-input" type="text" id="cms_hero_title" placeholder="e.g. NQU Job Fair 2026" oninput="markDirty()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Hero Subtitle</label>
+              <input class="form-input" type="text" id="cms_hero_subtitle" placeholder="e.g. Connecting talent with opportunity" oninput="markDirty()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Footer Text</label>
+              <input class="form-input" type="text" id="cms_footer_text" placeholder="e.g. © 2026 National Quemoy University" oninput="markDirty()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Announcement Banner <span class="text-muted text-xs">(shown sitewide if not empty)</span></label>
+              <input class="form-input" type="text" id="cms_announcement_banner" placeholder="e.g. Registration closes May 31!" oninput="markDirty()">
             </div>
           </div>
         </div>
 
         <div class="cms-settings-group">
-          <div class="cms-settings-group__title" data-i18n="cms.groupEvent">Event Info</div>
-          <div class="card" style="max-width:600px;">
+          <div class="cms-settings-group__title">Event Info</div>
+          <div class="card" style="max-width:650px;">
             <div class="form-group">
-              <label class="form-label" data-i18n="cms.eventDate">Event Date</label>
-              <input class="form-input" type="text" id="cms_event_date">
+              <label class="form-label">Event Date</label>
+              <input class="form-input" type="text" id="cms_event_date" placeholder="e.g. June 15, 2026" oninput="markDirty()">
             </div>
             <div class="form-group">
-              <label class="form-label" data-i18n="cms.eventVenue">Venue</label>
-              <input class="form-input" type="text" id="cms_event_venue">
+              <label class="form-label">Venue</label>
+              <input class="form-input" type="text" id="cms_event_venue" placeholder="e.g. NQU Student Activity Center" oninput="markDirty()">
             </div>
             <div class="form-group">
-              <label class="form-label" data-i18n="cms.regDeadline">Registration Deadline</label>
-              <input class="form-input" type="text" id="cms_registration_deadline">
-            </div>
-          </div>
-        </div>
-
-        <div class="cms-settings-group">
-          <div class="cms-settings-group__title" data-i18n="cms.groupContact">Contact</div>
-          <div class="card" style="max-width:600px;">
-            <div class="form-group">
-              <label class="form-label" data-i18n="cms.contactEmail">Email</label>
-              <input class="form-input" type="email" id="cms_contact_email">
+              <label class="form-label">Registration Deadline</label>
+              <input class="form-input" type="text" id="cms_registration_deadline" placeholder="e.g. May 31, 2026" oninput="markDirty()">
             </div>
             <div class="form-group">
-              <label class="form-label" data-i18n="cms.contactPhone">Phone</label>
-              <input class="form-input" type="text" id="cms_contact_phone">
+              <label class="form-label">Max Booths</label>
+              <input class="form-input" type="number" id="cms_max_booths" placeholder="e.g. 60" min="0" oninput="markDirty()">
             </div>
           </div>
         </div>
 
         <div class="cms-settings-group">
-          <div class="cms-settings-group__title" data-i18n="cms.groupSocial">Social Links</div>
-          <div class="card" style="max-width:600px;">
+          <div class="cms-settings-group__title">Contact</div>
+          <div class="card" style="max-width:650px;">
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input class="form-input" type="email" id="cms_contact_email" oninput="markDirty()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone</label>
+              <input class="form-input" type="text" id="cms_contact_phone" oninput="markDirty()">
+            </div>
+          </div>
+        </div>
+
+        <div class="cms-settings-group">
+          <div class="cms-settings-group__title">Social Links</div>
+          <div class="card" style="max-width:650px;">
             <div class="form-group">
               <label class="form-label">Facebook</label>
-              <input class="form-input" type="text" id="cms_social_facebook">
+              <input class="form-input" type="text" id="cms_social_facebook" placeholder="https://facebook.com/..." oninput="markDirty()">
             </div>
             <div class="form-group">
               <label class="form-label">LinkedIn</label>
-              <input class="form-input" type="text" id="cms_social_linkedin">
+              <input class="form-input" type="text" id="cms_social_linkedin" placeholder="https://linkedin.com/..." oninput="markDirty()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Instagram</label>
+              <input class="form-input" type="text" id="cms_social_instagram" placeholder="https://instagram.com/..." oninput="markDirty()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Twitter / X</label>
+              <input class="form-input" type="text" id="cms_social_twitter" placeholder="https://twitter.com/..." oninput="markDirty()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">YouTube</label>
+              <input class="form-input" type="text" id="cms_social_youtube" placeholder="https://youtube.com/..." oninput="markDirty()">
             </div>
           </div>
         </div>
 
         <div class="cms-settings-group">
-          <div class="cms-settings-group__title" data-i18n="cms.groupBranding">Branding</div>
-          <div class="card" style="max-width:600px;">
+          <div class="cms-settings-group__title">Branding</div>
+          <div class="card" style="max-width:650px;">
             <div class="form-group">
-              <label class="form-label" data-i18n="cms.logoUrl">Logo URL</label>
-              <input class="form-input" type="text" id="cms_logo_url">
+              <label class="form-label">Logo URL <span class="text-muted text-xs">(or upload via Media tab)</span></label>
+              <input class="form-input" type="text" id="cms_logo_url" placeholder="/uploads/logo.png" oninput="markDirty()">
             </div>
             <div class="form-group">
-              <label class="form-label" data-i18n="cms.faviconUrl">Favicon URL</label>
-              <input class="form-input" type="text" id="cms_favicon_url">
+              <label class="form-label">Favicon URL</label>
+              <input class="form-input" type="text" id="cms_favicon_url" placeholder="/uploads/favicon.ico" oninput="markDirty()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Primary Color</label>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <input type="color" id="cms_primary_color_picker" style="width:40px; height:34px; padding:2px; border:1px solid var(--color-border); border-radius:6px; cursor:pointer;" oninput="document.getElementById('cms_primary_color').value=this.value; markDirty()">
+                <input class="form-input" type="text" id="cms_primary_color" placeholder="#1d4ed8" style="flex:1;" oninput="updateColorPicker(); markDirty()">
+              </div>
             </div>
           </div>
         </div>
 
-        <button class="btn btn--primary" onclick="saveSettings()" data-i18n="cms.saveSettings">Save Settings</button>
+        <div style="display:flex; align-items:center; gap:12px; margin-top:var(--space-4);">
+          <button class="btn btn--primary" onclick="saveSettings()" data-i18n="cms.saveSettings">Save Settings</button>
+          <span class="settings-dirty-badge" id="dirtyBadge">Unsaved changes</span>
+        </div>
       </div>
 
     </main>
   </div>
 
-  <!-- PAGE MODAL -->
+  <!-- ═══ MODAL: Page ═══ -->
   <div class="modal-overlay" id="pageModal">
     <div class="modal" style="max-width:800px; width:90%;">
       <div class="modal__header">
-        <h2 class="modal__title" id="pageModalTitle" data-i18n="cms.editPage">Edit Page</h2>
+        <h2 class="modal__title" id="pageModalTitle">Edit Page</h2>
         <button class="modal__close" onclick="App.hideModal('pageModal')">✕</button>
-      </div>
-      <div class="form-group">
-        <label class="form-label" data-i18n="cms.slug">Slug</label>
-        <input class="form-input" type="text" id="pageSlug" placeholder="e.g. hero, about, contact">
-      </div>
-      <div class="form-group">
-        <label class="form-label" data-i18n="cms.pageTitle">Title</label>
-        <input class="form-input" type="text" id="pageTitle">
-      </div>
-      <div class="form-group">
-        <label class="form-label" data-i18n="cms.content">Content (HTML)</label>
-        <textarea class="editor" id="pageContent" rows="10"></textarea>
       </div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-4);">
         <div class="form-group">
-          <label class="form-label" data-i18n="cms.metaTitle">Meta Title</label>
+          <label class="form-label">Slug</label>
+          <input class="form-input" type="text" id="pageSlug" placeholder="e.g. hero, about, contact">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Title</label>
+          <input class="form-input" type="text" id="pageTitle">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Content (HTML)</label>
+        <div class="rich-toolbar">
+          <button class="rich-btn" onclick="wrapSelected('<strong>','</strong>')" title="Bold"><b>B</b></button>
+          <button class="rich-btn" onclick="wrapSelected('<em>','</em>')" title="Italic"><i>I</i></button>
+          <button class="rich-btn" onclick="wrapSelected('<u>','</u>')" title="Underline"><u>U</u></button>
+          <div class="rich-sep"></div>
+          <button class="rich-btn" onclick="wrapSelected('<h1>','</h1>')" title="Heading 1">H1</button>
+          <button class="rich-btn" onclick="wrapSelected('<h2>','</h2>')" title="Heading 2">H2</button>
+          <button class="rich-btn" onclick="wrapSelected('<h3>','</h3>')" title="Heading 3">H3</button>
+          <div class="rich-sep"></div>
+          <button class="rich-btn" onclick="wrapSelected('<p>','</p>')" title="Paragraph">P</button>
+          <button class="rich-btn" onclick="wrapSelected('<ul>\n  <li>','</li>\n</ul>')" title="Bullet list">• List</button>
+          <button class="rich-btn" onclick="wrapSelected('<a href=&quot;&quot;>','</a>')" title="Link">🔗</button>
+          <div class="rich-sep"></div>
+          <button class="rich-btn" onclick="insertAtCursor('<hr>\n')" title="Horizontal rule">—</button>
+          <button class="rich-btn" onclick="wrapSelected('<blockquote>','</blockquote>')" title="Quote">❝</button>
+          <button class="rich-btn" onclick="wrapSelected('<code>','</code>')" title="Code">&lt;/&gt;</button>
+        </div>
+        <textarea class="editor" id="pageContent" rows="12"></textarea>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:var(--space-4);">
+        <div class="form-group">
+          <label class="form-label">Meta Title</label>
           <input class="form-input" type="text" id="pageMetaTitle">
         </div>
         <div class="form-group">
-          <label class="form-label" data-i18n="cms.sortOrder">Sort Order</label>
+          <label class="form-label">Sort Order</label>
           <input class="form-input" type="number" id="pageSortOrder" value="0">
+        </div>
+        <div class="form-group" style="display:flex; flex-direction:column; justify-content:flex-end;">
+          <label class="checkbox-label">
+            <input type="checkbox" id="pageActive" checked> <span>Active</span>
+          </label>
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label" data-i18n="cms.metaDesc">Meta Description</label>
+        <label class="form-label">Meta Description</label>
         <textarea class="form-textarea" id="pageMetaDesc" rows="2"></textarea>
       </div>
-      <div class="form-group">
-        <label class="checkbox-label">
-          <input type="checkbox" id="pageActive" checked> <span data-i18n="cms.active">Active</span>
-        </label>
-      </div>
       <div class="modal__actions">
-        <button class="btn btn--outline" onclick="App.hideModal('pageModal')" data-i18n="adm.cancel">Cancel</button>
-        <button class="btn btn--danger" id="pageDeleteBtn" style="margin-right:auto;" onclick="deletePage()" data-i18n="adm.delete">Delete</button>
-        <button class="btn btn--primary" onclick="savePage()" data-i18n="adm.save">Save</button>
+        <button class="btn btn--outline" onclick="App.hideModal('pageModal')">Cancel</button>
+        <button class="btn btn--danger" id="pageDeleteBtn" style="margin-right:auto;" onclick="deletePage()">Delete</button>
+        <button class="btn btn--outline" id="pageDuplicateBtn" onclick="duplicatePage()">⧉ Duplicate</button>
+        <button class="btn btn--primary" onclick="savePage()">Save</button>
       </div>
     </div>
   </div>
 
-  <!-- NAV MODAL -->
+  <!-- ═══ MODAL: Media View / Edit ═══ -->
+  <div class="modal-overlay" id="mediaViewModal">
+    <div class="modal" style="max-width:560px; width:90%;">
+      <div class="modal__header">
+        <h2 class="modal__title">Media Details</h2>
+        <button class="modal__close" onclick="App.hideModal('mediaViewModal')">✕</button>
+      </div>
+      <div id="mediaViewPreview"></div>
+      <div class="media-view__meta" id="mediaViewMeta"></div>
+      <div class="form-group">
+        <label class="form-label">Alt Text</label>
+        <input class="form-input" type="text" id="mediaAltText" placeholder="Describe the image for accessibility">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Caption</label>
+        <input class="form-input" type="text" id="mediaCaption" placeholder="Optional caption">
+      </div>
+      <div class="form-group">
+        <label class="form-label">URL (click to copy)</label>
+        <input class="form-input" type="text" id="mediaUrlDisplay" readonly onclick="copyMediaUrl()" style="cursor:pointer;" title="Click to copy">
+      </div>
+      <div class="modal__actions">
+        <button class="btn btn--outline" onclick="App.hideModal('mediaViewModal')">Close</button>
+        <button class="btn btn--danger" style="margin-right:auto;" onclick="deleteMediaFromModal()">🗑 Delete</button>
+        <button class="btn btn--primary" onclick="saveMediaMeta()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MODAL: Navigation ═══ -->
   <div class="modal-overlay" id="navModal">
     <div class="modal">
       <div class="modal__header">
-        <h2 class="modal__title" id="navModalTitle" data-i18n="cms.editNav">Edit Navigation</h2>
+        <h2 class="modal__title" id="navModalTitle">Edit Navigation</h2>
         <button class="modal__close" onclick="App.hideModal('navModal')">✕</button>
       </div>
       <div class="form-group">
-        <label class="form-label" data-i18n="cms.label">Label</label>
+        <label class="form-label">Label</label>
         <input class="form-input" type="text" id="navLabel">
       </div>
       <div class="form-group">
-        <label class="form-label" data-i18n="cms.url">URL</label>
+        <label class="form-label">URL</label>
         <input class="form-input" type="text" id="navUrl" placeholder="/page or https://...">
       </div>
       <div class="form-group">
-        <label class="form-label" data-i18n="cms.icon">Icon (emoji)</label>
+        <label class="form-label">Icon (emoji)</label>
         <input class="form-input" type="text" id="navIcon" placeholder="🏠">
       </div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-4);">
         <div class="form-group">
-          <label class="form-label" data-i18n="cms.position">Position</label>
+          <label class="form-label">Position</label>
           <input class="form-input" type="number" id="navPosition" value="0">
         </div>
         <div class="form-group">
-          <label class="form-label" data-i18n="cms.parentPage">Parent</label>
+          <label class="form-label">Parent</label>
           <select class="form-select" id="navParent">
             <option value="">— None —</option>
           </select>
@@ -279,17 +409,17 @@
       </div>
       <div class="form-group">
         <label class="checkbox-label">
-          <input type="checkbox" id="navActive" checked> <span data-i18n="cms.active">Active</span>
+          <input type="checkbox" id="navActive" checked> <span>Active</span>
         </label>
         <br>
-        <label class="checkbox-label">
-          <input type="checkbox" id="navBlank"> <span data-i18n="cms.newTab">Open in new tab</span>
+        <label class="checkbox-label" style="margin-top:8px;">
+          <input type="checkbox" id="navBlank"> <span>Open in new tab</span>
         </label>
       </div>
       <div class="modal__actions">
-        <button class="btn btn--outline" onclick="App.hideModal('navModal')" data-i18n="adm.cancel">Cancel</button>
-        <button class="btn btn--danger" id="navDeleteBtn" style="margin-right:auto;" onclick="deleteNav()" data-i18n="adm.delete">Delete</button>
-        <button class="btn btn--primary" onclick="saveNav()" data-i18n="adm.save">Save</button>
+        <button class="btn btn--outline" onclick="App.hideModal('navModal')">Cancel</button>
+        <button class="btn btn--danger" id="navDeleteBtn" style="margin-right:auto;" onclick="deleteNav()">Delete</button>
+        <button class="btn btn--primary" onclick="saveNav()">Save</button>
       </div>
     </div>
   </div>
@@ -300,18 +430,25 @@
   <script>
     let editingPageId = null;
     let editingNavId = null;
-    const tabLoaded = {};
+    let viewingMediaId = null;
+    let allPages = [];
+    let allMedia = [];
+    let mediaOffset = 0;
+    const MEDIA_LIMIT = 48;
+    let settingsDirty = false;
+    let dragSrcNav = null;
 
+    // ── INIT ──────────────────────────────────────────────────
     async function init() {
       const user = await App.requireAuth('admin');
       if (!user) return;
       I18N.init('langToggle');
+      initMediaDragDrop();
       loadStats();
       loadPages();
       loadMedia();
       loadNavigation();
       loadSettings();
-      tabLoaded['tab-pages'] = true;
     }
 
     function switchTab(el) {
@@ -320,42 +457,85 @@
       if (el) {
         el.classList.add('sidebar-link--active');
         const tabId = el.dataset.tab;
-        document.getElementById(tabId)?.classList.add('tab-panel--active');
-      }
-      if (!tabLoaded[document.querySelector('.sidebar-link--active')?.dataset.tab]) {
-        tabLoaded[document.querySelector('.sidebar-link--active')?.dataset.tab] = true;
-        const tab = document.querySelector('.sidebar-link--active')?.dataset.tab;
-        if (tab === 'tab-pages') loadPages();
-        if (tab === 'tab-media') loadMedia();
-        if (tab === 'tab-navigation') loadNavigation();
-        if (tab === 'tab-settings') loadSettings();
+        if (tabId) document.getElementById(tabId)?.classList.add('tab-panel--active');
       }
     }
 
+    // ── STATS ─────────────────────────────────────────────────
     async function loadStats() {
       try {
         const s = await API.get('/api/cms/admin/stats');
-        document.getElementById('cmsStats').textContent = `${s.pages} pages | ${s.media} files | ${s.navigation} links`;
+        document.getElementById('statPages').textContent = s.pages;
+        document.getElementById('statMedia').textContent = s.media;
+        document.getElementById('statNav').textContent = s.navigation;
+        document.getElementById('statSettings').textContent = s.settings;
       } catch (err) { console.error(err); }
     }
 
+    // ── PAGES ─────────────────────────────────────────────────
     async function loadPages() {
       const list = document.getElementById('pagesList');
       try {
-        const pages = await API.get('/api/cms/admin/pages');
-        if (pages.length === 0) {
-          list.innerHTML = `<div class="text-muted text-center" style="padding:3rem;" data-i18n="cms.noPages">No pages yet</div>`;
-          return;
-        }
-        list.innerHTML = pages.map(p => `
-          <div class="cms-item" onclick="openPageModal(${p.id})" style="cursor:pointer;">
-            <div class="cms-item__title">${App.escapeHtml(p.title)}</div>
-            <div class="cms-item__meta">/${App.escapeHtml(p.slug)} · Order: ${p.sort_order || 0}</div>
-          </div>
-        `).join('');
-      } catch (err) { list.innerHTML = `<div class="text-danger">Error loading pages</div>`; }
+        allPages = await API.get('/api/cms/admin/pages');
+        renderPages(allPages);
+      } catch (err) {
+        list.innerHTML = `<div class="text-danger" style="padding:2rem;">Error loading pages</div>`;
+      }
     }
 
+    function renderPages(pages) {
+      const list = document.getElementById('pagesList');
+      if (pages.length === 0) {
+        list.innerHTML = `<div class="text-muted text-center" style="padding:3rem; grid-column:1/-1;">No pages found</div>`;
+        return;
+      }
+      list.innerHTML = pages.map(p => `
+        <div class="cms-item" onclick="openPageModal(${p.id})">
+          <div class="cms-item__header">
+            <div class="cms-item__title">${App.escapeHtml(p.title)}</div>
+            <span style="font-size:0.72rem; padding:2px 8px; border-radius:4px; background:${p.is_active ? '#dcfce7' : '#f3f4f6'}; color:${p.is_active ? '#166534' : '#6b7280'}; white-space:nowrap; flex-shrink:0;">${p.is_active ? 'Active' : 'Inactive'}</span>
+          </div>
+          <div class="cms-item__meta">/${App.escapeHtml(p.slug)} · Order: ${p.sort_order || 0} · Updated: ${App.formatDate(p.updated_at)}</div>
+        </div>
+      `).join('');
+    }
+
+    function filterPages() {
+      const q = document.getElementById('pageSearch').value.toLowerCase();
+      if (!q) { renderPages(allPages); return; }
+      renderPages(allPages.filter(p =>
+        p.title.toLowerCase().includes(q) || p.slug.toLowerCase().includes(q)
+      ));
+    }
+
+    async function openPageModal(id = null) {
+      editingPageId = id;
+      document.getElementById('pageModalTitle').textContent = id ? 'Edit Page' : 'New Page';
+      document.getElementById('pageDeleteBtn').style.display = id ? '' : 'none';
+      document.getElementById('pageDuplicateBtn').style.display = id ? '' : 'none';
+
+      if (!id) {
+        document.getElementById('pageSlug').value = '';
+        document.getElementById('pageTitle').value = '';
+        document.getElementById('pageContent').value = '';
+        document.getElementById('pageMetaTitle').value = '';
+        document.getElementById('pageMetaDesc').value = '';
+        document.getElementById('pageSortOrder').value = '0';
+        document.getElementById('pageActive').checked = true;
+      } else {
+        const page = allPages.find(p => p.id === id);
+        if (page) {
+          document.getElementById('pageSlug').value = page.slug || '';
+          document.getElementById('pageTitle').value = page.title || '';
+          document.getElementById('pageContent').value = page.content || '';
+          document.getElementById('pageMetaTitle').value = page.meta_title || '';
+          document.getElementById('pageMetaDesc').value = page.meta_desc || '';
+          document.getElementById('pageSortOrder').value = page.sort_order || 0;
+          document.getElementById('pageActive').checked = page.is_active !== 0;
+        }
+      }
+      App.showModal('pageModal');
+    }
 
     async function savePage() {
       const data = {
@@ -368,16 +548,16 @@
         is_active: document.getElementById('pageActive').checked
       };
       if (!data.slug || !data.title) {
-        App.toast(I18N.t('msg.required'), 'error');
+        App.toast('Slug and title are required', 'error');
         return;
       }
       try {
         if (editingPageId) {
           await API.put(`/api/cms/admin/pages/${editingPageId}`, data);
-          App.toast(I18N.t('msg.pageUpdated'), 'success');
+          App.toast('Page updated', 'success');
         } else {
           await API.post('/api/cms/admin/pages', data);
-          App.toast(I18N.t('msg.pageCreated'), 'success');
+          App.toast('Page created', 'success');
         }
         App.hideModal('pageModal');
         loadPages();
@@ -386,116 +566,322 @@
     }
 
     async function deletePage() {
-      if (!App.confirm(I18N.t('cms.confirmDelPage'))) return;
+      if (!App.confirm('Delete this page? This cannot be undone.')) return;
       try {
         await API.delete(`/api/cms/admin/pages/${editingPageId}`);
-        App.toast(I18N.t('msg.pageDeleted'), 'success');
+        App.toast('Page deleted', 'success');
         App.hideModal('pageModal');
         loadPages();
         loadStats();
       } catch (err) { App.toast(err.message, 'error'); }
     }
 
-    async function loadMedia() {
-      const list = document.getElementById('mediaList');
-      try {
-        const { items, total } = await API.get('/api/cms/media');
-        document.getElementById('mediaCount').textContent = `${total} files`;
-        if (items.length === 0) {
-          list.innerHTML = `<div class="text-muted text-center" style="grid-column:1/-1; padding:3rem;" data-i18n="cms.noMedia">No media yet</div>`;
-          return;
+    function duplicatePage() {
+      const page = allPages.find(p => p.id === editingPageId);
+      if (!page) return;
+      editingPageId = null;
+      document.getElementById('pageSlug').value = page.slug + '-copy';
+      document.getElementById('pageTitle').value = page.title + ' (Copy)';
+      document.getElementById('pageDeleteBtn').style.display = 'none';
+      document.getElementById('pageDuplicateBtn').style.display = 'none';
+      document.getElementById('pageModalTitle').textContent = 'New Page (Duplicate)';
+      App.toast('Edit the slug and title, then save', 'info');
+    }
+
+    // ── RICH TEXT TOOLBAR ─────────────────────────────────────
+    function wrapSelected(before, after) {
+      const ta = document.getElementById('pageContent');
+      const start = ta.selectionStart;
+      const end = ta.selectionEnd;
+      const selected = ta.value.substring(start, end) || 'text';
+      const replacement = before + selected + after;
+      ta.value = ta.value.substring(0, start) + replacement + ta.value.substring(end);
+      ta.selectionStart = start + before.length;
+      ta.selectionEnd = start + before.length + selected.length;
+      ta.focus();
+    }
+
+    function insertAtCursor(text) {
+      const ta = document.getElementById('pageContent');
+      const pos = ta.selectionStart;
+      ta.value = ta.value.substring(0, pos) + text + ta.value.substring(pos);
+      ta.selectionStart = ta.selectionEnd = pos + text.length;
+      ta.focus();
+    }
+
+    // ── MEDIA ─────────────────────────────────────────────────
+    function initMediaDragDrop() {
+      const overlay = document.getElementById('mediaDropOverlay');
+      let dragCounter = 0;
+
+      document.addEventListener('dragenter', (e) => {
+        if (e.dataTransfer?.types?.includes('Files')) {
+          dragCounter++;
+          overlay.classList.add('visible');
         }
+      });
+      document.addEventListener('dragleave', () => {
+        dragCounter--;
+        if (dragCounter <= 0) { dragCounter = 0; overlay.classList.remove('visible'); }
+      });
+      document.addEventListener('dragover', (e) => { e.preventDefault(); });
+      document.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dragCounter = 0;
+        overlay.classList.remove('visible');
+        if (e.dataTransfer?.files?.length) {
+          handleMediaUpload(e.dataTransfer.files);
+        }
+      });
+    }
+
+    async function handleMediaUpload(files) {
+      if (!files || files.length === 0) return;
+      const fileArr = Array.from(files);
+      App.toast(`Uploading ${fileArr.length} file(s)...`, 'info');
+      let success = 0;
+      for (const file of fileArr) {
+        const formData = new FormData();
+        formData.append('file', file);
+        try {
+          const res = await fetch('/api/cms/admin/media', {
+            method: 'POST',
+            headers: { 'Accept': 'application/json' },
+            body: formData,
+            credentials: 'include'
+          });
+          const data = await res.json();
+          if (data.url) success++;
+          else App.toast(`${file.name}: ${data.error || 'failed'}`, 'error');
+        } catch (err) {
+          App.toast(`${file.name}: ${err.message}`, 'error');
+        }
+      }
+      if (success > 0) {
+        App.toast(`${success} file(s) uploaded`, 'success');
+        mediaOffset = 0;
+        loadMedia();
+        loadStats();
+      }
+      document.getElementById('mediaUpload').value = '';
+    }
+
+    async function loadMedia(append = false) {
+      const list = document.getElementById('mediaList');
+      if (!append) {
+        mediaOffset = 0;
+        list.innerHTML = `<div class="text-muted text-center" style="padding:3rem; grid-column:1/-1;">Loading...</div>`;
+      }
+      try {
+        const { items, total } = await API.get(`/api/cms/media?limit=${MEDIA_LIMIT}&offset=${mediaOffset}`);
+        if (!append) allMedia = [];
+        allMedia = allMedia.concat(items);
+        document.getElementById('mediaCount').textContent = `${total} files`;
+
         const isImage = m => /jpeg|jpg|png|gif|webp|svg/.test(m.mime_type || '');
-        list.innerHTML = items.map(m => `
-          <div class="cms-media-item">
-            ${isImage(m) ? `<img src="${m.url_path}" alt="${App.escapeHtml(m.alt_text || '')}">` : `
-              <div style="display:flex; align-items:center; justify-content:center; height:100%; padding:8px;">
-                <span class="text-sm">${App.escapeHtml(m.original_name || m.filename)}</span>
-              </div>
-            `}
+        const fmt = (bytes) => bytes < 1024 ? `${bytes}B` : bytes < 1048576 ? `${Math.round(bytes/1024)}KB` : `${(bytes/1048576).toFixed(1)}MB`;
+
+        const html = allMedia.map(m => `
+          <div class="cms-media-item" data-id="${m.id}">
+            ${isImage(m)
+              ? `<img src="${App.escapeHtml(m.url_path)}" alt="${App.escapeHtml(m.alt_text || '')}" loading="lazy">`
+              : `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:4px;padding:8px;"><span style="font-size:2rem;">📄</span><span class="text-xs text-center" style="word-break:break-all;">${App.escapeHtml(m.original_name || m.filename)}</span></div>`
+            }
+            <div class="cms-media-item__label">${App.escapeHtml(m.original_name || m.filename)}${m.file_size ? ' · ' + fmt(m.file_size) : ''}</div>
             <div class="cms-media-item__overlay">
-              <button class="btn btn--ghost btn--sm" onclick="copyUrl('${m.url_path}')" title="Copy URL">📋</button>
-              <button class="btn btn--ghost btn--sm" style="color:#fff;" onclick="viewMedia(${m.id})" title="View">👁</button>
-              <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="deleteMedia(${m.id})" title="Delete">🗑</button>
+              <button class="btn btn--ghost btn--sm" style="color:#fff;" onclick="copyUrl('${App.escapeHtml(m.url_path)}')" title="Copy URL">📋</button>
+              <button class="btn btn--ghost btn--sm" style="color:#fff;" onclick="viewMedia(${m.id})" title="Details">👁</button>
+              <button class="btn btn--ghost btn--sm" style="color:#f87171;" onclick="deleteMedia(${m.id})" title="Delete">🗑</button>
             </div>
           </div>
         `).join('');
-      } catch (err) { list.innerHTML = `<div class="text-danger">Error</div>`; }
-    }
 
-    async function handleMediaUpload(input) {
-      const file = input.files[0];
-      if (!file) return;
-      const formData = new FormData();
-      formData.append('file', file);
-      try {
-        const res = await fetch('/api/cms/admin/media', {
-          method: 'POST',
-          headers: { 'Accept': 'application/json' },
-          body: formData,
-          credentials: 'include'
-        });
-        const data = await res.json();
-        if (data.url) {
-          App.toast(I18N.t('msg.uploaded'), 'success');
-          loadMedia();
-          loadStats();
+        if (!append) {
+          list.innerHTML = allMedia.length === 0
+            ? `<div class="text-muted text-center" style="grid-column:1/-1; padding:3rem;">No media yet. Upload some files.</div>`
+            : html;
         } else {
-          throw new Error(data.error || 'Upload failed');
+          list.insertAdjacentHTML('beforeend', html);
         }
-      } catch (err) { App.toast(err.message, 'error'); }
-      input.value = '';
+
+        const loadMoreBtn = document.getElementById('mediaLoadMore');
+        loadMoreBtn.style.display = (mediaOffset + MEDIA_LIMIT < total) ? '' : 'none';
+        mediaOffset += items.length;
+      } catch (err) {
+        if (!append) list.innerHTML = `<div class="text-danger" style="padding:2rem;">Error loading media</div>`;
+      }
     }
 
-    function copyUrl(url) {
-      navigator.clipboard.writeText(window.location.origin + url);
-      App.toast(I18N.t('msg.copied'), 'success');
+    function loadMoreMedia() {
+      loadMedia(true);
+    }
+
+    function copyUrl(urlPath) {
+      navigator.clipboard.writeText(window.location.origin + urlPath);
+      App.toast('URL copied to clipboard', 'success');
+    }
+
+    function viewMedia(id) {
+      const m = allMedia.find(x => x.id === id);
+      if (!m) return;
+      viewingMediaId = id;
+      const isImage = /jpeg|jpg|png|gif|webp|svg/.test(m.mime_type || '');
+      const fmt = (bytes) => bytes < 1048576 ? `${Math.round(bytes/1024)} KB` : `${(bytes/1048576).toFixed(1)} MB`;
+
+      document.getElementById('mediaViewPreview').innerHTML = isImage
+        ? `<div class="media-view__img-wrap"><img src="${App.escapeHtml(m.url_path)}" alt="${App.escapeHtml(m.alt_text || '')}"></div>`
+        : `<div class="media-view__doc">📄</div>`;
+
+      document.getElementById('mediaViewMeta').innerHTML =
+        `<strong>${App.escapeHtml(m.original_name || m.filename)}</strong>` +
+        (m.file_size ? ` · ${fmt(m.file_size)}` : '') +
+        ` · ${App.escapeHtml(m.mime_type || '')}` +
+        ` · Uploaded ${App.formatDate(m.created_at)}`;
+
+      document.getElementById('mediaAltText').value = m.alt_text || '';
+      document.getElementById('mediaCaption').value = m.caption || '';
+      document.getElementById('mediaUrlDisplay').value = window.location.origin + m.url_path;
+      App.showModal('mediaViewModal');
+    }
+
+    function copyMediaUrl() {
+      const input = document.getElementById('mediaUrlDisplay');
+      navigator.clipboard.writeText(input.value);
+      App.toast('URL copied', 'success');
+    }
+
+    async function saveMediaMeta() {
+      try {
+        await API.put(`/api/cms/admin/media/${viewingMediaId}`, {
+          alt_text: document.getElementById('mediaAltText').value,
+          caption: document.getElementById('mediaCaption').value
+        });
+        const m = allMedia.find(x => x.id === viewingMediaId);
+        if (m) {
+          m.alt_text = document.getElementById('mediaAltText').value;
+          m.caption = document.getElementById('mediaCaption').value;
+        }
+        App.toast('Media updated', 'success');
+        App.hideModal('mediaViewModal');
+      } catch (err) { App.toast(err.message, 'error'); }
     }
 
     async function deleteMedia(id) {
-      if (!App.confirm(I18N.t('cms.confirmDelMedia'))) return;
+      if (!App.confirm('Delete this file permanently?')) return;
       try {
         await API.delete(`/api/cms/admin/media/${id}`);
-        App.toast(I18N.t('msg.mediaDeleted'), 'success');
+        App.toast('File deleted', 'success');
+        allMedia = allMedia.filter(m => m.id !== id);
+        mediaOffset = allMedia.length;
         loadMedia();
         loadStats();
       } catch (err) { App.toast(err.message, 'error'); }
     }
 
+    async function deleteMediaFromModal() {
+      App.hideModal('mediaViewModal');
+      await deleteMedia(viewingMediaId);
+    }
+
+    // ── NAVIGATION ────────────────────────────────────────────
     async function loadNavigation() {
       const list = document.getElementById('navList');
       try {
-        const navs = await API.get('/api/cms/admin/navigation');
-        if (navs.length === 0) {
-          list.innerHTML = `<div class="text-muted text-center" data-i18n="cms.noNav">No navigation items</div>`;
-          return;
-        }
-        window.__cachedNavs = navs;
-        list.innerHTML = navs.map(n => `
-          <li onclick="openNavModal(${n.id})" style="cursor:pointer;">
+        window.__cachedNavs = await API.get('/api/cms/admin/navigation');
+        renderNavList(window.__cachedNavs);
+      } catch (err) {
+        list.innerHTML = `<div class="text-danger">Error loading navigation</div>`;
+      }
+    }
+
+    function renderNavList(navs) {
+      const list = document.getElementById('navList');
+      if (navs.length === 0) {
+        list.innerHTML = `<li style="border:none; background:none; color:var(--text-muted); justify-content:center;">No navigation items yet</li>`;
+        return;
+      }
+      list.innerHTML = navs.map((n, i) => {
+        const parentName = n.parent_id ? navs.find(x => x.id === n.parent_id)?.label : null;
+        return `
+          <li draggable="true" data-id="${n.id}" data-index="${i}"
+              ondragstart="navDragStart(event,${i})"
+              ondragover="navDragOver(event)"
+              ondrop="navDrop(event,${i})"
+              ondragend="navDragEnd()"
+              onclick="openNavModal(${n.id})">
             <span class="nav-handle">☰</span>
-            <span>${App.escapeHtml(n.icon || '')} ${App.escapeHtml(n.label)}</span>
+            <span class="nav-status-dot ${n.is_active ? 'nav-status-dot--active' : 'nav-status-dot--inactive'}" title="${n.is_active ? 'Active' : 'Inactive'}"></span>
+            <span>${App.escapeHtml(n.icon || '')} <strong>${App.escapeHtml(n.label)}</strong>${parentName ? ` <span class="text-xs text-muted">↳ ${App.escapeHtml(parentName)}</span>` : ''}</span>
             <span class="text-muted text-sm" style="margin-left:auto;">${App.escapeHtml(n.url)}</span>
-          </li>
-        `).join('');
-      } catch (err) { list.innerHTML = `<div class="text-danger">Error</div>`; }
+            ${n.target_blank ? '<span class="text-xs text-muted" style="flex-shrink:0;">↗ new tab</span>' : ''}
+          </li>`;
+      }).join('');
+    }
+
+    function navDragStart(e, idx) {
+      dragSrcNav = idx;
+      e.currentTarget.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    }
+    function navDragOver(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      document.querySelectorAll('#navList li').forEach(li => li.classList.remove('drag-over'));
+      e.currentTarget.classList.add('drag-over');
+    }
+    function navDrop(e, toIdx) {
+      e.preventDefault();
+      if (dragSrcNav === null || dragSrcNav === toIdx) return;
+      const navs = window.__cachedNavs;
+      const moved = navs.splice(dragSrcNav, 1)[0];
+      navs.splice(toIdx, 0, moved);
+      navs.forEach((n, i) => { n.position = i + 1; });
+      window.__cachedNavs = navs;
+      renderNavList(navs);
+      saveNavOrder(navs);
+    }
+    function navDragEnd() {
+      dragSrcNav = null;
+      document.querySelectorAll('#navList li').forEach(li => {
+        li.classList.remove('dragging', 'drag-over');
+      });
+    }
+
+    async function saveNavOrder(navs) {
+      try {
+        await Promise.all(navs.map(n =>
+          API.put(`/api/cms/admin/navigation/${n.id}`, {
+            label: n.label, url: n.url, icon: n.icon || '',
+            position: n.position, is_active: n.is_active !== 0,
+            target_blank: n.target_blank === 1, parent_id: n.parent_id || null
+          })
+        ));
+        App.toast('Order saved', 'success');
+      } catch (err) { App.toast('Failed to save order: ' + err.message, 'error'); }
     }
 
     function openNavModal(id = null) {
       editingNavId = id;
-      document.getElementById('navModalTitle').textContent = id ? I18N.t('cms.editNav') : I18N.t('cms.newNav');
+      document.getElementById('navModalTitle').textContent = id ? 'Edit Navigation' : 'New Navigation';
       document.getElementById('navDeleteBtn').style.display = id ? '' : 'none';
-      
+
+      // Populate parent select
+      const sel = document.getElementById('navParent');
+      sel.innerHTML = '<option value="">— None —</option>';
+      (window.__cachedNavs || []).filter(n => n.id !== id).forEach(n => {
+        sel.innerHTML += `<option value="${n.id}">${App.escapeHtml(n.label)}</option>`;
+      });
+
       if (!id) {
         document.getElementById('navLabel').value = '';
         document.getElementById('navUrl').value = '';
         document.getElementById('navIcon').value = '';
-        document.getElementById('navPosition').value = '0';
+        document.getElementById('navPosition').value = (window.__cachedNavs?.length || 0) + 1;
         document.getElementById('navParent').value = '';
         document.getElementById('navActive').checked = true;
         document.getElementById('navBlank').checked = false;
       } else {
-        const nav = window.__cachedNavs?.find(n => n.id === id);
+        const nav = (window.__cachedNavs || []).find(n => n.id === id);
         if (nav) {
           document.getElementById('navLabel').value = nav.label || '';
           document.getElementById('navUrl').value = nav.url || '';
@@ -520,16 +906,16 @@
         target_blank: document.getElementById('navBlank').checked
       };
       if (!data.label || !data.url) {
-        App.toast(I18N.t('msg.required'), 'error');
+        App.toast('Label and URL are required', 'error');
         return;
       }
       try {
         if (editingNavId) {
           await API.put(`/api/cms/admin/navigation/${editingNavId}`, data);
-          App.toast(I18N.t('msg.navUpdated'), 'success');
+          App.toast('Navigation item updated', 'success');
         } else {
           await API.post('/api/cms/admin/navigation', data);
-          App.toast(I18N.t('msg.navCreated'), 'success');
+          App.toast('Navigation item created', 'success');
         }
         App.hideModal('navModal');
         loadNavigation();
@@ -538,94 +924,92 @@
     }
 
     async function deleteNav() {
-      if (!App.confirm(I18N.t('cms.confirmDelNav'))) return;
+      if (!App.confirm('Delete this navigation item?')) return;
       try {
         await API.delete(`/api/cms/admin/navigation/${editingNavId}`);
-        App.toast(I18N.t('msg.navDeleted'), 'success');
+        App.toast('Navigation item deleted', 'success');
         App.hideModal('navModal');
         loadNavigation();
         loadStats();
       } catch (err) { App.toast(err.message, 'error'); }
     }
 
+    // ── SETTINGS ─────────────────────────────────────────────
+    const SETTINGS_MAP = {
+      'cms_site_name':            'site_name',
+      'cms_site_tagline':         'site_tagline',
+      'cms_hero_title':           'hero_title',
+      'cms_hero_subtitle':        'hero_subtitle',
+      'cms_footer_text':          'footer_text',
+      'cms_announcement_banner':  'announcement_banner',
+      'cms_event_date':           'event_date',
+      'cms_event_venue':          'event_venue',
+      'cms_registration_deadline':'registration_deadline',
+      'cms_max_booths':           'max_booths',
+      'cms_contact_email':        'contact_email',
+      'cms_contact_phone':        'contact_phone',
+      'cms_social_facebook':      'social_facebook',
+      'cms_social_linkedin':      'social_linkedin',
+      'cms_social_instagram':     'social_instagram',
+      'cms_social_twitter':       'social_twitter',
+      'cms_social_youtube':       'social_youtube',
+      'cms_logo_url':             'logo_url',
+      'cms_favicon_url':          'favicon_url',
+      'cms_primary_color':        'primary_color'
+    };
+
     async function loadSettings() {
       try {
         const s = await API.get('/api/cms/settings');
-        const mapping = {
-          'cms_site_name': 'site_name',
-          'cms_site_tagline': 'site_tagline',
-          'cms_event_date': 'event_date',
-          'cms_event_venue': 'event_venue',
-          'cms_registration_deadline': 'registration_deadline',
-          'cms_contact_email': 'contact_email',
-          'cms_contact_phone': 'contact_phone',
-          'cms_social_facebook': 'social_facebook',
-          'cms_social_linkedin': 'social_linkedin',
-          'cms_logo_url': 'logo_url',
-          'cms_favicon_url': 'favicon_url'
-        };
-        for (const [elId, key] of Object.entries(mapping)) {
+        for (const [elId, key] of Object.entries(SETTINGS_MAP)) {
           const el = document.getElementById(elId);
           if (el) el.value = s[key] || '';
         }
+        const colorEl = document.getElementById('cms_primary_color');
+        const pickerEl = document.getElementById('cms_primary_color_picker');
+        if (colorEl?.value && pickerEl) pickerEl.value = colorEl.value;
+        settingsDirty = false;
+        document.getElementById('dirtyBadge').classList.remove('visible');
       } catch (err) { console.error(err); }
     }
 
+    function updateColorPicker() {
+      const val = document.getElementById('cms_primary_color').value;
+      const picker = document.getElementById('cms_primary_color_picker');
+      if (/^#[0-9a-f]{6}$/i.test(val)) picker.value = val;
+    }
+
+    function markDirty() {
+      settingsDirty = true;
+      document.getElementById('dirtyBadge').classList.add('visible');
+    }
+
     async function saveSettings() {
-      const updates = {
-        site_name: document.getElementById('cms_site_name').value,
-        site_tagline: document.getElementById('cms_site_tagline').value,
-        event_date: document.getElementById('cms_event_date').value,
-        event_venue: document.getElementById('cms_event_venue').value,
-        registration_deadline: document.getElementById('cms_registration_deadline').value,
-        contact_email: document.getElementById('cms_contact_email').value,
-        contact_phone: document.getElementById('cms_contact_phone').value,
-        social_facebook: document.getElementById('cms_social_facebook').value,
-        social_linkedin: document.getElementById('cms_social_linkedin').value,
-        logo_url: document.getElementById('cms_logo_url').value,
-        favicon_url: document.getElementById('cms_favicon_url').value
-      };
+      const updates = {};
+      for (const [elId, key] of Object.entries(SETTINGS_MAP)) {
+        const el = document.getElementById(elId);
+        if (el) updates[key] = el.value;
+      }
       try {
         await API.put('/api/cms/admin/settings', updates);
-        App.toast(I18N.t('msg.cmsSaved'), 'success');
+        App.toast('Settings saved', 'success');
+        settingsDirty = false;
+        document.getElementById('dirtyBadge').classList.remove('visible');
+        loadStats();
       } catch (err) { App.toast(err.message, 'error'); }
     }
 
-    async function openPageModal(id = null) {
-      editingPageId = id;
-      document.getElementById('pageModalTitle').textContent = id ? I18N.t('cms.editPage') : I18N.t('cms.newPage');
-      document.getElementById('pageDeleteBtn').style.display = id ? '' : 'none';
-      
-      if (!id) {
-        document.getElementById('pageSlug').value = '';
-        document.getElementById('pageTitle').value = '';
-        document.getElementById('pageContent').value = '';
-        document.getElementById('pageMetaTitle').value = '';
-        document.getElementById('pageMetaDesc').value = '';
-        document.getElementById('pageSortOrder').value = '0';
-        document.getElementById('pageActive').checked = true;
-      } else {
-        // Fetch/refresh cache if editing
-        try {
-          window.__cachedPages = await API.get('/api/cms/admin/pages');
-        } catch (e) {
-          console.error('Failed to fetch pages for editing:', e);
-        }
+    // Warn on unsaved settings
+    window.addEventListener('beforeunload', (e) => {
+      if (settingsDirty) { e.preventDefault(); e.returnValue = ''; }
+    });
 
-        const page = window.__cachedPages?.find(p => p.id === id);
-        if (page) {
-          document.getElementById('pageSlug').value = page.slug || '';
-          document.getElementById('pageTitle').value = page.title || '';
-          document.getElementById('pageContent').value = page.content || '';
-          document.getElementById('pageMetaTitle').value = page.meta_title || '';
-          document.getElementById('pageMetaDesc').value = page.meta_desc || '';
-          document.getElementById('pageSortOrder').value = page.sort_order || 0;
-          document.getElementById('pageActive').checked = page.is_active !== 0;
-        }
-      }
-      App.showModal('pageModal');
-    }
-
+    // Close modals on overlay click
+    ['pageModal','mediaViewModal','navModal'].forEach(id => {
+      document.getElementById(id)?.addEventListener('click', function(e) {
+        if (e.target === this) App.hideModal(id);
+      });
+    });
 
     init();
   </script>

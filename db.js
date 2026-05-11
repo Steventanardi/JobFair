@@ -346,15 +346,24 @@ const initDB = async () => {
       await db.rawQuery(`INSERT INTO cms_settings (key, value, group_name) VALUES
         ('site_name', 'NQU Job Fair', 'general'),
         ('site_tagline', 'Connecting talent with opportunity', 'general'),
+        ('hero_title', 'National Quemoy University Job Fair', 'general'),
+        ('hero_subtitle', 'Connecting top employers with exceptional NQU talent', 'general'),
+        ('footer_text', '© National Quemoy University Career Development Center', 'general'),
+        ('announcement_banner', '', 'general'),
         ('contact_email', 'career@mail.nqu.edu.tw', 'contact'),
-        ('contact_phone', '+886-82-312- ext. ', 'contact'),
+        ('contact_phone', '+886-82-312000', 'contact'),
         ('event_date', '', 'event'),
         ('event_venue', 'NQU Student Activity Center', 'event'),
         ('registration_deadline', '', 'event'),
+        ('max_booths', '', 'event'),
         ('social_facebook', '', 'social'),
         ('social_linkedin', '', 'social'),
+        ('social_instagram', '', 'social'),
+        ('social_twitter', '', 'social'),
+        ('social_youtube', '', 'social'),
         ('logo_url', '', 'branding'),
-        ('favicon_url', '', 'branding')
+        ('favicon_url', '', 'branding'),
+        ('primary_color', '', 'branding')
       `);
       console.log('Default CMS settings seeded.');
     }
