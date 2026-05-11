@@ -29,13 +29,18 @@ function saveSession(req) {
 
 // POST /api/auth/employer/register
 router.post('/employer/register', authLimiter, async (req, res) => {
-  const { email, password, company_name } = req.body;
+  const email = (req.body.email || '').trim().toLowerCase();
+  const password = req.body.password || '';
+  const company_name = (req.body.company_name || '').trim();
 
   if (!email || !password || !company_name) {
     return res.status(400).json({ error: 'All fields are required' });
   }
   if (!EMAIL_RE.test(email)) {
     return res.status(400).json({ error: 'Invalid email format' });
+  }
+  if (company_name.length > 200) {
+    return res.status(400).json({ error: 'Company name must be 200 characters or fewer' });
   }
   if (password.length < 6) {
     return res.status(400).json({ error: 'Password must be at least 6 characters' });
@@ -68,14 +73,18 @@ router.post('/employer/register', authLimiter, async (req, res) => {
 
 // POST /api/auth/employer/login
 router.post('/employer/login', authLimiter, async (req, res) => {
-  const { email, password } = req.body;
+  const email = (req.body.email || '').trim().toLowerCase();
+  const password = req.body.password || '';
 
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required' });
   }
 
   try {
-    const { rows } = await db.query('SELECT * FROM employers WHERE email = $1', [email]);
+    const { rows } = await db.query(
+      'SELECT id, email, password_hash, company_name FROM employers WHERE email = $1',
+      [email]
+    );
     const employer = rows[0];
 
     if (!employer || !(await bcrypt.compare(password, employer.password_hash))) {
@@ -102,14 +111,18 @@ router.post('/employer/login', authLimiter, async (req, res) => {
 
 // POST /api/auth/admin/login
 router.post('/admin/login', authLimiter, async (req, res) => {
-  const { username, password } = req.body;
+  const username = (req.body.username || '').trim();
+  const password = req.body.password || '';
 
   if (!username || !password) {
     return res.status(400).json({ error: 'Username and password are required' });
   }
 
   try {
-    const { rows } = await db.query('SELECT * FROM admins WHERE username = $1', [username]);
+    const { rows } = await db.query(
+      'SELECT id, username, password_hash FROM admins WHERE username = $1',
+      [username]
+    );
     const admin = rows[0];
 
     if (!admin || !(await bcrypt.compare(password, admin.password_hash))) {

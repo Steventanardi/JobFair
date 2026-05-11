@@ -335,15 +335,19 @@ router.delete('/admin/navigation/:id', requireAdmin, async (req, res) => {
 // GET /api/cms/admin/stats - Admin: Get CMS stats
 router.get('/admin/stats', requireAdmin, async (req, res) => {
   try {
-    const { rows: pageRows } = await db.query('SELECT COUNT(*) as cnt FROM cms_pages');
-    const { rows: mediaRows } = await db.query('SELECT COUNT(*) as cnt FROM cms_media');
-    const { rows: navRows } = await db.query('SELECT COUNT(*) as cnt FROM cms_navigation');
-    const { rows: settingsRows } = await db.query('SELECT COUNT(*) as cnt FROM cms_settings');
+    const { rows } = await db.query(`
+      SELECT
+        (SELECT COUNT(*) FROM cms_pages)      AS pages,
+        (SELECT COUNT(*) FROM cms_media)      AS media,
+        (SELECT COUNT(*) FROM cms_navigation) AS navigation,
+        (SELECT COUNT(*) FROM cms_settings)   AS settings
+    `);
+    const r = rows[0];
     res.json({
-      pages: parseInt(pageRows[0].cnt),
-      media: parseInt(mediaRows[0].cnt),
-      navigation: parseInt(navRows[0].cnt),
-      settings: parseInt(settingsRows[0].cnt)
+      pages:      parseInt(r.pages),
+      media:      parseInt(r.media),
+      navigation: parseInt(r.navigation),
+      settings:   parseInt(r.settings)
     });
   } catch (err) {
     console.error(err);

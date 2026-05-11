@@ -23,8 +23,15 @@ app.set('trust proxy', 1);
 // ── Middleware ──────────────────────────────────────────────
 app.use(helmet({ contentSecurityPolicy: false })); // CSP disabled — inline scripts used throughout
 app.use(compression());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+
+if (!process.env.SESSION_SECRET && process.env.NODE_ENV === 'production') {
+  console.error('FATAL: SESSION_SECRET env var is required in production.');
+  process.exit(1);
+} else if (!process.env.SESSION_SECRET) {
+  console.warn('WARNING: SESSION_SECRET not set — sessions will reset on restart.');
+}
 
 app.use(session({
   store: new pgSession({
@@ -32,16 +39,12 @@ app.use(session({
     tableName: 'session',
     createTableIfMissing: true
   }),
-  secret: (() => {
-    if (!process.env.SESSION_SECRET) {
-      console.warn('WARNING: SESSION_SECRET env var not set — sessions will be invalidated on restart. Set it in Vercel env vars.');
-    }
-    return process.env.SESSION_SECRET || 'nqu-jobfair-fallback-secret-change-me';
-  })(),
+  name: 'nqu_sid',
+  secret: process.env.SESSION_SECRET || 'nqu-jobfair-fallback-secret-change-me',
   resave: false,
   saveUninitialized: false,
   cookie: {
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    maxAge: 24 * 60 * 60 * 1000,
     httpOnly: true,
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production'

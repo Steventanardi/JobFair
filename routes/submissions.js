@@ -7,6 +7,22 @@ const { requireEmployer } = require('../middleware/auth');
 
 const router = express.Router();
 
+// Submission list columns — excludes logo_path (base64, up to 4.5 MB per row)
+const SUB_LIST_COLS = `
+  id, employer_id, company_name, industry, contact_person, contact_email,
+  contact_phone, company_intro, job_positions, requirements, benefits,
+  activity_category, is_previous_participant, booth_signboard_name,
+  ceo_name, tax_id, main_products, internship_cooperation,
+  target_departments, mailing_address, attendee_main, attendee_count,
+  lunch_box_non_veg, lunch_box_veg, has_presentation_need,
+  has_shuttle_need, shuttle_details, raffle_prizes,
+  parking_spaces, other_requirements, group_type, establishment_date,
+  status, admin_notes, booth_number, submitted_at, reviewed_at
+`;
+
+const MAX_SHORT = 200;   // company name, contact fields
+const MAX_LONG  = 5000;  // descriptions, requirements, etc.
+
 // Reduced to ~3.5MB so that base64 encoding (~33% inflation) stays under 5MB stored in DB
 const storage = multer.memoryStorage();
 
@@ -52,11 +68,25 @@ router.post('/', requireEmployer, submitLimiter, upload.single('logo'), async (r
     parking_spaces, other_requirements, group_type, establishment_date
   } = req.body;
 
-  const resolvedContactPerson = contact_person || attendee_main || ceo_name || employer.company_name;
-  const resolvedContactEmail = contact_email || employer.email;
+  const trimmedCompanyName = (company_name || '').trim();
+  const trimmedContactPerson = (contact_person || '').trim();
+  const resolvedContactPerson = trimmedContactPerson || (attendee_main || '').trim() || (ceo_name || '').trim() || employer.company_name;
+  const resolvedContactEmail = (contact_email || '').trim().toLowerCase() || employer.email;
 
-  if (!company_name) {
+  if (!trimmedCompanyName) {
     return res.status(400).json({ error: 'Company name is required' });
+  }
+  if (trimmedCompanyName.length > MAX_SHORT) {
+    return res.status(400).json({ error: `Company name must be ${MAX_SHORT} characters or fewer` });
+  }
+  if ((company_intro || '').length > MAX_LONG) {
+    return res.status(400).json({ error: `Company introduction must be ${MAX_LONG} characters or fewer` });
+  }
+  if ((job_positions || '').length > MAX_LONG) {
+    return res.status(400).json({ error: `Job positions must be ${MAX_LONG} characters or fewer` });
+  }
+  if ((requirements || '').length > MAX_LONG) {
+    return res.status(400).json({ error: `Requirements must be ${MAX_LONG} characters or fewer` });
   }
 
   const nonVeg = parsePositiveInt(lunch_box_non_veg) ?? 0;
@@ -118,11 +148,11 @@ router.post('/', requireEmployer, submitLimiter, upload.single('logo'), async (r
   }
 });
 
-// GET /api/submissions/mine — get employer's own submissions
+// GET /api/submissions/mine — get employer's own submissions (logo excluded for bandwidth)
 router.get('/mine', requireEmployer, async (req, res) => {
   try {
     const { rows } = await db.query(
-      'SELECT * FROM submissions WHERE employer_id = $1 ORDER BY submitted_at DESC',
+      `SELECT ${SUB_LIST_COLS} FROM submissions WHERE employer_id = $1 ORDER BY submitted_at DESC`,
       [req.session.user.id]
     );
     res.json(rows);
@@ -246,7 +276,7 @@ router.put('/:id', requireEmployer, submitLimiter, upload.single('logo'), async 
 router.delete('/:id', requireEmployer, async (req, res) => {
   try {
     const { rows } = await db.query(
-      'SELECT * FROM submissions WHERE id = $1 AND employer_id = $2',
+      'SELECT id, status FROM submissions WHERE id = $1 AND employer_id = $2',
       [req.params.id, req.session.user.id]
     );
 

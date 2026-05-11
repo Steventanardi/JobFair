@@ -6,6 +6,20 @@ const { requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
+// Submission columns excluding logo_path (too large for list views)
+const SUB_LIST_COLS = `
+  s.id, s.employer_id, s.company_name, s.industry, s.contact_person, s.contact_email,
+  s.contact_phone, s.company_intro, s.job_positions, s.requirements, s.benefits,
+  s.activity_category, s.is_previous_participant, s.booth_signboard_name,
+  s.ceo_name, s.tax_id, s.main_products, s.internship_cooperation,
+  s.target_departments, s.mailing_address, s.attendee_main, s.attendee_count,
+  s.lunch_box_non_veg, s.lunch_box_veg, s.has_presentation_need,
+  s.has_shuttle_need, s.shuttle_details, s.raffle_prizes,
+  s.parking_spaces, s.other_requirements, s.group_type, s.establishment_date,
+  s.status, s.admin_notes, s.booth_number, s.submitted_at, s.reviewed_at,
+  e.email as employer_email
+`;
+
 const adminLimiter = rateLimit({
   windowMs: 5 * 60 * 1000,
   max: 120,
@@ -25,8 +39,7 @@ router.get('/submissions', async (req, res) => {
   const offset = Math.max(parseInt(req.query.offset) || 0, 0);
 
   let sql = `
-    SELECT
-      s.*, e.email as employer_email
+    SELECT ${SUB_LIST_COLS}
     FROM submissions s
     LEFT JOIN employers e ON s.employer_id = e.id
   `;
@@ -244,15 +257,31 @@ router.delete('/submissions/:id', async (req, res) => {
   }
 });
 
-// GET /api/admin/employers — list all employer accounts
+// GET /api/admin/employers — list all employer accounts (with optional search)
 router.get('/employers', async (req, res) => {
+  const search = (req.query.search || '').trim();
+  const limit = Math.min(parseInt(req.query.limit) || 100, 500);
+  const offset = Math.max(parseInt(req.query.offset) || 0, 0);
+
   try {
+    const params = [];
+    let where = '';
+    if (search) {
+      where = `WHERE (e.email ILIKE $1 OR e.company_name ILIKE $1)`;
+      params.push(`%${search}%`);
+    }
+    params.push(limit, offset);
+    const limitIdx = params.length - 1;
+    const offsetIdx = params.length;
+
     const { rows } = await db.query(`
-      SELECT e.*, 
+      SELECT e.id, e.email, e.company_name, e.created_at,
         (SELECT COUNT(*) FROM submissions s WHERE s.employer_id = e.id) as submission_count
-      FROM employers e 
+      FROM employers e
+      ${where}
       ORDER BY e.created_at DESC
-    `);
+      LIMIT $${limitIdx} OFFSET $${offsetIdx}
+    `, params);
     res.json(rows);
   } catch (err) {
     console.error(err);
@@ -413,17 +442,52 @@ router.get('/analytics', async (req, res) => {
   }
 });
 
-// GET /api/admin/logs — recent audit logs
+// GET /api/admin/logs — audit logs with pagination
 router.get('/logs', async (req, res) => {
+  const limit = Math.min(parseInt(req.query.limit) || 50, 200);
+  const offset = Math.max(parseInt(req.query.offset) || 0, 0);
   try {
     const { rows } = await db.query(`
       SELECT l.*, a.username as admin_name
       FROM admin_logs l
       LEFT JOIN admins a ON l.admin_id = a.id
       ORDER BY l.created_at DESC
-      LIMIT 50
-    `);
+      LIMIT $1 OFFSET $2
+    `, [limit, offset]);
     res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// PATCH /api/admin/me/password — admin changes their own password
+router.patch('/me/password', async (req, res) => {
+  const { current_password, new_password } = req.body;
+
+  if (!current_password || !new_password) {
+    return res.status(400).json({ error: 'current_password and new_password are required' });
+  }
+  if (new_password.length < 6) {
+    return res.status(400).json({ error: 'New password must be at least 6 characters' });
+  }
+
+  try {
+    const { rows } = await db.query(
+      'SELECT id, password_hash FROM admins WHERE id = $1',
+      [req.session.user.id]
+    );
+    if (rows.length === 0) return res.status(404).json({ error: 'Admin not found' });
+
+    if (!(await bcrypt.compare(current_password, rows[0].password_hash))) {
+      return res.status(401).json({ error: 'Current password is incorrect' });
+    }
+
+    const hash = await bcrypt.hash(new_password, 10);
+    await db.query('UPDATE admins SET password_hash = $1 WHERE id = $2', [hash, req.session.user.id]);
+    await logAction(req.session.user.id, 'Changed own password', 'admin', req.session.user.id);
+
+    res.json({ message: 'Password updated' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });

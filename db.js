@@ -298,7 +298,7 @@ const initDB = async () => {
     const { rows: admins } = await db.rawQuery('SELECT id FROM admins WHERE username = $1', ['admin']);
     if (admins.length === 0) {
       const adminPassword = process.env.ADMIN_PASSWORD || 'nqu2025';
-      const hash = bcrypt.hashSync(adminPassword, 10);
+      const hash = await bcrypt.hash(adminPassword, 10);
       await db.rawQuery('INSERT INTO admins (username, password_hash) VALUES ($1, $2)', ['admin', hash]);
       console.log(`Default admin account created ${process.env.ADMIN_PASSWORD ? 'with ADMIN_PASSWORD env var' : 'with default password nqu2025'}.`);
     }
