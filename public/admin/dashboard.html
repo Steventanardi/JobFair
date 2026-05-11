@@ -104,7 +104,14 @@
               <button class="btn btn--success btn--sm" onclick="bulkReview('approved')" data-i18n="adm.bulkApprove">Approve Selected</button>
               <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="bulkReview('rejected')" data-i18n="adm.bulkReject">Reject Selected</button>
             </div>
-            <button class="btn btn--outline" onclick="window.location.href='/api/admin/submissions/export'">📥 Export CSV</button>
+            <div class="export-dropdown" style="position:relative;">
+              <button class="btn btn--outline" onclick="toggleExportMenu(event)">📥 Export ▾</button>
+              <div id="exportMenu" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--color-bg-alt);border:1px solid var(--color-border);border-radius:var(--radius-md);box-shadow:0 4px 16px rgba(0,0,0,0.15);min-width:140px;z-index:100;">
+                <button class="export-menu-item" onclick="exportData('csv')">📄 CSV</button>
+                <button class="export-menu-item" onclick="exportData('excel')">📊 Excel</button>
+                <button class="export-menu-item" onclick="exportData('pdf')">📑 PDF</button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -437,7 +444,7 @@
                 <button class="btn btn--success btn--sm" onclick="openReviewModal(${s.id})" title="Approve">✓ Approve</button>
                 <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="openReviewModalReject(${s.id})" title="Reject">✕ Reject</button>
               ` : ''}
-              ${s.status === 'approved' ? `<button class="btn btn--outline btn--sm" onclick="openBoothModal(${s.id}, ${JSON.stringify(s.booth_number || '')})">🎪 Booth</button>` : ''}
+              ${s.status === 'approved' ? `<button class="btn btn--outline btn--sm" data-id="${s.id}" data-booth="${App.escapeHtml(s.booth_number || '')}" onclick="openBoothModal(this.dataset.id, this.dataset.booth)">🎪 Booth</button>` : ''}
               <button class="btn btn--ghost btn--sm" onclick="viewDetail(${s.id})">👁 View</button>
               <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="deleteSubmission(${s.id})">🗑</button>
             </div></td>
@@ -888,7 +895,103 @@
       } catch (err) { App.toast(err.message, 'error'); }
     }
 
+    // ── EXPORT ──
+    function toggleExportMenu(e) {
+      e.stopPropagation();
+      const menu = document.getElementById('exportMenu');
+      menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+    }
+    document.addEventListener('click', () => {
+      const menu = document.getElementById('exportMenu');
+      if (menu) menu.style.display = 'none';
+    });
+
+    async function exportData(format) {
+      document.getElementById('exportMenu').style.display = 'none';
+      if (format === 'csv') {
+        window.location.href = '/api/admin/submissions/export';
+        return;
+      }
+
+      App.toast('Preparing export...', 'info');
+      let data;
+      try {
+        data = await API.get('/api/admin/submissions?limit=2000&offset=0');
+      } catch (err) {
+        App.toast('Failed to load data: ' + err.message, 'error');
+        return;
+      }
+
+      if (format === 'excel') {
+        exportExcel(data.submissions || data);
+      } else if (format === 'pdf') {
+        exportPDF(data.submissions || data);
+      }
+    }
+
+    function exportExcel(rows) {
+      const cols = [
+        'id','company_name','industry','contact_person','contact_email','contact_phone',
+        'activity_category','status','booth_number','attendee_count','lunch_box_non_veg',
+        'lunch_box_veg','has_presentation_need','has_shuttle_need','parking_spaces','submitted_at'
+      ];
+      const header = cols.join('\t');
+      const body = rows.map(r => cols.map(c => {
+        const v = r[c] == null ? '' : String(r[c]);
+        return v.includes('\t') || v.includes('\n') ? `"${v.replace(/"/g,'""')}"` : v;
+      }).join('\t')).join('\n');
+      const tsv = header + '\n' + body;
+      const blob = new Blob(['﻿' + tsv], { type: 'application/vnd.ms-excel;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `submissions_${new Date().toISOString().slice(0,10)}.xls`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function exportPDF(rows) {
+      const cols = ['ID','Company','Industry','Contact','Email','Category','Status','Booth','Attendees','Submitted'];
+      const keys = ['id','company_name','industry','contact_person','contact_email','activity_category','status','booth_number','attendee_count','submitted_at'];
+
+      const style = `
+        <style>
+          body { font-family: Arial, sans-serif; font-size: 11px; }
+          h2 { text-align:center; margin-bottom:16px; }
+          table { width:100%; border-collapse:collapse; }
+          th { background:#1a1a2e; color:#fff; padding:6px 4px; text-align:left; }
+          td { padding:5px 4px; border-bottom:1px solid #e5e7eb; }
+          tr:nth-child(even) td { background:#f9fafb; }
+          @media print { body { -webkit-print-color-adjust:exact; } }
+        </style>`;
+
+      const thead = `<tr>${cols.map(c => `<th>${c}</th>`).join('')}</tr>`;
+      const tbody = rows.map(r => `<tr>${keys.map(k => {
+        const v = r[k] == null ? '—' : String(r[k]);
+        return `<td>${v.replace(/</g,'&lt;')}</td>`;
+      }).join('')}</tr>`).join('');
+
+      const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">${style}</head><body>
+        <h2>NQU Job Fair — Submissions Export (${new Date().toLocaleDateString()})</h2>
+        <table><thead>${thead}</thead><tbody>${tbody}</tbody></table>
+      </body></html>`;
+
+      const win = window.open('', '_blank');
+      win.document.write(html);
+      win.document.close();
+      win.onload = () => { win.focus(); win.print(); };
+    }
+
     init();
   </script>
+  <style>
+    .export-menu-item {
+      display: block; width: 100%; text-align: left;
+      padding: 8px 16px; background: none; border: none;
+      cursor: pointer; font-size: var(--font-sm);
+      color: var(--color-text); white-space: nowrap;
+    }
+    .export-menu-item:hover { background: rgba(0,0,0,0.06); }
+  </style>
 </body>
 </html>
