@@ -609,8 +609,8 @@
             <td data-label="Subs" class="text-center">${e.submission_count}</td>
             <td data-label="Reg'd" class="text-xs text-muted">${App.formatDate(e.created_at)}</td>
             <td data-label=""><div class="table-actions">
-              <button class="btn btn--outline btn--sm" onclick="openResetPwModal(${e.id}, ${JSON.stringify(e.company_name)}, ${JSON.stringify(e.email)})">🔑 ${resetLabel}</button>
-              <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="deleteEmployer(${e.id}, ${JSON.stringify(e.company_name)})">🗑 ${delLabel}</button>
+              <button class="btn btn--outline btn--sm" data-id="${e.id}" data-name="${App.escapeHtml(e.company_name)}" data-email="${App.escapeHtml(e.email)}" onclick="openResetPwModal(this.dataset.id, this.dataset.name, this.dataset.email)">🔑 ${resetLabel}</button>
+              <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" data-id="${e.id}" data-name="${App.escapeHtml(e.company_name)}" onclick="deleteEmployer(this.dataset.id, this.dataset.name)">🗑 ${delLabel}</button>
             </div></td>
           </tr>
         `).join('');
