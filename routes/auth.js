@@ -142,6 +142,32 @@ router.post('/admin/login', authLimiter, async (req, res) => {
   }
 });
 
+// PATCH /api/auth/employer/change-password
+router.patch('/employer/change-password', authLimiter, async (req, res) => {
+  if (!req.session.user || req.session.user.role !== 'employer') {
+    return res.status(401).json({ error: 'Not authenticated' });
+  }
+  const { current_password, new_password } = req.body;
+  if (!current_password || !new_password) {
+    return res.status(400).json({ error: 'Both fields are required' });
+  }
+  if (new_password.length < 6) {
+    return res.status(400).json({ error: 'Password must be at least 6 characters' });
+  }
+  try {
+    const { rows } = await db.query('SELECT password_hash FROM employers WHERE id = $1', [req.session.user.id]);
+    if (!rows.length || !(await bcrypt.compare(current_password, rows[0].password_hash))) {
+      return res.status(401).json({ error: 'Current password is incorrect' });
+    }
+    const hash = await bcrypt.hash(new_password, 10);
+    await db.query('UPDATE employers SET password_hash = $1 WHERE id = $2', [hash, req.session.user.id]);
+    res.json({ message: 'Password changed successfully' });
+  } catch (err) {
+    console.error('Change password error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // POST /api/auth/logout
 router.post('/logout', (req, res) => {
   req.session.destroy((err) => {

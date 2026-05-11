@@ -3,9 +3,63 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Manage your job fair submissions">
+  <meta name="description" content="Manage your job fair submission">
   <title>Employer Dashboard — NQU Job Fair</title>
   <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .dash-grid { display: grid; grid-template-columns: 280px 1fr; gap: var(--space-6); align-items: start; }
+    @media (max-width: 860px) { .dash-grid { grid-template-columns: 1fr; } }
+
+    .info-card { background: var(--color-bg-alt); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-5); }
+    .info-card + .info-card { margin-top: var(--space-4); }
+    .info-card__title { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: var(--space-3); }
+    .info-row { display: flex; gap: 10px; margin-bottom: var(--space-2); font-size: 0.875rem; }
+    .info-row__icon { flex-shrink: 0; width: 20px; }
+    .info-row__label { color: var(--text-muted); flex-shrink: 0; min-width: 80px; }
+    .info-row__val { font-weight: 500; word-break: break-word; }
+
+    .announce-strip { border-radius: var(--radius-md); padding: 10px 16px; margin-bottom: var(--space-4); display: flex; gap: 10px; align-items: flex-start; font-size: 0.875rem; }
+    .announce-strip--pinned { background: #fef3c7; border-left: 4px solid #f59e0b; }
+    .announce-strip--normal { background: var(--color-bg-alt); border-left: 4px solid var(--color-primary); }
+    .announce-strip__title { font-weight: 700; margin-bottom: 2px; }
+
+    .progress-bar { display: flex; align-items: center; gap: 0; margin: var(--space-4) 0; }
+    .progress-step { display: flex; flex-direction: column; align-items: center; flex: 1; }
+    .progress-step__dot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; border: 2px solid var(--color-border); background: var(--color-bg); color: var(--text-muted); transition: all 0.2s; z-index: 1; position: relative; }
+    .progress-step__dot--done { background: #10b981; border-color: #10b981; color: #fff; }
+    .progress-step__dot--active { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+    .progress-step__dot--rejected { background: var(--color-danger); border-color: var(--color-danger); color: #fff; }
+    .progress-step__label { font-size: 0.7rem; color: var(--text-muted); margin-top: 5px; text-align: center; white-space: nowrap; }
+    .progress-step__label--active { color: var(--color-primary); font-weight: 600; }
+    .progress-step__label--rejected { color: var(--color-danger); font-weight: 600; }
+    .progress-line { flex: 1; height: 2px; background: var(--color-border); margin: 0 -2px; margin-bottom: 22px; }
+    .progress-line--done { background: #10b981; }
+
+    .sub-card { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; }
+    .sub-card--approved { border-color: #10b981; }
+    .sub-card--rejected { border-color: var(--color-danger); }
+    .sub-card__header { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-5); border-bottom: 1px solid var(--color-border); background: var(--color-bg-alt); }
+    .sub-card__logo { width: 64px; height: 64px; object-fit: contain; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: #fff; flex-shrink: 0; }
+    .sub-card__logo-placeholder { width: 64px; height: 64px; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-bg); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; flex-shrink: 0; }
+    .sub-card__body { padding: var(--space-5); }
+    .sub-card__fields { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3) var(--space-6); margin-bottom: var(--space-4); }
+    @media (max-width: 540px) { .sub-card__fields { grid-template-columns: 1fr; } }
+    .sub-field__label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-muted); margin-bottom: 2px; }
+    .sub-field__val { font-size: 0.9rem; font-weight: 500; }
+    .booth-banner { display: flex; align-items: center; gap: 12px; background: linear-gradient(135deg, #fef3c7, #fffbeb); border: 1px solid #f59e0b; border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: var(--space-4); }
+    .booth-banner__num { font-size: 1.8rem; font-weight: 800; color: var(--color-gold-dark); }
+    .reject-banner { background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: var(--space-4); }
+    .reject-banner__title { font-weight: 700; color: var(--color-danger); margin-bottom: 4px; }
+    .sub-card__actions { display: flex; gap: var(--space-2); flex-wrap: wrap; padding-top: var(--space-4); border-top: 1px solid var(--color-border); margin-top: var(--space-4); }
+
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+    @media (max-width: 540px) { .detail-grid { grid-template-columns: 1fr; } }
+    .detail-section { margin-bottom: var(--space-5); }
+    .detail-section__title { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: var(--space-2); padding-bottom: 6px; border-bottom: 1px solid var(--color-border); }
+    .detail-item { margin-bottom: var(--space-2); }
+    .detail-item strong { font-size: 0.78rem; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 2px; }
+    .detail-item span { font-size: 0.9rem; }
+  </style>
 </head>
 <body>
   <div class="page-wrapper">
@@ -33,21 +87,51 @@
     <div class="page-content">
       <div class="container" style="padding-top:var(--space-8); padding-bottom:var(--space-16);">
 
-        <div class="dashboard__header fade-in-up">
+        <!-- Header -->
+        <div class="dashboard__header fade-in-up" style="margin-bottom:var(--space-5);">
           <div>
             <h1 class="dashboard__title" data-i18n="empDash.title">Dashboard</h1>
-            <p class="text-muted text-sm mt-2" id="welcomeMsg" data-i18n="empDash.welcome">Welcome back!</p>
+            <p class="text-muted text-sm mt-2" id="welcomeMsg">Welcome back!</p>
           </div>
-          <a href="/employer/submit.html" class="btn btn--primary" data-i18n="empDash.newSub">+ New Submission</a>
-        </div>
-
-        <div id="submissionsList">
-          <div class="empty-state">
-            <div class="spinner" style="margin:0 auto;"></div>
-            <p class="text-muted mt-4" data-i18n="empDash.loading">Loading your submissions...</p>
+          <div style="display:flex; gap:var(--space-2); flex-wrap:wrap;">
+            <button class="btn btn--outline btn--sm" onclick="App.showModal('accountModal')">⚙ Account</button>
+            <a href="/employer/submit.html" class="btn btn--primary" id="newSubBtn" data-i18n="empDash.newSub">+ New Submission</a>
           </div>
         </div>
 
+        <!-- Announcements -->
+        <div id="announcementsArea" style="margin-bottom:var(--space-5);"></div>
+
+        <!-- Main grid -->
+        <div class="dash-grid">
+
+          <!-- Left sidebar -->
+          <div>
+            <!-- Event Info -->
+            <div class="info-card fade-in-up stagger-1">
+              <div class="info-card__title">📅 Event Information</div>
+              <div id="eventInfoBody">
+                <div class="text-muted text-sm">Loading...</div>
+              </div>
+            </div>
+
+            <!-- Account -->
+            <div class="info-card fade-in-up stagger-2" style="margin-top:var(--space-4);">
+              <div class="info-card__title">🏢 Your Account</div>
+              <div id="accountInfoBody">
+                <div class="text-muted text-sm">Loading...</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Submission -->
+          <div id="submissionArea" class="fade-in-up stagger-2">
+            <div style="display:flex; align-items:center; justify-content:center; padding:4rem;">
+              <div class="spinner"></div>
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
 
@@ -59,91 +143,440 @@
     </footer>
   </div>
 
+  <!-- ═══ MODAL: Submission Details ═══ -->
+  <div class="modal-overlay" id="detailModal">
+    <div class="modal" style="max-width:720px; width:95%; max-height:85vh; overflow-y:auto;">
+      <div class="modal__header" style="position:sticky; top:0; background:var(--color-bg); z-index:1; border-bottom:1px solid var(--color-border);">
+        <h2 class="modal__title">Submission Details</h2>
+        <button class="modal__close" onclick="App.hideModal('detailModal')">✕</button>
+      </div>
+      <div id="detailModalBody" style="padding:var(--space-5);"></div>
+    </div>
+  </div>
+
+  <!-- ═══ MODAL: Account Settings ═══ -->
+  <div class="modal-overlay" id="accountModal">
+    <div class="modal" style="max-width:420px;">
+      <div class="modal__header">
+        <h2 class="modal__title">Account Settings</h2>
+        <button class="modal__close" onclick="App.hideModal('accountModal')">✕</button>
+      </div>
+      <div id="accountModalInfo" class="text-sm text-muted mb-4" style="padding:0 0 var(--space-3); border-bottom:1px solid var(--color-border); margin-bottom:var(--space-4);"></div>
+      <p class="text-sm" style="font-weight:600; margin-bottom:var(--space-3);">Change Password</p>
+      <div class="form-group">
+        <label class="form-label">Current Password</label>
+        <input class="form-input" type="password" id="currentPw" placeholder="••••••" autocomplete="current-password">
+      </div>
+      <div class="form-group">
+        <label class="form-label">New Password</label>
+        <input class="form-input" type="password" id="newPw" placeholder="At least 6 characters" autocomplete="new-password">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirm New Password</label>
+        <input class="form-input" type="password" id="confirmPw" placeholder="••••••" autocomplete="new-password">
+      </div>
+      <div class="modal__actions">
+        <button class="btn btn--outline" onclick="App.hideModal('accountModal')">Cancel</button>
+        <button class="btn btn--primary" onclick="changePassword()">Change Password</button>
+      </div>
+    </div>
+  </div>
+
   <script src="/js/api.js"></script>
   <script src="/js/app.js"></script>
   <script src="/js/i18n.js"></script>
   <script>
     let currentUser = null;
+    let currentSubmission = null;
 
     async function init() {
       currentUser = await App.requireAuth('employer');
       if (!currentUser) return;
       I18N.init('langToggle');
-      document.getElementById('welcomeMsg').textContent = 
-        I18N.currentLang === 'zh' ? `歡迎回來，${currentUser.company_name}！` : `Welcome, ${currentUser.company_name}!`;
-      loadSubmissions();
+
+      document.getElementById('welcomeMsg').textContent =
+        `Welcome back, ${currentUser.company_name}!`;
+      document.getElementById('accountModalInfo').innerHTML =
+        `<strong>${App.escapeHtml(currentUser.company_name)}</strong><br>${App.escapeHtml(currentUser.email)}`;
+      document.getElementById('accountInfoBody').innerHTML =
+        `<div class="info-row"><span class="info-row__icon">🏢</span><span class="info-row__val" style="font-weight:600;">${App.escapeHtml(currentUser.company_name)}</span></div>
+         <div class="info-row"><span class="info-row__icon">✉️</span><span class="info-row__val">${App.escapeHtml(currentUser.email)}</span></div>
+         <button class="btn btn--outline btn--sm" style="margin-top:var(--space-3); width:100%;" onclick="App.showModal('accountModal')">🔑 Change Password</button>`;
+
+      await Promise.all([loadAnnouncements(), loadEventInfo(), loadSubmissions()]);
+
+      // Close modals on overlay click
+      ['detailModal','accountModal'].forEach(id => {
+        document.getElementById(id).addEventListener('click', function(e) {
+          if (e.target === this) App.hideModal(id);
+        });
+      });
     }
 
+    // ── ANNOUNCEMENTS ─────────────────────────────────────────
+    async function loadAnnouncements() {
+      try {
+        const list = await API.get('/api/announcements');
+        const area = document.getElementById('announcementsArea');
+        if (!list.length) { area.innerHTML = ''; return; }
+        area.innerHTML = list.map(a => `
+          <div class="announce-strip ${a.is_pinned ? 'announce-strip--pinned' : 'announce-strip--normal'}">
+            <span style="font-size:1.2rem; flex-shrink:0;">${a.is_pinned ? '📌' : '📢'}</span>
+            <div>
+              <div class="announce-strip__title">${App.escapeHtml(a.title)}</div>
+              ${a.content ? `<div>${App.escapeHtml(a.content)}</div>` : ''}
+            </div>
+          </div>
+        `).join('');
+      } catch { /* non-critical */ }
+    }
+
+    // ── EVENT INFO ────────────────────────────────────────────
+    async function loadEventInfo() {
+      try {
+        const s = await API.get('/api/cms/settings');
+        const rows = [
+          s.event_date    && ['📅', 'Date',     s.event_date],
+          s.event_venue   && ['📍', 'Venue',    s.event_venue],
+          s.registration_deadline && ['⏰', 'Deadline', s.registration_deadline],
+          s.contact_email && ['✉️', 'Email',    s.contact_email],
+          s.contact_phone && ['📞', 'Phone',    s.contact_phone],
+        ].filter(Boolean);
+
+        document.getElementById('eventInfoBody').innerHTML = rows.length
+          ? rows.map(([icon, label, val]) => `
+              <div class="info-row">
+                <span class="info-row__icon">${icon}</span>
+                <div>
+                  <div class="info-row__label" style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.3px;">${label}</div>
+                  <div class="info-row__val">${App.escapeHtml(val)}</div>
+                </div>
+              </div>`).join('')
+          : `<div class="text-muted text-sm">Event details coming soon.</div>`;
+      } catch { /* non-critical */ }
+    }
+
+    // ── SUBMISSIONS ───────────────────────────────────────────
     async function loadSubmissions() {
-      const container = document.getElementById('submissionsList');
+      const area = document.getElementById('submissionArea');
       try {
         const submissions = await API.get('/api/submissions/mine');
+        currentSubmission = submissions[0] || null;
 
-        if (submissions.length === 0) {
-          container.innerHTML = `
-            <div class="empty-state fade-in-up">
+        if (!submissions.length) {
+          area.innerHTML = `
+            <div class="empty-state">
               <div class="empty-state__icon">📋</div>
-              <div class="empty-state__title" data-i18n="empDash.noSubs">No Submissions Yet</div>
-              <div class="empty-state__text" data-i18n="empDash.noSubsText">Create your first submission to participate in the job fair.</div>
-              <a href="/employer/submit.html" class="btn btn--primary" data-i18n="empDash.newSub">+ New Submission</a>
+              <div class="empty-state__title">No Submission Yet</div>
+              <div class="empty-state__text" style="max-width:380px; margin:0 auto;">
+                Submit your registration to participate in the NQU Job Fair. Fill in your company details, job positions, and booth preferences.
+              </div>
+              <a href="/employer/submit.html" class="btn btn--primary" style="margin-top:var(--space-4);">+ Create Submission</a>
             </div>`;
-          I18N.applyAll();
+          document.getElementById('newSubBtn').style.display = '';
           return;
         }
 
-        const editLabel = I18N.t('empDash.edit');
-        const deleteLabel = I18N.t('empDash.delete');
-        const boothLabel = I18N.t('empDash.booth');
-        const noteLabel = I18N.t('empDash.adminNote');
+        // Hide "New Submission" button — already have one
+        document.getElementById('newSubBtn').style.display = 'none';
 
-        container.innerHTML = `<div class="submissions-grid">
-          ${submissions.map((s, i) => `
-            <div class="submission-card fade-in-up stagger-${Math.min(i+1,5)}">
-              ${s.logo_path 
-                ? `<img src="${s.logo_path}" alt="${App.escapeHtml(s.company_name)}" class="submission-card__logo">` 
-                : `<div class="submission-card__logo" style="display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:var(--color-text-light);">🏢</div>`
-              }
-              <div class="submission-card__info">
-                <div class="submission-card__top">
-                  <div>
-                    <div class="submission-card__name">${App.escapeHtml(s.company_name)}</div>
-                    <div class="submission-card__meta">
-                      ${App.escapeHtml(s.industry || '—')} · ${App.timeAgo(s.submitted_at)}
-                    </div>
-                  </div>
-                  ${App.statusBadge(s.status)}
-                </div>
-                ${s.booth_number ? `<div class="text-sm" style="color:var(--color-gold-dark); font-weight:600;">🎪 ${boothLabel}: ${App.escapeHtml(s.booth_number)}</div>` : ''}
-                ${s.admin_notes ? `<div class="text-sm text-muted mt-2">📝 ${noteLabel}: ${App.escapeHtml(s.admin_notes)}</div>` : ''}
-                ${s.status !== 'rejected' ? `
-                  <div class="submission-card__actions">
-                    <a href="/employer/submit.html?edit=${s.id}" class="btn btn--outline btn--sm">${editLabel}</a>
-                    ${s.status === 'pending' ? `<button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="deleteSubmission(${s.id})">${deleteLabel}</button>` : ''}
-                  </div>
-                ` : ''}
-              </div>
-            </div>
-          `).join('')}
-        </div>`;
+        area.innerHTML = submissions.map(s => renderSubmissionCard(s)).join('');
       } catch (err) {
-        container.innerHTML = `
+        area.innerHTML = `
           <div class="empty-state">
             <div class="empty-state__icon">⚠️</div>
-            <div class="empty-state__title">Error</div>
+            <div class="empty-state__title">Error loading submission</div>
             <div class="empty-state__text">${App.escapeHtml(err.message)}</div>
+            <button class="btn btn--outline" style="margin-top:var(--space-3);" onclick="loadSubmissions()">Retry</button>
           </div>`;
       }
     }
 
+    function renderSubmissionCard(s) {
+      const isPending  = s.status === 'pending';
+      const isApproved = s.status === 'approved';
+      const isRejected = s.status === 'rejected';
+
+      // Progress steps
+      const steps = [
+        { label: 'Submitted', done: true,       active: isPending },
+        { label: 'Reviewing', done: isApproved || isRejected, active: isApproved || isRejected, rejected: isRejected && !isApproved },
+        { label: isRejected ? 'Rejected' : 'Approved', done: isApproved, active: isApproved || isRejected, rejected: isRejected }
+      ];
+
+      const progressBar = `
+        <div class="progress-bar">
+          ${steps.map((step, i) => `
+            ${i > 0 ? `<div class="progress-line ${steps[i-1].done && !steps[i-1].rejected ? 'progress-line--done' : ''}"></div>` : ''}
+            <div class="progress-step">
+              <div class="progress-step__dot ${step.rejected ? 'progress-step__dot--rejected' : step.done && i < steps.length-1 ? 'progress-step__dot--done' : step.done ? 'progress-step__dot--done' : step.active && !step.rejected ? 'progress-step__dot--active' : ''}">
+                ${step.rejected ? '✕' : step.done ? '✓' : i + 1}
+              </div>
+              <div class="progress-step__label ${step.rejected ? 'progress-step__label--rejected' : step.active && !step.rejected && step.done ? 'progress-step__label--active' : ''}">${step.label}</div>
+            </div>
+          `).join('')}
+        </div>`;
+
+      // Booth banner (approved)
+      const boothBanner = isApproved && s.booth_number ? `
+        <div class="booth-banner">
+          <span style="font-size:2rem;">🎪</span>
+          <div>
+            <div style="font-size:0.75rem; text-transform:uppercase; color:#92400e; letter-spacing:0.5px;">Assigned Booth</div>
+            <div class="booth-banner__num">${App.escapeHtml(s.booth_number)}</div>
+          </div>
+        </div>` : '';
+
+      // Rejection banner
+      const rejectBanner = isRejected ? `
+        <div class="reject-banner">
+          <div class="reject-banner__title">✕ Submission Not Selected</div>
+          ${s.admin_notes ? `<div class="text-sm" style="margin-top:4px;">${App.escapeHtml(s.admin_notes)}</div>` : ''}
+          <div class="text-sm text-muted" style="margin-top:8px;">Please contact the event organizer if you have questions about re-applying.</div>
+        </div>` : '';
+
+      // Admin note (non-rejection)
+      const adminNote = !isRejected && s.admin_notes ? `
+        <div style="background:var(--color-bg-alt); border-radius:var(--radius-sm); padding:10px 14px; margin-bottom:var(--space-4); font-size:0.875rem;">
+          📝 <strong>Admin Note:</strong> ${App.escapeHtml(s.admin_notes)}
+        </div>` : '';
+
+      // Key fields
+      const fields = [
+        ['Company', s.company_name],
+        ['Category', s.activity_category || '—'],
+        ['Industry', s.industry || '—'],
+        ['Contact', s.contact_person || '—'],
+        ['Email', s.contact_email || '—'],
+        ['Attendees', s.attendee_count != null ? s.attendee_count : '—'],
+        ['Booth Name', s.booth_signboard_name || '—'],
+        ['Tax ID', s.tax_id || '—'],
+      ].filter(([, v]) => v && v !== '—').slice(0, 6);
+
+      const fieldsHtml = `
+        <div class="sub-card__fields">
+          ${fields.map(([label, val]) => `
+            <div>
+              <div class="sub-field__label">${label}</div>
+              <div class="sub-field__val">${App.escapeHtml(String(val))}</div>
+            </div>`).join('')}
+        </div>`;
+
+      // Submitted date
+      const submittedOn = `<div class="text-xs text-muted" style="margin-bottom:var(--space-4);">Submitted ${App.timeAgo(s.submitted_at)} · ${App.formatDate(s.submitted_at)}</div>`;
+
+      // Actions
+      const actions = `
+        <div class="sub-card__actions">
+          <button class="btn btn--outline btn--sm" onclick="viewDetail(${s.id})">👁 View All Details</button>
+          ${isPending ? `<a href="/employer/submit.html?edit=${s.id}" class="btn btn--outline btn--sm">✏️ Edit</a>` : ''}
+          ${isPending ? `<button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="deleteSubmission(${s.id})">🗑 Delete</button>` : ''}
+          ${isApproved ? `<button class="btn btn--outline btn--sm" onclick="printConfirmation(${s.id})">🖨️ Print Confirmation</button>` : ''}
+        </div>`;
+
+      return `
+        <div class="sub-card ${isApproved ? 'sub-card--approved' : isRejected ? 'sub-card--rejected' : ''}">
+          <div class="sub-card__header">
+            ${s.logo_path
+              ? `<img src="${s.logo_path}" alt="${App.escapeHtml(s.company_name)}" class="sub-card__logo">`
+              : `<div class="sub-card__logo-placeholder">🏢</div>`}
+            <div style="flex:1; min-width:0;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+                <div class="text-lg font-bold" style="font-weight:700;">${App.escapeHtml(s.company_name)}</div>
+                ${App.statusBadge(s.status)}
+              </div>
+              <div class="text-sm text-muted">${App.escapeHtml(s.activity_category || '')}${s.industry ? ' · ' + App.escapeHtml(s.industry) : ''}</div>
+            </div>
+          </div>
+          <div class="sub-card__body">
+            ${progressBar}
+            ${boothBanner}
+            ${rejectBanner}
+            ${adminNote}
+            ${submittedOn}
+            ${fieldsHtml}
+            ${actions}
+          </div>
+        </div>`;
+    }
+
+    // ── VIEW FULL DETAILS ─────────────────────────────────────
+    async function viewDetail(id) {
+      const modal = document.getElementById('detailModalBody');
+      modal.innerHTML = '<div style="text-align:center;padding:3rem;"><div class="spinner"></div></div>';
+      App.showModal('detailModal');
+      try {
+        const s = await API.get(`/api/submissions/${id}`);
+        const esc = App.escapeHtml;
+        const field = (label, val) => val ? `<div class="detail-item"><strong>${label}</strong><span>${esc(String(val))}</span></div>` : '';
+        const yesno = v => v === 'Yes' ? '✓ Yes' : v === 'No' ? '✕ No' : v || '—';
+
+        modal.innerHTML = `
+          ${s.logo_path ? `<div style="text-align:center; margin-bottom:var(--space-4);"><img src="${s.logo_path}" style="max-height:80px; max-width:200px; object-fit:contain; border-radius:var(--radius-md); border:1px solid var(--color-border);"></div>` : ''}
+
+          <div class="detail-section">
+            <div class="detail-section__title">Company Information</div>
+            <div class="detail-grid">
+              ${field('Company Name', s.company_name)}
+              ${field('Booth Signboard Name', s.booth_signboard_name)}
+              ${field('CEO / Responsible Person', s.ceo_name)}
+              ${field('Tax ID', s.tax_id)}
+              ${field('Industry', s.industry)}
+              ${field('Main Products / Services', s.main_products)}
+              ${field('Establishment Date', s.establishment_date)}
+              ${field('Group Type', s.group_type)}
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <div class="detail-section__title">Contact</div>
+            <div class="detail-grid">
+              ${field('Contact Person', s.contact_person)}
+              ${field('Email', s.contact_email)}
+              ${field('Phone', s.contact_phone)}
+              ${field('Mailing Address', s.mailing_address)}
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <div class="detail-section__title">Registration Details</div>
+            <div class="detail-grid">
+              ${field('Activity Category', s.activity_category)}
+              ${field('Previous Participant', yesno(s.is_previous_participant))}
+              ${field('Internship Cooperation', s.internship_cooperation)}
+              ${field('Target Departments', s.target_departments)}
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <div class="detail-section__title">Recruitment Info</div>
+            ${field('Company Introduction', s.company_intro)}
+            ${field('Job Positions', s.job_positions)}
+            ${field('Requirements', s.requirements)}
+            ${field('Benefits', s.benefits)}
+          </div>
+
+          <div class="detail-section">
+            <div class="detail-section__title">Event Day Logistics</div>
+            <div class="detail-grid">
+              ${field('Lead Attendee', s.attendee_main)}
+              ${field('Total Attendees', s.attendee_count)}
+              ${field('Lunch (Regular)', s.lunch_box_non_veg)}
+              ${field('Lunch (Vegetarian)', s.lunch_box_veg)}
+              ${field('Parking Spaces', s.parking_spaces)}
+              ${field('Needs Presentation Room', yesno(s.has_presentation_need))}
+              ${field('Needs Shuttle', yesno(s.has_shuttle_need))}
+              ${s.shuttle_details ? field('Shuttle Details', s.shuttle_details) : ''}
+              ${field('Raffle Prizes', s.raffle_prizes)}
+              ${field('Other Requirements', s.other_requirements)}
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <div class="detail-section__title">Status</div>
+            <div class="detail-grid">
+              ${field('Status', s.status?.toUpperCase())}
+              ${field('Booth Number', s.booth_number)}
+              ${field('Admin Notes', s.admin_notes)}
+              ${field('Submitted', App.formatDate(s.submitted_at))}
+              ${s.reviewed_at ? field('Reviewed', App.formatDate(s.reviewed_at)) : ''}
+            </div>
+          </div>`;
+      } catch (err) {
+        modal.innerHTML = `<div class="text-danger" style="padding:2rem;">${App.escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    // ── PRINT CONFIRMATION ────────────────────────────────────
+    async function printConfirmation(id) {
+      let s;
+      try {
+        s = await API.get(`/api/submissions/${id}`);
+      } catch (err) { App.toast(err.message, 'error'); return; }
+
+      const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+        <title>Booth Confirmation — NQU Job Fair</title>
+        <style>
+          body { font-family: Arial, sans-serif; font-size: 12px; color: #111; padding: 32px; max-width: 680px; margin: 0 auto; }
+          h1 { font-size: 22px; margin-bottom: 4px; }
+          h2 { font-size: 14px; margin: 20px 0 8px; border-bottom: 1px solid #ccc; padding-bottom: 4px; color: #555; text-transform: uppercase; letter-spacing: 0.5px; }
+          .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px; }
+          .field strong { display: block; font-size: 10px; color: #888; text-transform: uppercase; margin-bottom: 1px; }
+          .booth-box { background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px; padding: 16px 24px; margin: 16px 0; display: inline-block; }
+          .booth-box .num { font-size: 36px; font-weight: 900; color: #92400e; }
+          .footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid #ccc; font-size: 11px; color: #888; }
+          @media print { body { padding: 0; } }
+        </style></head><body>
+        <h1>NQU Job Fair — Booth Confirmation</h1>
+        <p style="color:#555; margin-bottom:20px;">This document confirms your registration for the National Quemoy University Job Fair.</p>
+        ${s.booth_number ? `<div class="booth-box"><div style="font-size:11px;color:#92400e;text-transform:uppercase;letter-spacing:1px;">Your Booth Number</div><div class="num">${s.booth_number}</div></div>` : ''}
+        <h2>Company Information</h2>
+        <div class="grid">
+          <div class="field"><strong>Company Name</strong>${s.company_name || '—'}</div>
+          <div class="field"><strong>Booth Signboard</strong>${s.booth_signboard_name || '—'}</div>
+          <div class="field"><strong>Contact Person</strong>${s.contact_person || '—'}</div>
+          <div class="field"><strong>Email</strong>${s.contact_email || '—'}</div>
+          <div class="field"><strong>Phone</strong>${s.contact_phone || '—'}</div>
+          <div class="field"><strong>Industry</strong>${s.industry || '—'}</div>
+          <div class="field"><strong>Tax ID</strong>${s.tax_id || '—'}</div>
+          <div class="field"><strong>Activity Category</strong>${s.activity_category || '—'}</div>
+        </div>
+        <h2>Event Day Logistics</h2>
+        <div class="grid">
+          <div class="field"><strong>Lead Attendee</strong>${s.attendee_main || '—'}</div>
+          <div class="field"><strong>Attendee Count</strong>${s.attendee_count ?? '—'}</div>
+          <div class="field"><strong>Regular Lunches</strong>${s.lunch_box_non_veg ?? 0}</div>
+          <div class="field"><strong>Vegetarian Lunches</strong>${s.lunch_box_veg ?? 0}</div>
+          <div class="field"><strong>Parking Spaces</strong>${s.parking_spaces ?? 0}</div>
+          <div class="field"><strong>Presentation Room</strong>${s.has_presentation_need || '—'}</div>
+          <div class="field"><strong>Shuttle Service</strong>${s.has_shuttle_need || '—'}</div>
+          <div class="field"><strong>Status</strong>APPROVED ✓</div>
+        </div>
+        ${s.admin_notes ? `<h2>Notes from Organizer</h2><p>${s.admin_notes}</p>` : ''}
+        <div class="footer">
+          Printed on ${new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'})} ·
+          NQU Job Fair System · National Quemoy University
+        </div>
+      </body></html>`;
+
+      const win = window.open('', '_blank');
+      win.document.write(html);
+      win.document.close();
+      win.onload = () => { win.focus(); win.print(); };
+    }
+
+    // ── DELETE ────────────────────────────────────────────────
     async function deleteSubmission(id) {
-      if (!App.confirm(I18N.t('empDash.confirmDel'))) return;
+      if (!App.confirm('Delete this submission? This cannot be undone.')) return;
       try {
         await API.delete(`/api/submissions/${id}`);
-        App.toast(I18N.t('msg.subDeleted'), 'success');
+        App.toast('Submission deleted', 'success');
+        document.getElementById('newSubBtn').style.display = '';
         loadSubmissions();
-      } catch (err) {
-        App.toast(err.message, 'error');
-      }
+      } catch (err) { App.toast(err.message, 'error'); }
+    }
+
+    // ── CHANGE PASSWORD ───────────────────────────────────────
+    async function changePassword() {
+      const current = document.getElementById('currentPw').value;
+      const next    = document.getElementById('newPw').value;
+      const confirm = document.getElementById('confirmPw').value;
+
+      if (!current || !next) { App.toast('All fields are required', 'error'); return; }
+      if (next.length < 6) { App.toast('New password must be at least 6 characters', 'error'); return; }
+      if (next !== confirm) { App.toast('Passwords do not match', 'error'); return; }
+
+      try {
+        await API.patch('/api/auth/employer/change-password', {
+          current_password: current,
+          new_password: next
+        });
+        App.toast('Password changed successfully', 'success');
+        App.hideModal('accountModal');
+        document.getElementById('currentPw').value = '';
+        document.getElementById('newPw').value = '';
+        document.getElementById('confirmPw').value = '';
+      } catch (err) { App.toast(err.message, 'error'); }
     }
 
     init();
