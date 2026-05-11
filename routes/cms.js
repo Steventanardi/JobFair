@@ -8,7 +8,7 @@ const { requireAdmin } = require('../middleware/auth');
 const router = express.Router();
 
 const uploadsDir = path.join(__dirname, '..', 'uploads');
-fs.mkdirSync(uploadsDir, { recursive: true });
+try { fs.mkdirSync(uploadsDir, { recursive: true }); } catch { /* read-only FS on serverless is fine — dir exists via .gitkeep */ }
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadsDir),
