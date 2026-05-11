@@ -10,9 +10,22 @@ uploads/*
 
 # Ignore environment variables
 .env
+.env*.local
 
 # Ignore OS-specific files
 .DS_Store
 Thumbs.db
-.vercel
-.env*.local
+
+# Vercel deployment config (create locally — see README for template)
+vercel.json
+.vercel/
+
+# Editor / tooling config
+.claude/
+.claude-flow/
+.agents/
+.mcp.json
+CLAUDE.md
+progress.md
+*Improvements.md
+ruvector.db

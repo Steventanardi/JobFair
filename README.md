@@ -4,7 +4,7 @@
 
   <h1>NQU Career Fair System</h1>
 
-  <p><b>A Minimalist, Dual-Language Employer Registration &amp; Administration Platform</b></p>
+  <p><b>A Bilingual Employer Registration &amp; Administration Platform for National Quemoy University</b></p>
 
   <p>
     <a href="https://nqu-job-fair.vercel.app" target="_blank">
@@ -13,58 +13,60 @@
     <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js">
     <img src="https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white" alt="Express">
     <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL">
-    <img src="https://img.shields.io/badge/Deployed%20on-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel">
   </p>
 
 </div>
 
 ---
 
-## ✦ Overview
+## Overview
 
-The **NQU Career Fair System** is a lightweight, responsive, full-stack web application built for **National Quemoy University (NQU)**. It streamlines the entire career fair lifecycle — from employer registration and application tracking to administrator review and site-wide announcements.
+The **NQU Career Fair System** is a full-stack web application built for **National Quemoy University (NQU)**. It manages the entire career fair lifecycle — from employer registration and booth assignment to admin review, announcements, and content management.
 
-Built with performance and long-term usability in mind, the platform features a decoupled internationalization (i18n) system for seamless switching between **English** and **Traditional Chinese (繁體中文)**, and a premium **glassmorphism** UI aesthetic.
+The platform features a built-in internationalization (i18n) system for seamless switching between **English** and **Traditional Chinese (繁體中文)**, with no page reload required.
 
 ---
 
-## ✨ Features
+## Features
 
 | Feature | Details |
 |---|---|
-| 🏢 **Employer Registration** | Secure sign-up & login with `bcryptjs` session cookies |
-| 📋 **Application Tracking** | Real-time status: `Pending`, `Approved`, or `Rejected` |
-| 🌐 **Bilingual UI (i18n)** | Full English / 繁體中文 toggle — no page reload required |
-| 📢 **Announcements** | Admins can post site-wide announcements visible to employers |
-| 🛡️ **Admin Dashboard** | Centralized review table, booth assignment, and status management |
-| ⚙️ **Dynamic Settings** | Update event dates, venues & deadlines — no code changes needed |
-| 🔑 **Password Resets** | Admins can securely reset any employer's password |
-| 🖼️ **Logo Uploads** | Employers upload high-res logos; admins can download them for poster production |
-| 📊 **Analytics** | Submission counts, approval rates, and audit activity log |
+| 🏢 **Employer Portal** | Registration, login, submission form, status tracking, and dashboard |
+| 📋 **Submission Lifecycle** | Real-time status: `Pending → Approved / Rejected` with progress timeline |
+| 🎪 **Booth Assignment** | Admins assign booth numbers; employers see them prominently on their dashboard |
+| 🌐 **Bilingual UI** | Full English / 繁體中文 toggle — client-side, no reload |
+| 📢 **Announcements** | Admins post pinned or normal site-wide announcements |
+| 🛡️ **Admin Dashboard** | Submission review, bulk approve/reject, booth management, employer accounts |
+| 📊 **Export** | Download submissions as CSV, Excel, or print-to-PDF |
+| 📝 **CMS** | Manage pages, navigation, media library, and site-wide settings |
+| ⚙️ **Site Settings** | Event date, venue, deadlines, contact info, social links — no code changes needed |
+| 🔑 **Password Management** | Admins reset employer passwords; employers change their own |
+| 🖼️ **Logo Uploads** | Employers upload company logos stored as base64 in the database |
+| 🔒 **Security** | Session fixation prevention, CSRF protection, bcrypt hashing, rate limiting |
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |---|---|
 | **Frontend** | HTML5, Vanilla JavaScript, Vanilla CSS (CSS Variables) |
 | **Backend** | Node.js, Express.js |
 | **Database** | PostgreSQL (`pg` driver with connection pooling) |
-| **Auth** | `express-session`, `bcryptjs`, rate-limiting middleware |
-| **File Uploads** | `multer` (multipart/form-data) |
-| **Deployment** | Vercel (Serverless) |
+| **Auth** | `express-session` + `connect-pg-simple`, `bcryptjs` |
+| **File Uploads** | `multer` (memory storage, base64 to DB) |
+| **Security** | `helmet`, `compression`, `express-rate-limit` |
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
-### 1. Prerequisites
+### Prerequisites
 
 - [Node.js](https://nodejs.org/) v18 or higher
 - A PostgreSQL database (e.g., [Neon](https://neon.tech) for free serverless Postgres)
 
-### 2. Clone & Install
+### Clone & Install
 
 ```bash
 git clone https://github.com/Steventanardi/JobFair.git
@@ -72,87 +74,111 @@ cd JobFair
 npm install
 ```
 
-### 3. Configure Environment Variables
+### Configure Environment Variables
 
 Create a `.env` file in the project root:
 
 ```env
-# PostgreSQL Connection (Neon or any Postgres provider)
+# PostgreSQL connection string
 DATABASE_URL="postgresql://user:password@host/dbname?sslmode=require"
 
-# Session Security — use a long, random string in production
+# Session secret — use a long random string in production
 SESSION_SECRET="your_very_secure_random_string_here"
 ```
 
-### 4. Run the Application
+### Run Locally
 
 ```bash
-# Development (with auto-reload)
+# Development (auto-reload)
 npm run dev
 
 # Production
 npm start
 ```
 
-The app will be available at **`http://localhost:3000`**.
+The app runs at **`http://localhost:3000`**. The database schema and default data are initialized automatically on first run.
 
-> The database schema is automatically initialized on first run. Default settings and the admin account are seeded automatically.
-
-### 🔑 Default Admin Credentials
+### Default Admin Credentials
 
 | Field | Value |
 |---|---|
-| **Admin URL** | `/admin/login` |
+| **URL** | `/admin/login` |
 | **Username** | `admin` |
 | **Password** | `nqu2025` |
 
-> ⚠️ **Change the default password immediately after deployment.**
+> **Change the default password immediately after deployment.**
 
 ---
 
-## 🗂 Project Structure
+## Project Structure
 
-```text
+```
 JobFair/
-├── db.js                 # PostgreSQL connection pool & schema migrations
-├── server.js             # Express app entry point & middleware setup
-├── vercel.json           # Vercel deployment configuration
-├── public/               # Static assets served to the browser
-│   ├── css/              # Glassmorphism design system & variables
+├── server.js             # Express app entry point, middleware, route mounting
+├── db.js                 # PostgreSQL pool, schema creation, seed data
+├── package.json
+├── public/               # Static files served to the browser
+│   ├── css/style.css     # Design system with CSS variables
 │   ├── js/
-│   │   ├── api.js        # Global fetch wrapper with error handling
-│   │   ├── app.js        # Shared utilities (modals, toast notifications)
+│   │   ├── api.js        # Fetch wrapper with session handling
+│   │   ├── app.js        # Shared UI utilities (modals, toasts, nav)
 │   │   └── i18n.js       # EN / 繁體中文 translation strings
-│   ├── admin/            # Admin login & dashboard views
-│   ├── employer/         # Employer registration, login & dashboard
-│   └── index.html        # Bilingual landing page
-├── routes/               # Express API route handlers
-│   ├── admin.js          # Dashboard stats, review, password resets
-│   ├── auth.js           # Login / logout / session management
-│   ├── announcements.js  # Site-wide announcements CRUD
-│   ├── settings.js       # Dynamic event configuration
-│   └── submissions.js    # Employer form data & logo uploads
-├── middleware/           # Custom Express middleware (auth guards, rate limiting)
-└── uploads/              # Employer logo storage (gitignored)
+│   ├── admin/
+│   │   ├── login.html    # Admin login
+│   │   ├── dashboard.html # Submissions, employers, analytics, settings
+│   │   └── cms.html      # Content management (pages, media, navigation)
+│   ├── employer/
+│   │   ├── login.html    # Employer login
+│   │   ├── register.html # Employer registration
+│   │   ├── dashboard.html # Submission status, account settings
+│   │   └── submit.html   # Registration form (3 category types)
+│   └── index.html        # Public landing page
+├── routes/
+│   ├── auth.js           # Login, register, logout, password change
+│   ├── submissions.js    # Employer submission CRUD
+│   ├── admin.js          # Admin review, employer management, exports, logs
+│   ├── announcements.js  # Site-wide announcements
+│   ├── settings.js       # Registration status & deadline
+│   └── cms.js            # Pages, media, navigation, CMS settings
+├── middleware/
+│   └── auth.js           # requireEmployer / requireAdmin session guards
+└── uploads/              # File uploads (gitignored, kept via .gitkeep)
 ```
 
 ---
 
-## 🌐 Deployment
+## Deployment
 
-This project is deployed on **Vercel**. The `vercel.json` configuration routes all requests through `server.js`.
+This project is designed for deployment on **Vercel** (serverless Node.js).
 
-To deploy your own instance:
+### 1. Create `vercel.json` in the project root
+
+```json
+{
+  "version": 2,
+  "builds": [{ "src": "server.js", "use": "@vercel/node" }],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "server.js" },
+    { "src": "/employer/(.*)", "dest": "server.js" },
+    { "src": "/admin/(.*)", "dest": "server.js" },
+    { "src": "/(.*)", "dest": "server.js" }
+  ]
+}
+```
+
+### 2. Deploy
 
 ```bash
 npm i -g vercel
 vercel --prod
 ```
 
-Set the `DATABASE_URL` and `SESSION_SECRET` as **Environment Variables** in your Vercel project dashboard.
+### 3. Set Environment Variables in Vercel
+
+Add `DATABASE_URL` and `SESSION_SECRET` in your Vercel project **Settings → Environment Variables**.
 
 ---
 
 <div align="center">
-  <p><i>Design &amp; Engineering tailored for the future of NQU. · Built with ❤️ by <a href="https://github.com/Steventanardi">Steven Tanardi</a></i></p>
+  <p><i>Built for NQU Career Development Center · by <a href="https://github.com/Steventanardi">Steven Tanardi</a></i></p>
 </div>
