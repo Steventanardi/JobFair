@@ -26,11 +26,8 @@ app.use(compression());
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
-if (!process.env.SESSION_SECRET && process.env.NODE_ENV === 'production') {
-  console.error('FATAL: SESSION_SECRET env var is required in production.');
-  process.exit(1);
-} else if (!process.env.SESSION_SECRET) {
-  console.warn('WARNING: SESSION_SECRET not set — sessions will reset on restart.');
+if (!process.env.SESSION_SECRET) {
+  console.warn('WARNING: SESSION_SECRET not set — sessions will reset on restart. Set it in Vercel env vars.');
 }
 
 app.use(session({
