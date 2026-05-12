@@ -95,15 +95,6 @@ router.post('/', requireEmployer, submitLimiter, upload.single('logo'), async (r
     return res.status(400).json({ error: 'Total lunch boxes cannot exceed 3' });
   }
 
-  // One submission per employer
-  const { rows: existing } = await db.query(
-    'SELECT id FROM submissions WHERE employer_id = $1',
-    [employer.id]
-  );
-  if (existing.length > 0) {
-    return res.status(409).json({ error: 'You already have a submission. Edit or delete it before creating a new one.' });
-  }
-
   let logo_path = null;
   if (req.file) {
     logo_path = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;

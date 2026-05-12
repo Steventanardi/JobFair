@@ -275,12 +275,8 @@
               </div>
               <a href="/employer/submit.html" class="btn btn--primary" style="margin-top:var(--space-4);">+ Create Submission</a>
             </div>`;
-          document.getElementById('newSubBtn').style.display = '';
           return;
         }
-
-        // Hide "New Submission" button — already have one
-        document.getElementById('newSubBtn').style.display = 'none';
 
         area.innerHTML = submissions.map(s => renderSubmissionCard(s)).join('');
       } catch (err) {
