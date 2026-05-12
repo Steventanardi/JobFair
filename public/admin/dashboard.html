@@ -66,19 +66,19 @@
 
       <!-- Stats -->
       <div class="stats-grid fade-in-up" id="statsGrid">
-        <div class="stat-card stat-card--gold">
+        <div class="stat-card stat-card--gold" style="cursor:pointer;" title="Show all submissions" onclick="setFilterByStatus('')">
           <div class="stat-card__label" data-i18n="adm.statTotal">Total</div>
           <div class="stat-card__value" id="statTotal">—</div>
         </div>
-        <div class="stat-card stat-card--warning">
+        <div class="stat-card stat-card--warning" style="cursor:pointer;" title="Show pending" onclick="setFilterByStatus('pending')">
           <div class="stat-card__label" data-i18n="adm.statPending">Pending</div>
           <div class="stat-card__value" id="statPending">—</div>
         </div>
-        <div class="stat-card stat-card--success">
+        <div class="stat-card stat-card--success" style="cursor:pointer;" title="Show approved" onclick="setFilterByStatus('approved')">
           <div class="stat-card__label" data-i18n="adm.statApproved">Approved</div>
           <div class="stat-card__value" id="statApproved">—</div>
         </div>
-        <div class="stat-card stat-card--danger">
+        <div class="stat-card stat-card--danger" style="cursor:pointer;" title="Show rejected" onclick="setFilterByStatus('rejected')">
           <div class="stat-card__label" data-i18n="adm.statRejected">Rejected</div>
           <div class="stat-card__value" id="statRejected">—</div>
         </div>
@@ -108,7 +108,7 @@
             </div>
             <button class="btn btn--outline" onclick="openBulkBoothModal()">🎪 Bulk Booths</button>
             <div class="export-dropdown" style="position:relative;">
-              <button class="btn btn--outline" onclick="toggleExportMenu(event)">📥 Export ▾</button>
+              <button class="btn btn--primary" onclick="toggleExportMenu(event)">📥 Export ▾</button>
               <div id="exportMenu" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--color-bg-alt);border:1px solid var(--color-border);border-radius:var(--radius-md);box-shadow:0 4px 16px rgba(0,0,0,0.15);min-width:140px;z-index:100;">
                 <button class="export-menu-item" onclick="exportData('csv')">📄 CSV</button>
                 <button class="export-menu-item" onclick="exportData('excel')">📊 Excel</button>
@@ -135,6 +135,7 @@
           </select>
         </div>
 
+        <div id="resultsCount" class="text-sm text-muted" style="margin-bottom:var(--space-2);"></div>
         <div class="table-wrapper">
           <table class="data-table" id="submissionsTable">
             <thead>
@@ -160,6 +161,13 @@
       <div class="tab-panel" id="tab-employers">
         <div class="dashboard__header">
           <h1 class="dashboard__title" data-i18n="adm.empTitle">Employer Accounts</h1>
+        </div>
+
+        <div class="toolbar" style="margin-bottom:var(--space-4);">
+          <div class="toolbar__search">
+            <span class="toolbar__search-icon">🔍</span>
+            <input class="toolbar__search-input" type="text" id="employerSearch" placeholder="Search company or email..." oninput="filterEmployers()">
+          </div>
         </div>
 
         <div class="table-wrapper">
@@ -507,6 +515,8 @@
         const data = await API.get(url);
         const submissions = data.submissions || data;
         const total = data.total;
+        document.getElementById('resultsCount').textContent =
+          `${submissions.length} result${submissions.length !== 1 ? 's' : ''}${total && total !== submissions.length ? ` of ${total}` : ''}`;
         document.getElementById('selectAll').checked = false;
         updateBulkUI();
 
@@ -533,8 +543,8 @@
             <td data-label="Date" class="text-xs text-muted">${App.formatDate(s.submitted_at)}</td>
             <td data-label=""><div class="table-actions">
               ${s.status === 'pending' ? `
-                <button class="btn btn--success btn--sm" onclick="openReviewModal(${s.id})" title="Approve">✓ Approve</button>
-                <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="openReviewModalReject(${s.id})" title="Reject">✕ Reject</button>
+                <button class="btn btn--success btn--sm" onclick="openReviewModal(${s.id}, ${JSON.stringify(s.company_name)})" title="Approve">✓ Approve</button>
+                <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="openReviewModalReject(${s.id}, ${JSON.stringify(s.company_name)})" title="Reject">✕ Reject</button>
               ` : ''}
               ${s.status === 'approved' ? `<button class="btn btn--outline btn--sm" data-id="${s.id}" data-booth="${App.escapeHtml(s.booth_number || '')}" onclick="openBoothModal(this.dataset.id, this.dataset.booth)">🎪 Booth</button>` : ''}
               <button class="btn btn--ghost btn--sm" onclick="viewDetail(${s.id})">👁 View</button>
@@ -554,25 +564,36 @@
       loadSubmissions();
     }
 
+    function setFilterByStatus(status) {
+      currentFilter = status;
+      document.querySelectorAll('.filter-btn').forEach(b =>
+        b.classList.toggle('filter-btn--active', b.dataset.status === status));
+      const subLink = document.querySelector('[data-tab="tab-submissions"]');
+      if (subLink) switchTab(subLink);
+      loadSubmissions();
+    }
+
     let filterTimeout;
     function filterSubmissions() {
       clearTimeout(filterTimeout);
       filterTimeout = setTimeout(loadSubmissions, 300);
     }
 
-    function openReviewModal(id) {
+    function openReviewModal(id, companyName = '') {
       reviewingId = id;
       document.getElementById('adminNotes').value = '';
       document.getElementById('reviewModalTitle').textContent = I18N.t('adm.reviewTitle');
-      document.getElementById('reviewModalBody').innerHTML = `<p class="text-muted">Submission #${id}</p>`;
+      document.getElementById('reviewModalBody').innerHTML =
+        `<p style="font-weight:600; font-size:1rem; margin-bottom:4px;">${App.escapeHtml(companyName || ('Submission #' + id))}</p>
+         <p class="text-xs text-muted">Submission #${id}</p>`;
       document.getElementById('reviewNotesGroup').style.display = '';
       document.getElementById('rejectBtn').style.display = '';
       document.getElementById('approveBtn').style.display = '';
       App.showModal('reviewModal');
     }
 
-    function openReviewModalReject(id) {
-      openReviewModal(id);
+    function openReviewModalReject(id, companyName = '') {
+      openReviewModal(id, companyName);
       document.getElementById('approveBtn').style.display = 'none';
     }
 
@@ -683,32 +704,62 @@
       } catch (err) { App.toast(err.message, 'error'); }
     }
 
+    let allEmployers = [];
+
     async function loadEmployers() {
       const body = document.getElementById('employersBody');
       try {
-        const employers = await API.get('/api/admin/employers');
-        if (employers.length === 0) {
-          body.innerHTML = `<tr><td colspan="6" class="text-center text-muted" style="padding:3rem;">—</td></tr>`;
-          return;
-        }
-        const delLabel = I18N.t('adm.delete');
-        const resetLabel = I18N.t('adm.resetPassword');
-        body.innerHTML = employers.map(e => `
-          <tr>
-            <td data-label="ID" class="text-sm text-muted">#${e.id}</td>
-            <td data-label="Company" style="font-weight:600;">${App.escapeHtml(e.company_name)}</td>
-            <td data-label="Email" class="text-sm">${App.escapeHtml(e.email)}</td>
-            <td data-label="Subs" class="text-center">${e.submission_count}</td>
-            <td data-label="Reg'd" class="text-xs text-muted">${App.formatDate(e.created_at)}</td>
-            <td data-label=""><div class="table-actions">
-              <button class="btn btn--outline btn--sm" data-id="${e.id}" data-name="${App.escapeHtml(e.company_name)}" data-email="${App.escapeHtml(e.email)}" onclick="openResetPwModal(this.dataset.id, this.dataset.name, this.dataset.email)">🔑 ${resetLabel}</button>
-              <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" data-id="${e.id}" data-name="${App.escapeHtml(e.company_name)}" onclick="deleteEmployer(this.dataset.id, this.dataset.name)">🗑 ${delLabel}</button>
-            </div></td>
-          </tr>
-        `).join('');
+        allEmployers = await API.get('/api/admin/employers');
+        renderEmployers(allEmployers);
       } catch (err) {
         body.innerHTML = `<tr><td colspan="6" class="text-center" style="color:var(--color-danger);">Error</td></tr>`;
       }
+    }
+
+    function renderEmployers(employers) {
+      const body = document.getElementById('employersBody');
+      if (employers.length === 0) {
+        body.innerHTML = `<tr><td colspan="6" class="text-center text-muted" style="padding:3rem;">—</td></tr>`;
+        return;
+      }
+      const delLabel = I18N.t('adm.delete');
+      const resetLabel = I18N.t('adm.resetPassword');
+      body.innerHTML = employers.map(e => `
+        <tr>
+          <td data-label="ID" class="text-sm text-muted">#${e.id}</td>
+          <td data-label="Company" style="font-weight:600;">${App.escapeHtml(e.company_name)}</td>
+          <td data-label="Email" class="text-sm">${App.escapeHtml(e.email)}</td>
+          <td data-label="Subs" class="text-center">
+            ${e.submission_count > 0
+              ? `<button class="btn btn--ghost btn--sm" style="font-weight:600;" onclick="viewEmployerSubmissions(${JSON.stringify(e.company_name)})">${e.submission_count}</button>`
+              : '0'}
+          </td>
+          <td data-label="Reg'd" class="text-xs text-muted">${App.formatDate(e.created_at)}</td>
+          <td data-label=""><div class="table-actions">
+            <button class="btn btn--outline btn--sm" data-id="${e.id}" data-name="${App.escapeHtml(e.company_name)}" data-email="${App.escapeHtml(e.email)}" onclick="openResetPwModal(this.dataset.id, this.dataset.name, this.dataset.email)">🔑 ${resetLabel}</button>
+            <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" data-id="${e.id}" data-name="${App.escapeHtml(e.company_name)}" onclick="deleteEmployer(this.dataset.id, this.dataset.name)">🗑 ${delLabel}</button>
+          </div></td>
+        </tr>
+      `).join('');
+    }
+
+    let employerFilterTimeout;
+    function filterEmployers() {
+      clearTimeout(employerFilterTimeout);
+      employerFilterTimeout = setTimeout(() => {
+        const q = (document.getElementById('employerSearch').value || '').toLowerCase();
+        renderEmployers(q
+          ? allEmployers.filter(e =>
+              e.company_name.toLowerCase().includes(q) || e.email.toLowerCase().includes(q))
+          : allEmployers);
+      }, 200);
+    }
+
+    function viewEmployerSubmissions(companyName) {
+      const subLink = document.querySelector('[data-tab="tab-submissions"]');
+      if (subLink) switchTab(subLink);
+      document.getElementById('searchInput').value = companyName;
+      filterSubmissions();
     }
 
     async function deleteEmployer(id, name) {
@@ -834,7 +885,13 @@
      */
     function downloadLogo(path, companyName) {
       const safeName = companyName.replace(/[^a-zA-Z0-9\u4e00-\u9fff_\- ]/g, '').trim() || 'logo';
-      const ext = path.split('.').pop() || 'png';
+      let ext = 'png';
+      if (path.startsWith('data:')) {
+        const mime = path.slice(5, path.indexOf(';'));
+        ext = mime.split('/')[1] || 'png';
+      } else {
+        ext = path.split('.').pop().split('?')[0] || 'png';
+      }
       const filename = `${safeName}_logo.${ext}`;
 
       fetch(path)
@@ -988,7 +1045,7 @@
           <tr class="text-xs">
             <td><strong>${App.escapeHtml(l.admin_name || 'System')}</strong></td>
             <td>${App.escapeHtml(l.action)}</td>
-            <td>${App.escapeHtml(l.target_type)} #${l.target_id}</td>
+            <td>${App.escapeHtml(l.target_type || '—')}${l.target_id != null ? ' #' + l.target_id : ''}</td>
             <td class="text-muted">${App.escapeHtml(l.details || '—')}</td>
             <td>${App.formatDate(l.created_at)}</td>
           </tr>
