@@ -34,7 +34,7 @@
     <!-- Hero -->
     <section class="hero">
       <div class="container hero__content">
-        <div class="hero__badge fade-in" data-i18n="hero.badge">2025 Career Fair</div>
+        <div class="hero__badge fade-in" data-i18n="hero.badge">NQU Career Fair</div>
         <h1 class="hero__title fade-in-up">
           <span data-i18n="hero.title1">National Quemoy University</span><br>
           <span class="gold" data-i18n="hero.title2">Job Fair</span>
@@ -104,7 +104,7 @@
       <div class="container">
         <div class="footer__brand">NQU <span class="gold" data-i18n="nav.brand">Job Fair</span></div>
         <p data-i18n="footer.uni">National Quemoy University</p>
-        <p style="margin-top:0.5rem; font-size:0.75rem; opacity:0.5;" data-i18n="footer.copy">© 2025 NQU Career Center. All rights reserved.</p>
+        <p id="footerCopy" style="margin-top:0.5rem; font-size:0.75rem; opacity:0.5;"></p>
       </div>
     </footer>
 
@@ -238,6 +238,7 @@
       }
     }
 
+    document.getElementById('footerCopy').textContent = `© ${new Date().getFullYear()} NQU Career Center. All rights reserved.`;
     I18N.init('langToggle');
     loadAnnouncements();
     updateNav();

@@ -1,11 +1,20 @@
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const db = require('../db');
 const { requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
+const announceLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 60,
+  message: { error: 'Too many requests, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // GET /api/announcements — public, list all
-router.get('/', async (req, res) => {
+router.get('/', announceLimiter, async (req, res) => {
   try {
     const { rows } = await db.query(
       'SELECT * FROM announcements ORDER BY is_pinned DESC, priority DESC, created_at DESC'
@@ -13,10 +22,7 @@ router.get('/', async (req, res) => {
     res.json(rows);
   } catch (err) {
     console.error('Announcements fetch error:', err);
-    res.status(500).json({ 
-      error: 'Server error',
-      detail: err.message
-    });
+    res.status(500).json({ error: 'Server error' });
   }
 });
 

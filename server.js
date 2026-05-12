@@ -21,7 +21,12 @@ const PORT = process.env.PORT || 3000;
 app.set('trust proxy', 1);
 
 // ── Middleware ──────────────────────────────────────────────
-app.use(helmet({ contentSecurityPolicy: false })); // CSP disabled — inline scripts used throughout
+app.use(helmet({ contentSecurityPolicy: false })); // CSP enforcement disabled — inline scripts throughout
+app.use((req, res, next) => {
+  res.setHeader('Content-Security-Policy-Report-Only',
+    "default-src 'self'; script-src 'self' 'unsafe-inline' cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'");
+  next();
+});
 app.use(compression());
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
@@ -66,7 +71,6 @@ app.use((req, res, next) => {
 
 // Static files
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ── Health Check ───────────────────────────────────────────
 app.get('/api/health', async (req, res) => {
@@ -107,6 +111,14 @@ app.get('/admin/*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', file), (err) => {
     if (err) res.sendFile(path.join(__dirname, 'public', 'index.html'));
   });
+});
+
+// ── 404 Catch-all ─────────────────────────────────────────
+app.use((req, res) => {
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'Not found' });
+  }
+  res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 });
 
 // ── Start (only when not on Vercel) ────────────────────────

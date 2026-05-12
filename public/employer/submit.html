@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
   <meta name="description" content="NQU 2026 Job Fair Registration - Employer Submission Form">
   <title>Job Fair Registration — NQU</title>
   <link rel="stylesheet" href="/css/style.css">
@@ -140,7 +141,7 @@
               <div class="form-group">
                 <label class="form-label" for="companyIntro"><span data-i18n="q.intro">Company Introduction</span><span class="required-star">*</span></label>
                 <p class="form-hint" data-i18n="q.introHint">Recommended within 100 words</p>
-                <textarea class="form-textarea" id="companyIntro" name="company_introduction" rows="3" required></textarea>
+                <textarea class="form-textarea" id="companyIntro" name="company_introduction" rows="3" maxlength="5000" required></textarea>
               </div>
 
               <!-- Q6: CEO / Responsible Person Name -->
@@ -409,7 +410,7 @@
               <div class="form-group">
                 <label class="form-label" for="p_intro"><span data-i18n="q.intro">Organization Introduction</span><span class="required-star">*</span></label>
                 <p class="form-hint" data-i18n="q.introHint">Recommended within 100 words</p>
-                <textarea class="form-textarea" id="p_intro" name="p_introduction" rows="3" required></textarea>
+                <textarea class="form-textarea" id="p_intro" name="p_introduction" rows="3" maxlength="5000" required></textarea>
               </div>
 
               <!-- Q6: Responsible Person -->
@@ -600,6 +601,30 @@
       document.getElementById('sectionRecruitment').classList.toggle('section-hidden', cat !== 'Recruitment');
       document.getElementById('sectionResume').classList.toggle('section-hidden', cat !== 'Resume');
       document.getElementById('sectionPublicWelfare').classList.toggle('section-hidden', cat !== 'PublicWelfare');
+      if (cat) sessionStorage.setItem('nqu_category', cat);
+    }
+
+    function restoreCategory() {
+      const saved = sessionStorage.getItem('nqu_category');
+      if (!saved) return;
+      const radio = document.querySelector(`input[name="activity_category"][value="${saved}"]`);
+      if (radio) { radio.checked = true; switchSection(); }
+    }
+
+    function setupCharCounters() {
+      document.querySelectorAll('textarea[maxlength], textarea[data-maxlen]').forEach(ta => {
+        const max = parseInt(ta.getAttribute('maxlength') || ta.getAttribute('data-maxlen') || 5000);
+        ta.setAttribute('maxlength', max);
+        const hint = document.createElement('div');
+        hint.className = 'form-hint char-counter';
+        hint.style.textAlign = 'right';
+        hint.textContent = `0 / ${max}`;
+        ta.insertAdjacentElement('afterend', hint);
+        ta.addEventListener('input', () => {
+          hint.textContent = `${ta.value.length} / ${max}`;
+          hint.style.color = ta.value.length > max * 0.9 ? 'var(--color-danger)' : '';
+        });
+      });
     }
 
     // Called by I18N.applyAll() hook after language switch
@@ -796,6 +821,18 @@
       try {
         const sub = await API.get(`/api/submissions/${id}`);
 
+        if (sub.status !== 'pending') {
+          const form = document.getElementById('submitForm');
+          form.innerHTML = `
+            <div style="text-align:center; padding:3rem;">
+              <div style="font-size:2.5rem; margin-bottom:1rem;">🔒</div>
+              <h2 style="margin-bottom:0.75rem;">Editing Not Available</h2>
+              <p class="text-muted">This submission has been <strong>${App.escapeHtml(sub.status)}</strong> and can no longer be edited.</p>
+              <a href="/employer/dashboard.html" class="btn btn--primary" style="margin-top:1.5rem; display:inline-block;">Back to Dashboard</a>
+            </div>`;
+          return;
+        }
+
         // Set category radio
         const catRadio = document.querySelector(`input[name="activity_category"][value="${sub.activity_category}"]`);
         if (catRadio) { catRadio.checked = true; switchSection(); }
@@ -919,6 +956,7 @@
       populateDynamicFields();
       setupLogoUpload('logo');
       setupLogoUpload('p_logo');
+      setupCharCounters();
 
       const params = new URLSearchParams(window.location.search);
       editId = params.get('id') || params.get('edit');
@@ -927,6 +965,8 @@
         document.getElementById('submitBtn').setAttribute('data-i18n', 'btn.update');
         I18N.applyAll();
         await loadSubmission(editId);
+      } else {
+        restoreCategory();
       }
     }
 

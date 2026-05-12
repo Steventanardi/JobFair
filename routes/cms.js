@@ -1,32 +1,19 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
 const db = require('../db');
 const { requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
-const uploadsDir = path.join(__dirname, '..', 'uploads');
-try { fs.mkdirSync(uploadsDir, { recursive: true }); } catch { /* read-only FS on serverless is fine — dir exists via .gitkeep */ }
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadsDir),
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const ext = path.extname(file.originalname);
-    cb(null, `${uniqueSuffix}${ext}`);
-  }
-});
-
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|gif|svg|webp|pdf|doc|docx/;
     const extOk = allowedTypes.test(path.extname(file.originalname).toLowerCase().slice(1));
     const mimeOk = allowedTypes.test(file.mimetype.split('/')[1]);
-    if (extOk || mimeOk) return cb(null, true);
+    if (extOk && mimeOk) return cb(null, true);
     cb(new Error('Only image and document files are allowed'));
   }
 });
@@ -177,18 +164,19 @@ router.delete('/admin/pages/:id', requireAdmin, async (req, res) => {
   }
 });
 
-// POST /api/cms/admin/media - Admin: Upload media
+// POST /api/cms/admin/media - Admin: Upload media (stored as base64 in DB — no disk needed)
 router.post('/admin/media', requireAdmin, upload.single('file'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
 
   try {
-    const urlPath = `/uploads/${req.file.filename}`;
+    const dataUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+    const uniqueId = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
     const { rows } = await db.query(
       `INSERT INTO cms_media (filename, original_name, mime_type, file_size, url_path)
        VALUES ($1, $2, $3, $4, $5) RETURNING id`,
-      [req.file.filename, req.file.originalname, req.file.mimetype, req.file.size, urlPath]
+      [uniqueId, req.file.originalname, req.file.mimetype, req.file.size, dataUrl]
     );
-    res.json({ message: 'File uploaded', id: rows[0].id, url: urlPath });
+    res.json({ message: 'File uploaded', id: rows[0].id, url: dataUrl });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
@@ -216,15 +204,8 @@ router.put('/admin/media/:id', requireAdmin, async (req, res) => {
 // DELETE /api/cms/admin/media/:id - Admin: Delete media
 router.delete('/admin/media/:id', requireAdmin, async (req, res) => {
   try {
-    const { rows } = await db.query('SELECT * FROM cms_media WHERE id = $1', [req.params.id]);
+    const { rows } = await db.query('SELECT id FROM cms_media WHERE id = $1', [req.params.id]);
     if (rows.length === 0) return res.status(404).json({ error: 'Media not found' });
-
-    const filePath = path.join(uploadsDir, rows[0].filename);
-    try {
-      await fs.promises.unlink(filePath);
-    } catch {
-      // File may not exist on disk (e.g. serverless), continue
-    }
 
     await db.query('DELETE FROM cms_media WHERE id = $1', [req.params.id]);
     res.json({ message: 'Media deleted' });

@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
   <meta name="description" content="NQU Job Fair Admin Dashboard">
   <title>Admin Dashboard — NQU Job Fair</title>
   <link rel="stylesheet" href="/css/style.css">
@@ -124,6 +125,12 @@
           <button class="filter-btn" data-status="pending" onclick="setFilter(this, 'pending')" data-i18n="adm.pending">Pending</button>
           <button class="filter-btn" data-status="approved" onclick="setFilter(this, 'approved')" data-i18n="adm.approved">Approved</button>
           <button class="filter-btn" data-status="rejected" onclick="setFilter(this, 'rejected')" data-i18n="adm.rejected">Rejected</button>
+          <select class="form-select" id="categoryFilter" onchange="filterSubmissions()" style="height:36px; font-size:var(--font-sm); padding:0 var(--space-3); border-radius:var(--radius-md); border:1px solid var(--color-border);">
+            <option value="">All Categories</option>
+            <option value="Recruitment">Recruitment</option>
+            <option value="Resume">Resume</option>
+            <option value="PublicWelfare">Public Welfare</option>
+          </select>
         </div>
 
         <div class="table-wrapper">
@@ -240,6 +247,24 @@
             <input class="form-input" type="date" id="setting_registration_deadline" style="width:100%;">
           </div>
           <button class="btn btn--primary mt-6" onclick="saveSettings()" data-i18n="adm.saveConfig">Save Configuration</button>
+        </div>
+
+        <div class="card mt-8" style="max-width:600px; background:var(--color-bg-alt); padding:var(--space-6); border-radius:var(--radius-lg); border:1px solid var(--color-border);">
+          <h3 style="font-size:1rem; font-weight:600; margin-bottom:var(--space-4);">Change Admin Password</h3>
+          <div class="form-group">
+            <label class="form-label">Current Password</label>
+            <input class="form-input" type="password" id="adminCurrentPw" autocomplete="current-password">
+          </div>
+          <div class="form-group mt-4">
+            <label class="form-label">New Password</label>
+            <input class="form-input" type="password" id="adminNewPw" autocomplete="new-password" minlength="6">
+          </div>
+          <div class="form-group mt-4">
+            <label class="form-label">Confirm New Password</label>
+            <input class="form-input" type="password" id="adminConfirmPw" autocomplete="new-password" minlength="6">
+          </div>
+          <div id="adminPwError" class="form-error mb-4" style="display:none;"></div>
+          <button class="btn btn--primary mt-4" onclick="changeAdminPassword()">Update Password</button>
         </div>
 
         <div class="dashboard__header mt-10">
@@ -412,9 +437,13 @@
         if (currentFilter) params.set('status', currentFilter);
         const search = document.getElementById('searchInput').value;
         if (search) params.set('search', search);
+        const category = document.getElementById('categoryFilter').value;
+        if (category) params.set('category', category);
         if (params.toString()) url += '?' + params;
 
-        const submissions = await API.get(url);
+        const data = await API.get(url);
+        const submissions = data.submissions || data;
+        const total = data.total;
         document.getElementById('selectAll').checked = false;
         updateBulkUI();
 
@@ -823,6 +852,42 @@
       } catch (err) { console.error(err); }
     }
 
+    async function changeAdminPassword() {
+      const currentPw = document.getElementById('adminCurrentPw').value;
+      const newPw = document.getElementById('adminNewPw').value;
+      const confirmPw = document.getElementById('adminConfirmPw').value;
+      const errorEl = document.getElementById('adminPwError');
+      errorEl.style.display = 'none';
+
+      if (!currentPw || !newPw || !confirmPw) {
+        errorEl.textContent = 'All fields are required.';
+        errorEl.style.display = 'block';
+        return;
+      }
+      if (newPw !== confirmPw) {
+        errorEl.textContent = 'New passwords do not match.';
+        errorEl.style.display = 'block';
+        return;
+      }
+      if (newPw.length < 6) {
+        errorEl.textContent = 'Password must be at least 6 characters.';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      try {
+        await API.patch('/api/admin/me/password', { current_password: currentPw, new_password: newPw });
+        App.toast('Password updated successfully. Please log in again.', 'success');
+        document.getElementById('adminCurrentPw').value = '';
+        document.getElementById('adminNewPw').value = '';
+        document.getElementById('adminConfirmPw').value = '';
+        setTimeout(() => App.logout(), 2000);
+      } catch (err) {
+        errorEl.textContent = err.message;
+        errorEl.style.display = 'block';
+      }
+    }
+
     async function saveSettings() {
       const updates = {
         registration_status: document.getElementById('setting_registration_status').value,
@@ -908,15 +973,23 @@
 
     async function exportData(format) {
       document.getElementById('exportMenu').style.display = 'none';
+      const filterParams = new URLSearchParams();
+      if (currentFilter) filterParams.set('status', currentFilter);
+      const search = document.getElementById('searchInput').value;
+      if (search) filterParams.set('search', search);
+      const category = document.getElementById('categoryFilter').value;
+      if (category) filterParams.set('category', category);
+      const filterStr = filterParams.toString() ? '?' + filterParams : '';
+
       if (format === 'csv') {
-        window.location.href = '/api/admin/submissions/export';
+        window.location.href = '/api/admin/submissions/export' + filterStr;
         return;
       }
 
       App.toast('Preparing export...', 'info');
       let data;
       try {
-        data = await API.get('/api/admin/submissions?limit=2000&offset=0');
+        data = await API.get('/api/admin/submissions?limit=2000&offset=0' + (filterStr ? '&' + filterParams : ''));
       } catch (err) {
         App.toast('Failed to load data: ' + err.message, 'error');
         return;

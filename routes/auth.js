@@ -172,7 +172,7 @@ router.patch('/employer/change-password', authLimiter, async (req, res) => {
 router.post('/logout', (req, res) => {
   req.session.destroy((err) => {
     if (err) return res.status(500).json({ error: 'Logout failed' });
-    res.clearCookie('connect.sid');
+    res.clearCookie('nqu_sid');
     res.json({ message: 'Logged out' });
   });
 });

@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
   <meta name="description" content="Register your company for the NQU Job Fair">
   <title>Employer Registration — NQU Job Fair</title>
   <link rel="stylesheet" href="/css/style.css">
@@ -103,6 +104,20 @@
     API.checkAuth().then(user => {
       if (user && user.role === 'employer') window.location.href = '/employer/dashboard.html';
     });
+
+    API.get('/api/settings').then(settings => {
+      if (settings.registration_status === 'closed') {
+        const form = document.getElementById('registerForm');
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.5';
+        const notice = document.createElement('div');
+        notice.className = 'form-error mb-4';
+        notice.style.display = 'block';
+        notice.textContent = 'Registration is currently closed. Please check back later.';
+        form.insertBefore(notice, submitBtn);
+      }
+    }).catch(() => {});
   </script>
 </body>
 </html>

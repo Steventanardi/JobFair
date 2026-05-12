@@ -34,57 +34,84 @@ router.use(requireAdmin);
 
 // GET /api/admin/submissions — list all submissions with optional filters + pagination
 router.get('/submissions', async (req, res) => {
-  const { status, search } = req.query;
+  const { status, search, category } = req.query;
   const limit = Math.min(parseInt(req.query.limit) || 100, 500);
   const offset = Math.max(parseInt(req.query.offset) || 0, 0);
 
-  let sql = `
-    SELECT ${SUB_LIST_COLS}
-    FROM submissions s
-    LEFT JOIN employers e ON s.employer_id = e.id
-  `;
   const conditions = [];
   const params = [];
-  let paramCounter = 1;
+  let p = 1;
 
   if (status && ['pending', 'approved', 'rejected'].includes(status)) {
-    conditions.push(`s.status = $${paramCounter++}`);
+    conditions.push(`s.status = $${p++}`);
     params.push(status);
   }
 
+  if (category && ['Recruitment', 'Resume', 'PublicWelfare'].includes(category)) {
+    conditions.push(`s.activity_category = $${p++}`);
+    params.push(category);
+  }
+
   if (search) {
-    conditions.push(`(s.company_name ILIKE $${paramCounter} OR s.contact_person ILIKE $${paramCounter + 1} OR s.contact_email ILIKE $${paramCounter + 2})`);
+    conditions.push(`(s.company_name ILIKE $${p} OR s.contact_person ILIKE $${p + 1} OR s.contact_email ILIKE $${p + 2})`);
     const term = `%${search}%`;
     params.push(term, term, term);
-    paramCounter += 3;
+    p += 3;
   }
 
-  if (conditions.length > 0) {
-    sql += ' WHERE ' + conditions.join(' AND ');
-  }
+  const where = conditions.length > 0 ? ' WHERE ' + conditions.join(' AND ') : '';
+  const listSql = `SELECT ${SUB_LIST_COLS} FROM submissions s LEFT JOIN employers e ON s.employer_id = e.id${where} ORDER BY s.submitted_at DESC LIMIT $${p++} OFFSET $${p++}`;
+  const countSql = `SELECT COUNT(*) as total FROM submissions s${where}`;
 
-  sql += ` ORDER BY s.submitted_at DESC LIMIT $${paramCounter++} OFFSET $${paramCounter++}`;
   params.push(limit, offset);
 
   try {
-    const { rows } = await db.query(sql, params);
-    res.json(rows);
+    const [{ rows }, { rows: countRows }] = await Promise.all([
+      db.query(listSql, params),
+      db.query(countSql, params.slice(0, params.length - 2))
+    ]);
+    res.json({ submissions: rows, total: parseInt(countRows[0].total) });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
   }
 });
 
-// GET /api/admin/submissions/export — download CSV
+// GET /api/admin/submissions/export — download CSV (respects status/search filters)
 router.get('/submissions/export', async (req, res) => {
+  const { status, search, category } = req.query;
+
+  const conditions = [];
+  const params = [];
+  let p = 1;
+
+  if (status && ['pending', 'approved', 'rejected'].includes(status)) {
+    conditions.push(`s.status = $${p++}`);
+    params.push(status);
+  }
+
+  if (category && ['Recruitment', 'Resume', 'PublicWelfare'].includes(category)) {
+    conditions.push(`s.activity_category = $${p++}`);
+    params.push(category);
+  }
+
+  if (search) {
+    conditions.push(`(s.company_name ILIKE $${p} OR s.contact_person ILIKE $${p + 1} OR s.contact_email ILIKE $${p + 2})`);
+    const term = `%${search}%`;
+    params.push(term, term, term);
+    p += 3;
+  }
+
+  const where = conditions.length > 0 ? ' WHERE ' + conditions.join(' AND ') : '';
+
   try {
     const { rows } = await db.query(`
-      SELECT 
-        s.*, e.email as employer_email 
-      FROM submissions s 
+      SELECT ${SUB_LIST_COLS}
+      FROM submissions s
       LEFT JOIN employers e ON s.employer_id = e.id
+      ${where}
       ORDER BY s.company_name ASC
-    `);
+    `, params);
 
     if (rows.length === 0) {
       return res.status(404).send('No submissions found');
@@ -186,6 +213,10 @@ router.patch('/submissions/:id/status', async (req, res) => {
 
   if (!status || !['pending', 'approved', 'rejected'].includes(status)) {
     return res.status(400).json({ error: 'Status must be "pending", "approved", or "rejected"' });
+  }
+
+  if (admin_notes && admin_notes.length > 1000) {
+    return res.status(400).json({ error: 'Admin notes must be 1000 characters or fewer' });
   }
 
   try {

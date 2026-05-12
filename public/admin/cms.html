@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
   <meta name="description" content="NQU Job Fair CMS Admin">
   <title>CMS Admin — NQU Job Fair</title>
   <link rel="stylesheet" href="/css/style.css">
@@ -833,12 +834,13 @@
       e.preventDefault();
       if (dragSrcNav === null || dragSrcNav === toIdx) return;
       const navs = window.__cachedNavs;
+      const originalPositions = Object.fromEntries(navs.map(n => [n.id, n.position]));
       const moved = navs.splice(dragSrcNav, 1)[0];
       navs.splice(toIdx, 0, moved);
       navs.forEach((n, i) => { n.position = i + 1; });
       window.__cachedNavs = navs;
       renderNavList(navs);
-      saveNavOrder(navs);
+      saveNavOrder(navs, originalPositions);
     }
     function navDragEnd() {
       dragSrcNav = null;
@@ -847,9 +849,11 @@
       });
     }
 
-    async function saveNavOrder(navs) {
+    async function saveNavOrder(navs, originalPositions) {
       try {
-        await Promise.all(navs.map(n =>
+        const changed = navs.filter(n => n.position !== originalPositions[n.id]);
+        if (changed.length === 0) return;
+        await Promise.all(changed.map(n =>
           API.put(`/api/cms/admin/navigation/${n.id}`, {
             label: n.label, url: n.url, icon: n.icon || '',
             position: n.position, is_active: n.is_active !== 0,

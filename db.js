@@ -233,6 +233,7 @@ const initDB = async () => {
     await db.rawQuery(`CREATE INDEX IF NOT EXISTS idx_submissions_employer_id ON submissions(employer_id)`);
     await db.rawQuery(`CREATE INDEX IF NOT EXISTS idx_submissions_status ON submissions(status)`);
     await db.rawQuery(`CREATE INDEX IF NOT EXISTS idx_submissions_company_name ON submissions(company_name)`);
+    await db.rawQuery(`CREATE INDEX IF NOT EXISTS idx_admin_logs_created_at ON admin_logs(created_at)`);
 
     console.log('Tables created successfully.');
 

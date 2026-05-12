@@ -204,6 +204,20 @@ router.put('/:id', requireEmployer, submitLimiter, upload.single('logo'), async 
       parking_spaces, other_requirements, group_type, establishment_date
     } = req.body;
 
+    const trimmedCompanyName = (company_name || '').trim();
+    if (trimmedCompanyName && trimmedCompanyName.length > MAX_SHORT) {
+      return res.status(400).json({ error: `Company name must be ${MAX_SHORT} characters or fewer` });
+    }
+    if ((company_intro || '').length > MAX_LONG) {
+      return res.status(400).json({ error: `Company introduction must be ${MAX_LONG} characters or fewer` });
+    }
+    if ((job_positions || '').length > MAX_LONG) {
+      return res.status(400).json({ error: `Job positions must be ${MAX_LONG} characters or fewer` });
+    }
+    if ((requirements || '').length > MAX_LONG) {
+      return res.status(400).json({ error: `Requirements must be ${MAX_LONG} characters or fewer` });
+    }
+
     const nonVeg = parsePositiveInt(lunch_box_non_veg) ?? submission.lunch_box_non_veg ?? 0;
     const veg = parsePositiveInt(lunch_box_veg) ?? submission.lunch_box_veg ?? 0;
     if (nonVeg + veg > 3) {
@@ -281,8 +295,8 @@ router.delete('/:id', requireEmployer, async (req, res) => {
     );
 
     if (rows.length === 0) return res.status(404).json({ error: 'Submission not found' });
-    if (rows[0].status !== 'pending') {
-      return res.status(400).json({ error: 'Can only delete pending submissions' });
+    if (rows[0].status === 'approved') {
+      return res.status(400).json({ error: 'Approved submissions cannot be deleted. Contact the admin.' });
     }
 
     await db.query('DELETE FROM submissions WHERE id = $1', [req.params.id]);
