@@ -319,6 +319,7 @@
           <button class="rich-btn" onclick="wrapSelected('<code>','</code>')" title="Code">&lt;/&gt;</button>
         </div>
         <textarea class="editor" id="pageContent" rows="12"></textarea>
+        <button type="button" class="btn btn--outline btn--sm" style="margin-top:4px;" onclick="openMediaPicker()">🖼 Browse Media</button>
       </div>
       <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:var(--space-4);">
         <div class="form-group">
@@ -344,6 +345,22 @@
         <button class="btn btn--danger" id="pageDeleteBtn" style="margin-right:auto;" onclick="deletePage()">Delete</button>
         <button class="btn btn--outline" id="pageDuplicateBtn" onclick="duplicatePage()">⧉ Duplicate</button>
         <button class="btn btn--primary" onclick="savePage()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MODAL: Media Picker ═══ -->
+  <div class="modal-overlay" id="mediaPickerModal">
+    <div class="modal" style="max-width:760px;">
+      <div class="modal__header">
+        <h2 class="modal__title">Browse Media — Click to Insert</h2>
+        <button class="modal__close" onclick="App.hideModal('mediaPickerModal')">✕</button>
+      </div>
+      <div id="mediaPickerGrid" class="cms-media-grid" style="max-height:400px; overflow-y:auto; min-height:120px;">
+        <div class="text-muted text-center" style="padding:2rem; grid-column:1/-1;">Loading...</div>
+      </div>
+      <div class="modal__actions">
+        <button class="btn btn--outline" onclick="App.hideModal('mediaPickerModal')">Cancel</button>
       </div>
     </div>
   </div>
@@ -715,6 +732,44 @@
 
     function loadMoreMedia() {
       loadMedia(true);
+    }
+
+    async function openMediaPicker() {
+      App.showModal('mediaPickerModal');
+      const grid = document.getElementById('mediaPickerGrid');
+      grid.innerHTML = `<div class="text-muted text-center" style="padding:2rem; grid-column:1/-1;">Loading...</div>`;
+      try {
+        const { items } = await API.get('/api/cms/media?limit=100&offset=0');
+        if (!items || items.length === 0) {
+          grid.innerHTML = `<div class="text-muted text-center" style="padding:2rem; grid-column:1/-1;">No media uploaded yet.</div>`;
+          return;
+        }
+        const isImage = m => /jpeg|jpg|png|gif|webp|svg/.test(m.mime_type || '');
+        grid.innerHTML = items.map(m => `
+          <div class="cms-media-item" style="cursor:pointer;" title="${App.escapeHtml(m.original_name || m.filename)}"
+               onclick="insertMediaUrl('${App.escapeHtml(m.url_path)}', ${isImage(m)})">
+            ${isImage(m)
+              ? `<img src="${App.escapeHtml(m.url_path)}" alt="${App.escapeHtml(m.alt_text || '')}" loading="lazy">`
+              : `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:4px;padding:8px;"><span style="font-size:2rem;">📄</span></div>`
+            }
+            <div class="cms-media-item__label">${App.escapeHtml(m.original_name || m.filename)}</div>
+          </div>
+        `).join('');
+      } catch {
+        grid.innerHTML = `<div class="text-danger text-center" style="padding:2rem; grid-column:1/-1;">Error loading media.</div>`;
+      }
+    }
+
+    function insertMediaUrl(url, isImage) {
+      const ta = document.getElementById('pageContent');
+      if (!ta) return;
+      const insert = isImage ? `<img src="${url}" alt="">` : url;
+      const start = ta.selectionStart;
+      const end = ta.selectionEnd;
+      ta.value = ta.value.slice(0, start) + insert + ta.value.slice(end);
+      ta.selectionStart = ta.selectionEnd = start + insert.length;
+      ta.focus();
+      App.hideModal('mediaPickerModal');
     }
 
     function copyUrl(urlPath) {

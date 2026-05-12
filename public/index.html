@@ -233,6 +233,34 @@
             el.textContent = cms.site_name;
           });
         }
+
+        // Countdown timer — only when event_date is a parseable date (not free-text like "Spring 2025")
+        if (cms.event_date) {
+          const target = new Date(cms.event_date);
+          if (!isNaN(target.getTime()) && target > new Date()) {
+            const timerEl = document.createElement('div');
+            timerEl.id = 'heroCountdown';
+            timerEl.style.cssText = 'margin-top:1.5rem; display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;';
+            document.querySelector('.hero__content').appendChild(timerEl);
+
+            function renderCountdown() {
+              const diff = target - new Date();
+              if (diff <= 0) { timerEl.remove(); return; }
+              const d = Math.floor(diff / 86400000);
+              const h = Math.floor((diff % 86400000) / 3600000);
+              const m = Math.floor((diff % 3600000) / 60000);
+              const s = Math.floor((diff % 60000) / 1000);
+              const unit = (n, label) =>
+                `<div style="background:rgba(255,255,255,0.15);border-radius:8px;padding:8px 14px;min-width:56px;text-align:center;">
+                   <div style="font-size:1.5rem;font-weight:700;line-height:1;">${n}</div>
+                   <div style="font-size:0.65rem;opacity:0.8;margin-top:2px;text-transform:uppercase;">${label}</div>
+                 </div>`;
+              timerEl.innerHTML = unit(d,'Days') + unit(h,'Hrs') + unit(m,'Min') + unit(s,'Sec');
+            }
+            renderCountdown();
+            setInterval(renderCountdown, 1000);
+          }
+        }
       } catch (err) {
         // CMS not critical — page works with hardcoded defaults
       }

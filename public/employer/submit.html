@@ -937,6 +937,7 @@
         } else {
           await API.post('/api/submissions', data);
         }
+        localStorage.removeItem(DRAFT_KEY);
         window.location.href = '/employer/dashboard.html';
       } catch (err) {
         errEl.textContent = err.message || I18N.t('err.general');
@@ -965,9 +966,76 @@
         document.getElementById('submitBtn').setAttribute('data-i18n', 'btn.update');
         I18N.applyAll();
         await loadSubmission(editId);
+        setupDraftAutosave(true);
       } else {
         restoreCategory();
+        setupDraftAutosave(false);
       }
+    }
+
+    // ── F8: Draft auto-save ───────────────────────────────────────
+    const DRAFT_KEY = 'nqu_submit_draft';
+
+    function collectDraft() {
+      const data = {};
+      document.querySelectorAll('#submitForm input:not([type=file]):not([type=radio]):not([type=checkbox]), #submitForm textarea, #submitForm select').forEach(el => {
+        if (el.name || el.id) data[el.id || el.name] = el.value;
+      });
+      document.querySelectorAll('#submitForm input[type=radio]:checked').forEach(el => {
+        data[`__radio__${el.name}`] = el.value;
+      });
+      document.querySelectorAll('#submitForm input[type=checkbox]:checked').forEach(el => {
+        if (!data[`__cb__${el.name}`]) data[`__cb__${el.name}`] = [];
+        data[`__cb__${el.name}`].push(el.value);
+      });
+      return data;
+    }
+
+    function applyDraft(data) {
+      Object.entries(data).forEach(([key, val]) => {
+        if (key.startsWith('__radio__')) {
+          const name = key.replace('__radio__', '');
+          const r = document.querySelector(`input[name="${name}"][value="${val}"]`);
+          if (r) { r.checked = true; if (name === 'activity_category') switchSection(); }
+          return;
+        }
+        if (key.startsWith('__cb__')) {
+          const name = key.replace('__cb__', '');
+          (val || []).forEach(v => {
+            const cb = document.querySelector(`input[name="${name}"][value="${v}"]`);
+            if (cb) cb.checked = true;
+          });
+          return;
+        }
+        const el = document.getElementById(key) || document.querySelector(`[name="${key}"]`);
+        if (el && el.type !== 'file') el.value = val;
+      });
+    }
+
+    function setupDraftAutosave(isEdit) {
+      if (isEdit) { localStorage.removeItem(DRAFT_KEY); return; }
+      const saved = localStorage.getItem(DRAFT_KEY);
+      if (saved) {
+        try {
+          const draft = JSON.parse(saved);
+          const banner = document.createElement('div');
+          banner.className = 'form-notice';
+          banner.style.cssText = 'display:flex; justify-content:space-between; align-items:center;';
+          banner.innerHTML = `<span>📝 A saved draft was found. Restore it?</span>
+            <div style="display:flex;gap:8px;">
+              <button type="button" class="btn btn--primary btn--sm" id="draftRestoreBtn">Restore</button>
+              <button type="button" class="btn btn--ghost btn--sm" id="draftDiscardBtn">Discard</button>
+            </div>`;
+          const form = document.getElementById('submitForm');
+          form.insertBefore(banner, form.firstChild);
+          document.getElementById('draftRestoreBtn').onclick = () => { applyDraft(draft); banner.remove(); };
+          document.getElementById('draftDiscardBtn').onclick = () => { localStorage.removeItem(DRAFT_KEY); banner.remove(); };
+        } catch {}
+      }
+      setInterval(() => {
+        if (!document.getElementById('submitForm')) return;
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(collectDraft()));
+      }, 30000);
     }
 
     init();

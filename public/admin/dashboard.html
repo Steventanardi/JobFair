@@ -105,6 +105,7 @@
               <button class="btn btn--success btn--sm" onclick="bulkReview('approved')" data-i18n="adm.bulkApprove">Approve Selected</button>
               <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="bulkReview('rejected')" data-i18n="adm.bulkReject">Reject Selected</button>
             </div>
+            <button class="btn btn--outline" onclick="openBulkBoothModal()">🎪 Bulk Booths</button>
             <div class="export-dropdown" style="position:relative;">
               <button class="btn btn--outline" onclick="toggleExportMenu(event)">📥 Export ▾</button>
               <div id="exportMenu" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--color-bg-alt);border:1px solid var(--color-border);border-radius:var(--radius-md);box-shadow:0 4px 16px rgba(0,0,0,0.15);min-width:140px;z-index:100;">
@@ -267,8 +268,28 @@
           <button class="btn btn--primary mt-4" onclick="changeAdminPassword()">Update Password</button>
         </div>
 
+        <div class="card mt-8" style="max-width:900px; background:var(--color-bg-alt); padding:var(--space-6); border-radius:var(--radius-lg); border:1px solid var(--color-border);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-4);">
+            <h3 style="font-size:1rem; font-weight:600; margin:0;">Admin Accounts</h3>
+            <button class="btn btn--primary btn--sm" onclick="openNewAdminModal()">+ Add Admin</button>
+          </div>
+          <div id="adminAccountsList" class="text-sm text-muted">Loading...</div>
+        </div>
+
         <div class="dashboard__header mt-10">
           <h1 class="dashboard__title" data-i18n="adm.recentActivity">Recent Activity (Admin Logs)</h1>
+        </div>
+        <div style="display:flex; gap:var(--space-2); flex-wrap:wrap; margin-bottom:var(--space-4);">
+          <input class="form-input" type="text" id="logSearch" placeholder="Search action, details, admin..." style="flex:1; min-width:180px;" oninput="filterLogs()">
+          <select class="form-select" id="logTargetType" onchange="filterLogs()" style="height:40px;">
+            <option value="">All types</option>
+            <option value="submission">Submission</option>
+            <option value="employer">Employer</option>
+            <option value="settings">Settings</option>
+            <option value="admin">Admin</option>
+          </select>
+          <input class="form-input" type="date" id="logDateFrom" onchange="filterLogs()" style="width:145px;" title="From date">
+          <input class="form-input" type="date" id="logDateTo" onchange="filterLogs()" style="width:145px;" title="To date">
         </div>
         <div class="table-wrapper">
           <table class="data-table">
@@ -287,6 +308,47 @@
       </div>
 
     </main>
+  </div>
+
+  <!-- ═══ MODAL: Bulk Booth Assignment ═══ -->
+  <div class="modal-overlay" id="bulkBoothModal">
+    <div class="modal" style="max-width:700px;">
+      <div class="modal__header">
+        <h2 class="modal__title">Bulk Booth Assignment</h2>
+        <button class="modal__close" onclick="App.hideModal('bulkBoothModal')">✕</button>
+      </div>
+      <p class="text-sm text-muted mb-4">Edit booth numbers for all approved submissions. Leave blank to clear.</p>
+      <div id="bulkBoothBody" style="max-height:400px; overflow-y:auto;">
+        <div class="text-muted text-center" style="padding:2rem;">Loading approved submissions...</div>
+      </div>
+      <div class="modal__actions">
+        <button class="btn btn--outline" onclick="App.hideModal('bulkBoothModal')">Cancel</button>
+        <button class="btn btn--primary" onclick="saveBulkBooths()">Save All</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MODAL: New Admin Account ═══ -->
+  <div class="modal-overlay" id="newAdminModal">
+    <div class="modal" style="max-width:400px;">
+      <div class="modal__header">
+        <h2 class="modal__title">Add Admin Account</h2>
+        <button class="modal__close" onclick="App.hideModal('newAdminModal')">✕</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input class="form-input" type="text" id="newAdminUsername" autocomplete="off">
+      </div>
+      <div class="form-group mt-4">
+        <label class="form-label">Password</label>
+        <input class="form-input" type="password" id="newAdminPassword" autocomplete="new-password" minlength="6">
+      </div>
+      <div id="newAdminError" class="form-error mb-4" style="display:none;"></div>
+      <div class="modal__actions">
+        <button class="btn btn--outline" onclick="App.hideModal('newAdminModal')">Cancel</button>
+        <button class="btn btn--primary" onclick="createAdmin()">Create</button>
+      </div>
+    </div>
   </div>
 
   <!-- ═══ MODAL: Review ═══ -->
@@ -414,7 +476,7 @@
         if (tabId === 'tab-employers') loadEmployers();
         if (tabId === 'tab-announcements') loadAnnouncements();
         if (tabId === 'tab-analytics') loadAnalytics();
-        if (tabId === 'tab-settings') { loadSettingsDisplay(); loadLogs(); }
+        if (tabId === 'tab-settings') { loadSettingsDisplay(); loadLogs(); loadAdminAccounts(); }
       }
     }
 
@@ -899,11 +961,28 @@
       } catch (err) { App.toast(err.message, 'error'); }
     }
 
+    // ── F17: Log search/filter ──
+    let logFilterTimeout;
+    function filterLogs() {
+      clearTimeout(logFilterTimeout);
+      logFilterTimeout = setTimeout(loadLogs, 300);
+    }
+
     async function loadLogs() {
       const body = document.getElementById('logsBody');
       const quickBody = document.getElementById('quickLogsBody');
+      const params = new URLSearchParams();
+      const search = document.getElementById('logSearch')?.value;
+      const targetType = document.getElementById('logTargetType')?.value;
+      const dateFrom = document.getElementById('logDateFrom')?.value;
+      const dateTo = document.getElementById('logDateTo')?.value;
+      if (search) params.set('search', search);
+      if (targetType) params.set('target_type', targetType);
+      if (dateFrom) params.set('date_from', dateFrom);
+      if (dateTo) params.set('date_to', dateTo);
+      const url = '/api/admin/logs' + (params.toString() ? '?' + params : '');
       try {
-        const logs = await API.get('/api/admin/logs');
+        const logs = await API.get(url);
         const rows = logs.map(l => `
           <tr class="text-xs">
             <td><strong>${App.escapeHtml(l.admin_name || 'System')}</strong></td>
@@ -913,7 +992,7 @@
             <td>${App.formatDate(l.created_at)}</td>
           </tr>
         `).join('');
-        if (body) body.innerHTML = rows;
+        if (body) body.innerHTML = rows || `<tr><td colspan="5" class="text-center text-muted" style="padding:2rem;">No matching logs</td></tr>`;
 
         if (quickBody) {
           quickBody.innerHTML = logs.slice(0, 5).map(l => `
@@ -924,6 +1003,102 @@
           `).join('') || `<div class="text-muted">${I18N.t('adm.noActivity')}</div>`;
         }
       } catch (err) { console.error(err); }
+    }
+
+    // ── F5: Bulk Booth Assignment ──
+    let bulkBoothData = [];
+    async function openBulkBoothModal() {
+      App.showModal('bulkBoothModal');
+      const body = document.getElementById('bulkBoothBody');
+      body.innerHTML = '<div class="text-muted text-center" style="padding:2rem;">Loading...</div>';
+      try {
+        const data = await API.get('/api/admin/submissions?status=approved&limit=500');
+        bulkBoothData = data.submissions || data;
+        if (bulkBoothData.length === 0) {
+          body.innerHTML = '<div class="text-muted text-center" style="padding:2rem;">No approved submissions.</div>';
+          return;
+        }
+        body.innerHTML = `<table class="data-table" style="font-size:var(--font-sm);">
+          <thead><tr><th>Company</th><th>Current Booth</th><th>New Booth</th></tr></thead>
+          <tbody>${bulkBoothData.map(s => `
+            <tr>
+              <td>${App.escapeHtml(s.company_name)}</td>
+              <td>${s.booth_number ? `<span style="color:var(--color-gold-dark);font-weight:600;">${App.escapeHtml(s.booth_number)}</span>` : '—'}</td>
+              <td><input type="text" class="form-input booth-bulk-input" data-id="${s.id}" value="${App.escapeHtml(s.booth_number || '')}" placeholder="e.g. A-01" maxlength="10" style="padding:4px 8px; height:32px; font-size:var(--font-sm);"></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>`;
+      } catch (err) {
+        body.innerHTML = `<div class="text-danger" style="padding:2rem;">Error: ${App.escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    async function saveBulkBooths() {
+      const inputs = document.querySelectorAll('.booth-bulk-input');
+      const changed = [];
+      inputs.forEach(inp => {
+        const original = bulkBoothData.find(s => s.id == inp.dataset.id);
+        if (original && (inp.value.trim() !== (original.booth_number || ''))) {
+          changed.push({ id: inp.dataset.id, booth_number: inp.value.trim() });
+        }
+      });
+      if (changed.length === 0) { App.toast('No changes to save', 'info'); return; }
+      try {
+        await Promise.all(changed.map(c => API.patch(`/api/admin/submissions/${c.id}/booth`, { booth_number: c.booth_number || null })));
+        App.toast(`${changed.length} booth(s) updated`, 'success');
+        App.hideModal('bulkBoothModal');
+        loadSubmissions();
+      } catch (err) {
+        App.toast('Error: ' + err.message, 'error');
+      }
+    }
+
+    // ── F6: Admin Account Management ──
+    async function loadAdminAccounts() {
+      const el = document.getElementById('adminAccountsList');
+      if (!el) return;
+      try {
+        const admins = await API.get('/api/admin/admins');
+        el.innerHTML = admins.map(a => `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--color-border);">
+            <span style="font-weight:600;">${App.escapeHtml(a.username)}</span>
+            <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="deleteAdmin(${a.id}, '${App.escapeHtml(a.username)}')">Delete</button>
+          </div>`).join('');
+      } catch (err) { el.textContent = 'Error loading admins'; }
+    }
+
+    function openNewAdminModal() {
+      document.getElementById('newAdminUsername').value = '';
+      document.getElementById('newAdminPassword').value = '';
+      document.getElementById('newAdminError').style.display = 'none';
+      App.showModal('newAdminModal');
+    }
+
+    async function createAdmin() {
+      const username = document.getElementById('newAdminUsername').value.trim();
+      const password = document.getElementById('newAdminPassword').value;
+      const errEl = document.getElementById('newAdminError');
+      errEl.style.display = 'none';
+      try {
+        await API.post('/api/admin/admins', { username, password });
+        App.toast('Admin account created', 'success');
+        App.hideModal('newAdminModal');
+        loadAdminAccounts();
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.style.display = 'block';
+      }
+    }
+
+    async function deleteAdmin(id, username) {
+      if (!App.confirm(`Delete admin "${username}"? This cannot be undone.`)) return;
+      try {
+        await API.delete(`/api/admin/admins/${id}`);
+        App.toast('Admin deleted', 'success');
+        loadAdminAccounts();
+      } catch (err) {
+        App.toast(err.message, 'error');
+      }
     }
 
     // ── BULK ACTIONS ──

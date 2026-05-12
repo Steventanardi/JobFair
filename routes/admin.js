@@ -473,19 +473,106 @@ router.get('/analytics', async (req, res) => {
   }
 });
 
-// GET /api/admin/logs — audit logs with pagination
+// GET /api/admin/logs — audit logs with pagination + search/filter
 router.get('/logs', async (req, res) => {
   const limit = Math.min(parseInt(req.query.limit) || 50, 200);
   const offset = Math.max(parseInt(req.query.offset) || 0, 0);
+  const { search, target_type, date_from, date_to } = req.query;
+
+  const conditions = [];
+  const params = [];
+  let p = 1;
+
+  if (search) {
+    conditions.push(`(l.action ILIKE $${p} OR l.details ILIKE $${p + 1} OR a.username ILIKE $${p + 2})`);
+    const term = `%${search}%`;
+    params.push(term, term, term);
+    p += 3;
+  }
+  if (target_type) {
+    conditions.push(`l.target_type = $${p++}`);
+    params.push(target_type);
+  }
+  if (date_from) {
+    conditions.push(`l.created_at >= $${p++}`);
+    params.push(date_from);
+  }
+  if (date_to) {
+    conditions.push(`l.created_at < ($${p++}::date + interval '1 day')`);
+    params.push(date_to);
+  }
+
+  const where = conditions.length ? ' WHERE ' + conditions.join(' AND ') : '';
+  params.push(limit, offset);
+
   try {
     const { rows } = await db.query(`
       SELECT l.*, a.username as admin_name
       FROM admin_logs l
       LEFT JOIN admins a ON l.admin_id = a.id
+      ${where}
       ORDER BY l.created_at DESC
-      LIMIT $1 OFFSET $2
-    `, [limit, offset]);
+      LIMIT $${p++} OFFSET $${p++}
+    `, params);
     res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// GET /api/admin/admins — list all admin accounts
+router.get('/admins', async (req, res) => {
+  try {
+    const { rows } = await db.query('SELECT id, username FROM admins ORDER BY id ASC');
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/admin/admins — create new admin account
+router.post('/admins', async (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Username and password are required' });
+  }
+  if (username.length < 3 || username.length > 50) {
+    return res.status(400).json({ error: 'Username must be 3–50 characters' });
+  }
+  if (password.length < 6) {
+    return res.status(400).json({ error: 'Password must be at least 6 characters' });
+  }
+  try {
+    const { rows: existing } = await db.query('SELECT id FROM admins WHERE username = $1', [username]);
+    if (existing.length > 0) return res.status(409).json({ error: 'Username already exists' });
+
+    const hash = await bcrypt.hash(password, 10);
+    const { rows } = await db.query(
+      'INSERT INTO admins (username, password_hash) VALUES ($1, $2) RETURNING id, username',
+      [username, hash]
+    );
+    await logAction(req.session.user.id, `Created admin account: ${username}`, 'admin', rows[0].id);
+    res.json({ message: 'Admin created', id: rows[0].id, username: rows[0].username });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// DELETE /api/admin/admins/:id — delete an admin account (cannot delete self)
+router.delete('/admins/:id', async (req, res) => {
+  if (parseInt(req.params.id) === req.session.user.id) {
+    return res.status(400).json({ error: 'Cannot delete your own account' });
+  }
+  try {
+    const { rows } = await db.query('SELECT id, username FROM admins WHERE id = $1', [req.params.id]);
+    if (rows.length === 0) return res.status(404).json({ error: 'Admin not found' });
+
+    await db.query('DELETE FROM admins WHERE id = $1', [req.params.id]);
+    await logAction(req.session.user.id, `Deleted admin account: ${rows[0].username}`, 'admin', req.params.id);
+    res.json({ message: 'Admin deleted' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
