@@ -8,6 +8,7 @@
   <meta name="description" content="Manage your job fair submission">
   <title>Employer Dashboard — NQU Job Fair</title>
   <link rel="stylesheet" href="/css/style.css">
+  <script>if(localStorage.getItem('nqu-dark')==='1')document.documentElement.setAttribute('data-theme','dark')</script>
   <style>
     .dash-grid { display: grid; grid-template-columns: 280px 1fr; gap: var(--space-6); align-items: start; }
     @media (max-width: 860px) { .dash-grid { grid-template-columns: 1fr; } }
@@ -22,17 +23,17 @@
 
     .announce-strip { border-radius: var(--radius-md); padding: 10px 16px; margin-bottom: var(--space-4); display: flex; gap: 10px; align-items: flex-start; font-size: 0.875rem; }
     .announce-strip--pinned { background: #fef3c7; border-left: 4px solid #f59e0b; }
-    .announce-strip--normal { background: var(--color-bg-alt); border-left: 4px solid var(--color-primary); }
+    .announce-strip--normal { background: var(--color-bg-alt); border-left: 4px solid var(--color-gold); }
     .announce-strip__title { font-weight: 700; margin-bottom: 2px; }
 
     .progress-bar { display: flex; align-items: center; gap: 0; margin: var(--space-4) 0; }
     .progress-step { display: flex; flex-direction: column; align-items: center; flex: 1; }
     .progress-step__dot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; border: 2px solid var(--color-border); background: var(--color-bg); color: var(--text-muted); transition: all 0.2s; z-index: 1; position: relative; }
     .progress-step__dot--done { background: #10b981; border-color: #10b981; color: #fff; }
-    .progress-step__dot--active { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+    .progress-step__dot--active { background: var(--color-gold); border-color: var(--color-gold); color: #fff; }
     .progress-step__dot--rejected { background: var(--color-danger); border-color: var(--color-danger); color: #fff; }
     .progress-step__label { font-size: 0.7rem; color: var(--text-muted); margin-top: 5px; text-align: center; white-space: nowrap; }
-    .progress-step__label--active { color: var(--color-primary); font-weight: 600; }
+    .progress-step__label--active { color: var(--color-gold); font-weight: 600; }
     .progress-step__label--rejected { color: var(--color-danger); font-weight: 600; }
     .progress-line { flex: 1; height: 2px; background: var(--color-border); margin: 0 -2px; margin-bottom: 22px; }
     .progress-line--done { background: #10b981; }
@@ -113,7 +114,9 @@
             <div class="info-card fade-in-up stagger-1">
               <div class="info-card__title">📅 <span data-i18n="empDash.eventInfo">Event Information</span></div>
               <div id="eventInfoBody">
-                <div class="text-muted text-sm">Loading...</div>
+                <div class="loading-skeleton" style="height:12px; width:65%; margin-bottom:8px;"></div>
+                <div class="loading-skeleton" style="height:12px; width:80%; margin-bottom:8px;"></div>
+                <div class="loading-skeleton" style="height:12px; width:50%;"></div>
               </div>
             </div>
 
@@ -121,15 +124,23 @@
             <div class="info-card fade-in-up stagger-2" style="margin-top:var(--space-4);">
               <div class="info-card__title">🏢 <span data-i18n="empDash.yourAccount">Your Account</span></div>
               <div id="accountInfoBody">
-                <div class="text-muted text-sm">Loading...</div>
+                <div class="loading-skeleton" style="height:12px; width:70%; margin-bottom:8px;"></div>
+                <div class="loading-skeleton" style="height:12px; width:45%;"></div>
               </div>
             </div>
           </div>
 
           <!-- Right: Submission -->
           <div id="submissionArea" class="fade-in-up stagger-2">
-            <div style="display:flex; align-items:center; justify-content:center; padding:4rem;">
-              <div class="spinner"></div>
+            <div class="card">
+              <div class="loading-skeleton" style="height:18px; width:45%; margin-bottom:14px;"></div>
+              <div class="loading-skeleton" style="height:12px; width:75%; margin-bottom:8px;"></div>
+              <div class="loading-skeleton" style="height:12px; width:60%; margin-bottom:8px;"></div>
+              <div class="loading-skeleton" style="height:12px; width:80%; margin-bottom:20px;"></div>
+              <div style="display:flex; gap:10px;">
+                <div class="loading-skeleton" style="height:34px; width:100px; border-radius:8px;"></div>
+                <div class="loading-skeleton" style="height:34px; width:80px; border-radius:8px;"></div>
+              </div>
             </div>
           </div>
 
@@ -268,7 +279,15 @@
         if (!submissions.length) {
           area.innerHTML = `
             <div class="empty-state">
-              <div class="empty-state__icon">📋</div>
+              <div class="empty-state__svg">
+                <svg viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg" width="88" height="88">
+                  <rect x="16" y="12" width="56" height="64" rx="6" stroke="currentColor" stroke-width="3" fill="none"/>
+                  <rect x="28" y="8" width="32" height="10" rx="4" stroke="currentColor" stroke-width="2.5" fill="none"/>
+                  <line x1="28" y1="38" x2="60" y2="38" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                  <line x1="28" y1="50" x2="52" y2="50" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                  <line x1="28" y1="62" x2="45" y2="62" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+              </div>
               <div class="empty-state__title">${I18N.t('empDash.noSubs')}</div>
               <div class="empty-state__text" style="max-width:380px; margin:0 auto;">
                 ${I18N.t('empDash.noSubsTextFull')}
@@ -282,7 +301,13 @@
       } catch (err) {
         area.innerHTML = `
           <div class="empty-state">
-            <div class="empty-state__icon">⚠️</div>
+            <div class="empty-state__svg">
+              <svg viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg" width="88" height="88">
+                <path d="M44 12 L78 72 H10 Z" stroke="currentColor" stroke-width="3" stroke-linejoin="round" fill="none"/>
+                <line x1="44" y1="38" x2="44" y2="56" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                <circle cx="44" cy="64" r="2.5" fill="currentColor"/>
+              </svg>
+            </div>
             <div class="empty-state__title">${I18N.t('empDash.errorLoad')}</div>
             <div class="empty-state__text">${App.escapeHtml(err.message)}</div>
             <button class="btn btn--outline" style="margin-top:var(--space-3);" onclick="loadSubmissions()">${I18N.t('empDash.retry')}</button>

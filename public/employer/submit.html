@@ -8,16 +8,17 @@
   <meta name="description" content="NQU 2026 Job Fair Registration - Employer Submission Form">
   <title>Job Fair Registration — NQU</title>
   <link rel="stylesheet" href="/css/style.css">
+  <script>if(localStorage.getItem('nqu-dark')==='1')document.documentElement.setAttribute('data-theme','dark')</script>
   <style>
-    .form-hint { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+    .form-hint { font-size: 0.8rem; color: var(--color-text-muted); margin-top: 4px; }
     .radio-stack { display: flex; flex-direction: column; gap: 10px; }
     .radio-label, .checkbox-label {
       display: flex; align-items: flex-start; gap: 10px;
       padding: 10px 14px; border-radius: 8px;
-      border: 1px solid var(--border-color);
+      border: 1px solid var(--color-border);
       cursor: pointer; transition: background 0.15s, border-color 0.15s;
     }
-    .radio-label:hover, .checkbox-label:hover { background: var(--bg-secondary); }
+    .radio-label:hover, .checkbox-label:hover { background: var(--color-surface-alt); }
     .radio-label input, .checkbox-label input { margin-top: 2px; flex-shrink: 0; }
     .radio-inline { display: flex; flex-wrap: wrap; gap: 10px; }
     .radio-inline .radio-label { flex: 0 0 auto; }
@@ -34,7 +35,7 @@
     }
     .required-star { color: #ef4444; margin-left: 2px; }
     .card__title { font-size: 1.1rem; font-weight: 600; margin-bottom: 4px; }
-    .card__subtitle { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color); }
+    .card__subtitle { font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--color-border); }
   </style>
 </head>
 <body>
@@ -58,6 +59,31 @@
       </div>
     </nav>
     <div class="nav__overlay"></div>
+
+    <!-- Step indicator strip -->
+    <div class="form-steps-strip" id="formStepsStrip">
+      <div class="form-steps container container--medium">
+        <div class="form-step form-step--active" id="step1">
+          <span class="form-step__num">1</span>
+          <span class="form-step__label" data-i18n="step.category">Category</span>
+        </div>
+        <div class="form-step__conn" id="conn1"></div>
+        <div class="form-step" id="step2">
+          <span class="form-step__num">2</span>
+          <span class="form-step__label" data-i18n="step.companyInfo">Company Info</span>
+        </div>
+        <div class="form-step__conn" id="conn2"></div>
+        <div class="form-step" id="step3">
+          <span class="form-step__num">3</span>
+          <span class="form-step__label" data-i18n="step.details">Details</span>
+        </div>
+        <div class="form-step__conn" id="conn3"></div>
+        <div class="form-step" id="step4">
+          <span class="form-step__num">4</span>
+          <span class="form-step__label" data-i18n="step.logistics">Logistics</span>
+        </div>
+      </div>
+    </div>
 
     <div class="page-content">
       <div class="container container--medium" style="padding-top:var(--space-8); padding-bottom:var(--space-16);">
@@ -99,7 +125,7 @@
           <div id="sectionRecruitment" class="section-hidden">
 
             <!-- Basic Info -->
-            <div class="card mb-6">
+            <div class="card mb-6" id="stepAnchor2">
               <h2 class="card__title" data-i18n="sec2.title">Part 2: On-site Recruitment — Basic Information</h2>
               <p class="card__subtitle" data-i18n="sec2.subtitle">Please fill in your company details</p>
 
@@ -173,7 +199,7 @@
             </div>
 
             <!-- Recruitment Details -->
-            <div class="card mb-6">
+            <div class="card mb-6" id="stepAnchor3">
               <h2 class="card__title" data-i18n="sec2b.title">Part 3: Recruitment & Internship Details</h2>
               <p class="card__subtitle" data-i18n="sec2b.subtitle">Specify internship history and target departments</p>
 
@@ -207,7 +233,7 @@
             </div>
 
             <!-- Logistics -->
-            <div class="card mb-6">
+            <div class="card mb-6" id="stepAnchor4">
               <h2 class="card__title" data-i18n="sec5.title">Part 4: Event Logistics</h2>
               <p class="card__subtitle" data-i18n="sec5.subtitle">Attendance, meals and parking information</p>
 
@@ -292,7 +318,7 @@
           <!-- ══════════════════════════════════════════════════ -->
           <div id="sectionResume" class="section-hidden">
 
-            <div class="card mb-6">
+            <div class="card mb-6" id="stepAnchorResume2">
               <h2 class="card__title" data-i18n="sec3.title">Part 2: Resume Collection — Basic Information</h2>
               <p class="card__subtitle" data-i18n="sec3.subtitle">Please fill in your company details</p>
 
@@ -368,7 +394,7 @@
           <!-- ══════════════════════════════════════════════════ -->
           <div id="sectionPublicWelfare" class="section-hidden">
 
-            <div class="card mb-6">
+            <div class="card mb-6" id="stepAnchorWelfare2">
               <h2 class="card__title" data-i18n="sec4.title">Part 2: Public Welfare — Basic Information</h2>
               <p class="card__subtitle" data-i18n="sec4.subtitle">Please fill in your organization details</p>
 
@@ -1039,7 +1065,49 @@
       }, 30000);
     }
 
+    // ── Step indicator ────────────────────────────────────────────
+    function initStepIndicator() {
+      const steps = [
+        { el: document.getElementById('step1'), anchors: ['sectionPart1'] },
+        { el: document.getElementById('step2'), anchors: ['stepAnchor2', 'stepAnchorResume2', 'stepAnchorWelfare2'] },
+        { el: document.getElementById('step3'), anchors: ['stepAnchor3'] },
+        { el: document.getElementById('step4'), anchors: ['stepAnchor4'] },
+      ];
+      const conns = [document.getElementById('conn1'), document.getElementById('conn2'), document.getElementById('conn3')];
+
+      function getActiveStep() {
+        const scrollMid = window.scrollY + window.innerHeight * 0.45;
+        let active = 0;
+        steps.forEach((s, i) => {
+          for (const id of s.anchors) {
+            const anchor = document.getElementById(id);
+            if (!anchor || anchor.closest('.section-hidden')) continue;
+            if (anchor.offsetTop <= scrollMid) active = i;
+          }
+        });
+        return active;
+      }
+
+      function updateStrip() {
+        const active = getActiveStep();
+        steps.forEach((s, i) => {
+          s.el.classList.toggle('form-step--active', i === active);
+          s.el.classList.toggle('form-step--done', i < active);
+        });
+        conns.forEach((c, i) => c && c.classList.toggle('form-step__conn--done', i < active));
+      }
+
+      window.addEventListener('scroll', updateStrip, { passive: true });
+      document.addEventListener('langchange', () => {
+        document.querySelectorAll('#formStepsStrip [data-i18n]').forEach(el => {
+          el.textContent = I18N.t(el.getAttribute('data-i18n'));
+        });
+      });
+      updateStrip();
+    }
+
     init();
+    initStepIndicator();
   </script>
 </body>
 </html>

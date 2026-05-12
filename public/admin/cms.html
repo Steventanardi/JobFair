@@ -8,21 +8,22 @@
   <meta name="description" content="NQU Job Fair CMS Admin">
   <title>CMS Admin — NQU Job Fair</title>
   <link rel="stylesheet" href="/css/style.css">
+  <script>if(localStorage.getItem('nqu-dark')==='1')document.documentElement.setAttribute('data-theme','dark')</script>
   <style>
     .cms-tabs { display: flex; gap: 4px; margin-bottom: var(--space-6); border-bottom: 1px solid var(--color-border); overflow-x: auto; }
     .cms-tab { padding: 12px 20px; background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; font-size: 0.95rem; color: var(--text-muted); white-space: nowrap; transition: color 0.15s, border-color 0.15s; }
-    .cms-tab:hover { color: var(--text-color); }
-    .cms-tab--active { color: var(--color-primary); border-bottom-color: var(--color-primary); font-weight: 600; }
+    .cms-tab:hover { color: var(--color-text); }
+    .cms-tab--active { color: var(--color-gold-dark); border-bottom-color: var(--color-gold); font-weight: 600; }
     .cms-section { display: none; }
     .cms-section--active { display: block; }
     .cms-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-4); }
     .cms-card { background: var(--color-bg-alt); padding: var(--space-4); border-radius: var(--radius-md); border: 1px solid var(--color-border); }
     .cms-card__header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3); }
     .cms-card__title { font-weight: 600; font-size: 1rem; }
-    .cms-card__badge { font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; background: var(--color-primary); color: #fff; }
-    .cms-card__badge--inactive { background: var(--text-muted); }
+    .cms-card__badge { font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; background: var(--color-gold); color: var(--color-charcoal); }
+    .cms-card__badge--inactive { background: var(--color-text-muted); color: #fff; }
     .cms-item { padding: var(--space-3); background: var(--color-bg); border-radius: var(--radius-sm); margin-bottom: var(--space-2); border: 1px solid var(--color-border); cursor: pointer; transition: border-color 0.15s; }
-    .cms-item:hover { border-color: var(--color-primary); }
+    .cms-item:hover { border-color: var(--color-gold); }
     .cms-item__header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
     .cms-item__title { font-weight: 600; }
     .cms-item__meta { font-size: 0.8rem; color: var(--text-muted); }
@@ -36,20 +37,20 @@
     .cms-media-item__label { position: absolute; bottom: 0; left: 0; right: 0; padding: 4px 6px; background: rgba(0,0,0,0.6); color: #fff; font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .editor-wrap { min-height: 300px; }
     .editor { width: 100%; min-height: 300px; padding: 16px; border: 1px solid var(--color-border); border-radius: 0 0 var(--radius-md) var(--radius-md); background: var(--color-bg); font-family: inherit; font-size: 0.95rem; line-height: 1.6; resize: vertical; box-sizing: border-box; }
-    .editor:focus { outline: none; border-color: var(--color-primary); }
+    .editor:focus { outline: none; border-color: var(--color-gold); }
     .rich-toolbar { display: flex; flex-wrap: wrap; gap: 3px; padding: 8px; background: var(--color-bg-alt); border: 1px solid var(--color-border); border-radius: var(--radius-md) var(--radius-md) 0 0; border-bottom: none; }
     .rich-btn { padding: 3px 10px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: 4px; cursor: pointer; font-size: 13px; color: var(--color-text); transition: background 0.1s; }
-    .rich-btn:hover { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+    .rich-btn:hover { background: var(--color-gold); color: var(--color-charcoal); border-color: var(--color-gold); }
     .rich-sep { width: 1px; height: 24px; background: var(--color-border); margin: 2px 4px; align-self: center; }
     .nav-sortable { list-style: none; padding: 0; margin: 0; }
     .nav-sortable li { padding: 12px 16px; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-sm); margin-bottom: 8px; cursor: grab; display: flex; align-items: center; gap: 12px; user-select: none; transition: background 0.1s; }
-    .nav-sortable li.drag-over { border-color: var(--color-primary); background: rgba(37,99,235,0.06); }
+    .nav-sortable li.drag-over { border-color: var(--color-gold); background: rgba(201,169,110,0.06); }
     .nav-sortable li.dragging { opacity: 0.4; }
     .nav-handle { color: var(--text-muted); font-size: 1.2rem; flex-shrink: 0; }
     .nav-status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
     .nav-status-dot--active { background: #10b981; }
     .nav-status-dot--inactive { background: #9ca3af; }
-    .media-drop-overlay { position: fixed; inset: 0; background: rgba(37,99,235,0.08); border: 3px dashed var(--color-primary); z-index: 500; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 700; color: var(--color-primary); pointer-events: none; opacity: 0; transition: opacity 0.15s; border-radius: 0; }
+    .media-drop-overlay { position: fixed; inset: 0; background: rgba(201,169,110,0.08); border: 3px dashed var(--color-gold); z-index: 500; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 700; color: var(--color-gold); pointer-events: none; opacity: 0; transition: opacity 0.15s; border-radius: 0; }
     .media-drop-overlay.visible { opacity: 1; }
     .settings-dirty-badge { display: none; padding: 3px 10px; background: #fef3c7; color: #92400e; border-radius: 6px; font-size: 0.78rem; margin-left: 10px; }
     .settings-dirty-badge.visible { display: inline-block; }
@@ -60,7 +61,7 @@
     .media-view__doc { display: flex; align-items: center; justify-content: center; height: 120px; font-size: 3rem; }
     .media-view__meta { font-size: 0.82rem; color: var(--text-muted); margin: 8px 0 12px; }
     .page-search { width: 100%; padding: 8px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-bg); font-size: 0.95rem; margin-bottom: var(--space-4); }
-    .page-search:focus { outline: none; border-color: var(--color-primary); }
+    .page-search:focus { outline: none; border-color: var(--color-gold); }
   </style>
 </head>
 <body>

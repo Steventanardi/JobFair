@@ -7,6 +7,7 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <title>NQU Job Fair</title>
   <link rel="stylesheet" href="/css/style.css">
+  <script>if(localStorage.getItem('nqu-dark')==='1')document.documentElement.setAttribute('data-theme','dark')</script>
 </head>
 <body>
   <div class="page-wrapper">
@@ -122,7 +123,16 @@
         if (announcements.length === 0) {
           container.innerHTML = `
             <div class="empty-state">
-              <div class="empty-state__icon">📢</div>
+              <div class="empty-state__svg">
+                <svg viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg" width="88" height="88">
+                  <path d="M20 54 L20 36 L52 24 L52 66 L20 54 Z" stroke="currentColor" stroke-width="3" stroke-linejoin="round" fill="none"/>
+                  <line x1="52" y1="32" x2="66" y2="28" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                  <line x1="52" y1="44" x2="70" y2="44" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                  <line x1="52" y1="56" x2="66" y2="60" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                  <line x1="20" y1="54" x2="20" y2="70" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                  <line x1="14" y1="70" x2="26" y2="70" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+              </div>
               <div class="empty-state__title" data-i18n="ann.empty">No Announcements Yet</div>
               <div class="empty-state__text" data-i18n="ann.emptyText">Check back later for updates.</div>
             </div>`;
@@ -146,7 +156,13 @@
       } catch (err) {
         container.innerHTML = `
           <div class="empty-state">
-            <div class="empty-state__icon">⚠️</div>
+            <div class="empty-state__svg">
+              <svg viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg" width="88" height="88">
+                <path d="M44 12 L78 72 H10 Z" stroke="currentColor" stroke-width="3" stroke-linejoin="round" fill="none"/>
+                <line x1="44" y1="38" x2="44" y2="56" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                <circle cx="44" cy="64" r="2.5" fill="currentColor"/>
+              </svg>
+            </div>
             <div class="empty-state__title">Error</div>
             <div class="empty-state__text">${App.escapeHtml(err.message)}</div>
           </div>`;

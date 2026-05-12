@@ -8,6 +8,7 @@
   <meta name="description" content="NQU Job Fair Admin Dashboard">
   <title>Admin Dashboard — NQU Job Fair</title>
   <link rel="stylesheet" href="/css/style.css">
+  <script>if(localStorage.getItem('nqu-dark')==='1')document.documentElement.setAttribute('data-theme','dark')</script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js" crossorigin="anonymous"></script>
 </head>
@@ -110,7 +111,7 @@
             <button class="btn btn--outline" onclick="openBulkBoothModal()">🎪 Bulk Booths</button>
             <div class="export-dropdown" style="position:relative;">
               <button class="btn btn--primary" onclick="toggleExportMenu(event)">📥 Export ▾</button>
-              <div id="exportMenu" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--color-bg-alt);border:1px solid var(--color-border);border-radius:var(--radius-md);box-shadow:0 4px 16px rgba(0,0,0,0.15);min-width:140px;z-index:100;">
+              <div id="exportMenu" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);box-shadow:0 4px 16px rgba(0,0,0,0.15);min-width:140px;z-index:100;overflow:hidden;">
                 <button class="export-menu-item" onclick="exportData('csv')">📄 CSV</button>
                 <button class="export-menu-item" onclick="exportData('excel')">📊 Excel</button>
                 <button class="export-menu-item" onclick="exportData('pdf')">📑 PDF</button>
@@ -1342,11 +1343,12 @@
   <style>
     .export-menu-item {
       display: block; width: 100%; text-align: left;
-      padding: 10px 16px; background: var(--color-bg-alt); border: none;
+      padding: 10px 16px; background: var(--color-surface); border: none;
       cursor: pointer; font-size: var(--font-sm);
       color: var(--color-text); white-space: nowrap;
+      transition: background 0.15s;
     }
-    .export-menu-item:hover { background: var(--color-primary); color: #fff; }
+    .export-menu-item:hover { background: var(--color-gold); color: var(--color-charcoal); }
   </style>
 </body>
 </html>

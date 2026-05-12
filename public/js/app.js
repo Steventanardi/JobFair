@@ -209,4 +209,36 @@ const App = {
 document.addEventListener('DOMContentLoaded', () => {
   App.initNav();
   App.initSidebar();
+  DarkMode.injectBtn();
 });
+
+// ── Dark Mode ──────────────────────────────────────────────
+const DarkMode = {
+  get isDark() {
+    return document.documentElement.getAttribute('data-theme') === 'dark';
+  },
+  apply(dark) {
+    if (dark) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('nqu-dark', '1');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.removeItem('nqu-dark');
+    }
+    this._updateBtn();
+  },
+  toggle() { this.apply(!this.isDark); },
+  _updateBtn() {
+    const btn = document.querySelector('.dark-toggle');
+    if (btn) btn.textContent = this.isDark ? '☀️' : '🌙';
+  },
+  injectBtn() {
+    if (document.querySelector('.dark-toggle')) return;
+    const btn = document.createElement('button');
+    btn.className = 'dark-toggle';
+    btn.title = 'Toggle dark mode';
+    btn.textContent = this.isDark ? '☀️' : '🌙';
+    btn.onclick = () => DarkMode.toggle();
+    document.body.appendChild(btn);
+  }
+};

@@ -166,6 +166,12 @@ const I18N = {
     'submit.draftRestore': { en: 'Restore', zh: '還原' },
     'submit.draftDiscard': { en: 'Discard', zh: '捨棄' },
 
+    // ── Submit Form — Step Indicator ──────────────────────
+    'step.category':    { en: 'Category',     zh: '類別'   },
+    'step.companyInfo': { en: 'Company Info',  zh: '公司資訊' },
+    'step.details':     { en: 'Details',       zh: '詳細資料' },
+    'step.logistics':   { en: 'Logistics',     zh: '後勤'   },
+
     // ── Submit Form (General) ─────────────────────────────
     'submit.back': { en: '← Dashboard', zh: '← 返回控制台' },
     'submit.formTitle': { en: 'NQU 2026 Campus Job Fair Registration', zh: '2026 國立金門大學校園巡迴博覽會報名表' },
