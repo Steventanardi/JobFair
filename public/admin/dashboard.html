@@ -9,6 +9,7 @@
   <title>Admin Dashboard — NQU Job Fair</title>
   <link rel="stylesheet" href="/css/style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js" crossorigin="anonymous"></script>
 </head>
 <body>
   <div class="dashboard">
@@ -1236,24 +1237,52 @@
     }
 
     function exportExcel(rows) {
+      const XLS = window.XLSX;
+      if (!XLS) { App.toast('Excel library not loaded yet — try again in a moment', 'error'); return; }
+
       const cols = [
-        'id','company_name','industry','contact_person','contact_email','contact_phone',
-        'activity_category','status','booth_number','attendee_count','lunch_box_non_veg',
-        'lunch_box_veg','has_presentation_need','has_shuttle_need','parking_spaces','submitted_at'
+        { key: 'id',                label: 'ID',               width: 8  },
+        { key: 'company_name',      label: 'Company Name',     width: 28 },
+        { key: 'industry',          label: 'Industry',         width: 20 },
+        { key: 'contact_person',    label: 'Contact Person',   width: 22 },
+        { key: 'contact_email',     label: 'Contact Email',    width: 30 },
+        { key: 'contact_phone',     label: 'Phone',            width: 16 },
+        { key: 'activity_category', label: 'Category',         width: 16 },
+        { key: 'status',            label: 'Status',           width: 12 },
+        { key: 'booth_number',      label: 'Booth',            width: 10 },
+        { key: 'attendee_count',    label: 'Attendees',        width: 12 },
+        { key: 'lunch_box_non_veg', label: 'Lunch (Regular)',  width: 16 },
+        { key: 'lunch_box_veg',     label: 'Lunch (Veg)',      width: 14 },
+        { key: 'parking_spaces',    label: 'Parking',          width: 10 },
+        { key: 'submitted_at',      label: 'Submitted At',     width: 22 },
       ];
-      const header = cols.join('\t');
-      const body = rows.map(r => cols.map(c => {
-        const v = r[c] == null ? '' : String(r[c]);
-        return v.includes('\t') || v.includes('\n') ? `"${v.replace(/"/g,'""')}"` : v;
-      }).join('\t')).join('\n');
-      const tsv = header + '\n' + body;
-      const blob = new Blob(['﻿' + tsv], { type: 'application/vnd.ms-excel;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `submissions_${new Date().toISOString().slice(0,10)}.xls`;
-      a.click();
-      URL.revokeObjectURL(url);
+
+      const hStyle = {
+        font: { bold: true, sz: 11, color: { rgb: 'FFFFFF' } },
+        fill: { patternType: 'solid', fgColor: { rgb: '1E3A8A' } },
+        alignment: { horizontal: 'center', vertical: 'center' },
+        border: { bottom: { style: 'thin', color: { rgb: 'AAAAAA' } } }
+      };
+      const altStyle = { fill: { patternType: 'solid', fgColor: { rgb: 'EEF2FF' } } };
+      const numStyle = (alt) => ({ ...( alt ? altStyle : {} ), alignment: { horizontal: 'right' } });
+
+      const sheetData = [
+        cols.map(c => ({ v: c.label, t: 's', s: hStyle })),
+        ...rows.map((r, i) => cols.map(c => {
+          const v = r[c.key] ?? '';
+          const alt = i % 2 !== 0;
+          if (typeof v === 'number') return { v, t: 'n', s: numStyle(alt) };
+          return { v: String(v), t: 's', s: alt ? altStyle : {} };
+        }))
+      ];
+
+      const ws = XLS.utils.aoa_to_sheet(sheetData);
+      ws['!cols'] = cols.map(c => ({ wch: c.width }));
+      ws['!rows'] = [{ hpt: 22 }];
+
+      const wb = XLS.utils.book_new();
+      XLS.utils.book_append_sheet(wb, ws, 'Submissions');
+      XLS.writeFile(wb, `nqu_jobfair_${new Date().toISOString().slice(0, 10)}.xlsx`);
     }
 
     function exportPDF(rows) {
