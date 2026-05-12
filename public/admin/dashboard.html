@@ -1194,6 +1194,36 @@
       } catch (err) { App.toast(err.message, 'error'); }
     }
 
+    // ── EXPORT helpers ──
+    function getExportColDefs() {
+      const zh = I18N.currentLang === 'zh';
+      return [
+        { key: 'id',                label: zh ? '編號'     : 'ID',              width: 8  },
+        { key: 'company_name',      label: zh ? '公司名稱' : 'Company Name',    width: 28 },
+        { key: 'industry',          label: zh ? '產業類型' : 'Industry',        width: 20 },
+        { key: 'contact_person',    label: zh ? '聯絡人'   : 'Contact Person',  width: 22 },
+        { key: 'contact_email',     label: zh ? '電子信箱' : 'Contact Email',   width: 30 },
+        { key: 'contact_phone',     label: zh ? '電話'     : 'Phone',           width: 16 },
+        { key: 'activity_category', label: zh ? '活動類別' : 'Category',        width: 16 },
+        { key: 'status',            label: zh ? '狀態'     : 'Status',          width: 12 },
+        { key: 'booth_number',      label: zh ? '攤位編號' : 'Booth',           width: 10 },
+        { key: 'attendee_count',    label: zh ? '出席人數' : 'Attendees',       width: 12 },
+        { key: 'lunch_box_non_veg', label: zh ? '葷食便當' : 'Lunch (Regular)', width: 16 },
+        { key: 'lunch_box_veg',     label: zh ? '素食便當' : 'Lunch (Veg)',     width: 14 },
+        { key: 'parking_spaces',    label: zh ? '停車位'   : 'Parking',         width: 10 },
+        { key: 'submitted_at',      label: zh ? '提交日期' : 'Submitted At',    width: 22 },
+      ];
+    }
+
+    function translateExportVal(key, val) {
+      if (I18N.currentLang !== 'zh' || val == null) return val;
+      if (key === 'status')
+        return { pending: '待審核', approved: '已通過', rejected: '已拒絕' }[val] ?? val;
+      if (key === 'activity_category')
+        return { Recruitment: '現場徵才', Resume: '代收履歷', PublicWelfare: '公益宣導' }[val] ?? val;
+      return val;
+    }
+
     // ── EXPORT ──
     function toggleExportMenu(e) {
       e.stopPropagation();
@@ -1216,7 +1246,8 @@
       const filterStr = filterParams.toString() ? '?' + filterParams : '';
 
       if (format === 'csv') {
-        window.location.href = '/api/admin/submissions/export' + filterStr;
+        const langParam = (filterParams.toString() ? '&' : '?') + 'lang=' + I18N.currentLang;
+        window.location.href = '/api/admin/submissions/export' + filterStr + langParam;
         return;
       }
 
@@ -1240,22 +1271,7 @@
       const XLS = window.XLSX;
       if (!XLS) { App.toast('Excel library not loaded yet — try again in a moment', 'error'); return; }
 
-      const cols = [
-        { key: 'id',                label: 'ID',               width: 8  },
-        { key: 'company_name',      label: 'Company Name',     width: 28 },
-        { key: 'industry',          label: 'Industry',         width: 20 },
-        { key: 'contact_person',    label: 'Contact Person',   width: 22 },
-        { key: 'contact_email',     label: 'Contact Email',    width: 30 },
-        { key: 'contact_phone',     label: 'Phone',            width: 16 },
-        { key: 'activity_category', label: 'Category',         width: 16 },
-        { key: 'status',            label: 'Status',           width: 12 },
-        { key: 'booth_number',      label: 'Booth',            width: 10 },
-        { key: 'attendee_count',    label: 'Attendees',        width: 12 },
-        { key: 'lunch_box_non_veg', label: 'Lunch (Regular)',  width: 16 },
-        { key: 'lunch_box_veg',     label: 'Lunch (Veg)',      width: 14 },
-        { key: 'parking_spaces',    label: 'Parking',          width: 10 },
-        { key: 'submitted_at',      label: 'Submitted At',     width: 22 },
-      ];
+      const cols = getExportColDefs();
 
       const hStyle = {
         font: { bold: true, sz: 11, color: { rgb: 'FFFFFF' } },
@@ -1269,10 +1285,10 @@
       const sheetData = [
         cols.map(c => ({ v: c.label, t: 's', s: hStyle })),
         ...rows.map((r, i) => cols.map(c => {
-          const v = r[c.key] ?? '';
+          const raw = translateExportVal(c.key, r[c.key] ?? '');
           const alt = i % 2 !== 0;
-          if (typeof v === 'number') return { v, t: 'n', s: numStyle(alt) };
-          return { v: String(v), t: 's', s: alt ? altStyle : {} };
+          if (typeof raw === 'number') return { v: raw, t: 'n', s: numStyle(alt) };
+          return { v: String(raw), t: 's', s: alt ? altStyle : {} };
         }))
       ];
 
@@ -1286,8 +1302,12 @@
     }
 
     function exportPDF(rows) {
-      const cols = ['ID','Company','Industry','Contact','Email','Category','Status','Booth','Attendees','Submitted'];
-      const keys = ['id','company_name','industry','contact_person','contact_email','activity_category','status','booth_number','attendee_count','submitted_at'];
+      const colDefs = getExportColDefs().filter(c =>
+        ['id','company_name','industry','contact_person','contact_email',
+         'activity_category','status','booth_number','attendee_count','submitted_at'].includes(c.key)
+      );
+      const cols = colDefs.map(c => c.label);
+      const keys = colDefs.map(c => c.key);
 
       const style = `
         <style>
@@ -1302,8 +1322,8 @@
 
       const thead = `<tr>${cols.map(c => `<th>${c}</th>`).join('')}</tr>`;
       const tbody = rows.map(r => `<tr>${keys.map(k => {
-        const v = r[k] == null ? '—' : String(r[k]);
-        return `<td>${v.replace(/</g,'&lt;')}</td>`;
+        const v = translateExportVal(k, r[k]) ?? '—';
+        return `<td>${String(v).replace(/</g,'&lt;')}</td>`;
       }).join('')}</tr>`).join('');
 
       const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">${style}</head><body>

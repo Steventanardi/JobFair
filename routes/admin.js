@@ -77,9 +77,10 @@ router.get('/submissions', async (req, res) => {
   }
 });
 
-// GET /api/admin/submissions/export — download CSV (respects status/search filters)
+// GET /api/admin/submissions/export — download CSV (respects status/search/category/lang filters)
 router.get('/submissions/export', async (req, res) => {
-  const { status, search, category } = req.query;
+  const { status, search, category, lang } = req.query;
+  const zh = lang === 'zh';
 
   const conditions = [];
   const params = [];
@@ -118,10 +119,20 @@ router.get('/submissions/export', async (req, res) => {
     }
 
     // CSV Headers
-    const headers = [
+    const headers = zh ? [
+      '編號', '狀態', '攤位編號', '活動類別', '曾參加過',
+      '團體類型', '成立日期',
+      '公司名稱', '攤位看板名稱', '負責人', '統一編號', '產業類型',
+      '公司簡介', '主要產品', '實習合作', '目標系所',
+      '聯絡人', '電子信箱', '電話', '通訊地址',
+      '職缺說明', '需求條件', '福利待遇',
+      '當日負責人', '出席人數',
+      '葷食便當', '素食便當', '需要簡報設備', '需要接駁',
+      '接駁說明', '抽獎獎品', '停車位', '其他需求', '提交日期'
+    ] : [
       'ID', 'Status', 'Booth No', 'Activity Category', 'Prev Participant',
       'Group Type', 'Establishment Date',
-      'Company Name', 'Booth Signboard', 'CEO Name', 'Tax ID', 'Industry', 
+      'Company Name', 'Booth Signboard', 'CEO Name', 'Tax ID', 'Industry',
       'Introduction', 'Main Products', 'Internship', 'Target Depts',
       'Contact Person', 'Email', 'Phone', 'Mailing Address',
       'Job Positions', 'Requirements', 'Benefits',
@@ -139,12 +150,15 @@ router.get('/submissions/export', async (req, res) => {
     };
 
     // CSV Rows
+    const statusZh = { pending: '待審核', approved: '已通過', rejected: '已拒絕' };
+    const categoryZh = { Recruitment: '現場徵才', Resume: '代收履歷', PublicWelfare: '公益宣導' };
+
     const csvRows = rows.map(row => {
       return [
         row.id,
-        row.status,
+        zh ? (statusZh[row.status] || row.status) : row.status,
         esc(row.booth_number),
-        esc(row.activity_category),
+        zh ? esc(categoryZh[row.activity_category] || row.activity_category) : esc(row.activity_category),
         esc(row.is_previous_participant),
         esc(row.group_type),
         esc(row.establishment_date),
@@ -181,7 +195,8 @@ router.get('/submissions/export', async (req, res) => {
     const csvString = headers.join(',') + '\n' + csvRows.join('\n');
 
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', 'attachment; filename="jobfair-submissions-full.csv"');
+    const fname = zh ? 'jobfair-submissions-zh.csv' : 'jobfair-submissions-full.csv';
+    res.setHeader('Content-Disposition', `attachment; filename="${fname}"`);
     // Add BOM for Excel UTF-8 support
     res.send('\uFEFF' + csvString);
   } catch (err) {
