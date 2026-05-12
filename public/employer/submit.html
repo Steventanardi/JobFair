@@ -827,9 +827,9 @@
           form.innerHTML = `
             <div style="text-align:center; padding:3rem;">
               <div style="font-size:2.5rem; margin-bottom:1rem;">🔒</div>
-              <h2 style="margin-bottom:0.75rem;">Editing Not Available</h2>
-              <p class="text-muted">This submission has been <strong>${App.escapeHtml(sub.status)}</strong> and can no longer be edited.</p>
-              <a href="/employer/dashboard.html" class="btn btn--primary" style="margin-top:1.5rem; display:inline-block;">Back to Dashboard</a>
+              <h2 style="margin-bottom:0.75rem;">${I18N.t('submit.editBlocked')}</h2>
+              <p class="text-muted">${I18N.t('submit.editBlockedMsg')} <strong>${App.escapeHtml(sub.status)}</strong> ${I18N.t('submit.editBlockedSuffix')}</p>
+              <a href="/employer/dashboard.html" class="btn btn--primary" style="margin-top:1.5rem; display:inline-block;">${I18N.t('submit.backDash')}</a>
             </div>`;
           return;
         }
@@ -1022,10 +1022,10 @@
           const banner = document.createElement('div');
           banner.className = 'form-notice';
           banner.style.cssText = 'display:flex; justify-content:space-between; align-items:center;';
-          banner.innerHTML = `<span>📝 A saved draft was found. Restore it?</span>
+          banner.innerHTML = `<span>${I18N.t('submit.draftFound')}</span>
             <div style="display:flex;gap:8px;">
-              <button type="button" class="btn btn--primary btn--sm" id="draftRestoreBtn">Restore</button>
-              <button type="button" class="btn btn--ghost btn--sm" id="draftDiscardBtn">Discard</button>
+              <button type="button" class="btn btn--primary btn--sm" id="draftRestoreBtn">${I18N.t('submit.draftRestore')}</button>
+              <button type="button" class="btn btn--ghost btn--sm" id="draftDiscardBtn">${I18N.t('submit.draftDiscard')}</button>
             </div>`;
           const form = document.getElementById('submitForm');
           form.insertBefore(banner, form.firstChild);

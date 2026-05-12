@@ -96,7 +96,7 @@
             <p class="text-muted text-sm mt-2" id="welcomeMsg">Welcome back!</p>
           </div>
           <div style="display:flex; gap:var(--space-2); flex-wrap:wrap;">
-            <button class="btn btn--outline btn--sm" onclick="App.showModal('accountModal')">⚙ Account</button>
+            <button class="btn btn--outline btn--sm" onclick="App.showModal('accountModal')">⚙ <span data-i18n="empDash.accountBtn">Account</span></button>
             <a href="/employer/submit.html" class="btn btn--primary" id="newSubBtn" data-i18n="empDash.newSub">+ New Submission</a>
           </div>
         </div>
@@ -111,7 +111,7 @@
           <div>
             <!-- Event Info -->
             <div class="info-card fade-in-up stagger-1">
-              <div class="info-card__title">📅 Event Information</div>
+              <div class="info-card__title">📅 <span data-i18n="empDash.eventInfo">Event Information</span></div>
               <div id="eventInfoBody">
                 <div class="text-muted text-sm">Loading...</div>
               </div>
@@ -119,7 +119,7 @@
 
             <!-- Account -->
             <div class="info-card fade-in-up stagger-2" style="margin-top:var(--space-4);">
-              <div class="info-card__title">🏢 Your Account</div>
+              <div class="info-card__title">🏢 <span data-i18n="empDash.yourAccount">Your Account</span></div>
               <div id="accountInfoBody">
                 <div class="text-muted text-sm">Loading...</div>
               </div>
@@ -149,7 +149,7 @@
   <div class="modal-overlay" id="detailModal">
     <div class="modal" style="max-width:720px; width:95%; max-height:85vh; overflow-y:auto;">
       <div class="modal__header" style="position:sticky; top:0; background:var(--color-bg); z-index:1; border-bottom:1px solid var(--color-border);">
-        <h2 class="modal__title">Submission Details</h2>
+        <h2 class="modal__title" data-i18n="empDash.subDetails">Submission Details</h2>
         <button class="modal__close" onclick="App.hideModal('detailModal')">✕</button>
       </div>
       <div id="detailModalBody" style="padding:var(--space-5);"></div>
@@ -160,26 +160,26 @@
   <div class="modal-overlay" id="accountModal">
     <div class="modal" style="max-width:420px;">
       <div class="modal__header">
-        <h2 class="modal__title">Account Settings</h2>
+        <h2 class="modal__title" data-i18n="empDash.accountSettings">Account Settings</h2>
         <button class="modal__close" onclick="App.hideModal('accountModal')">✕</button>
       </div>
       <div id="accountModalInfo" class="text-sm text-muted mb-4" style="padding:0 0 var(--space-3); border-bottom:1px solid var(--color-border); margin-bottom:var(--space-4);"></div>
-      <p class="text-sm" style="font-weight:600; margin-bottom:var(--space-3);">Change Password</p>
+      <p class="text-sm" style="font-weight:600; margin-bottom:var(--space-3);" data-i18n="empDash.changePw">Change Password</p>
       <div class="form-group">
-        <label class="form-label">Current Password</label>
+        <label class="form-label" data-i18n="empDash.currentPw">Current Password</label>
         <input class="form-input" type="password" id="currentPw" placeholder="••••••" autocomplete="current-password">
       </div>
       <div class="form-group">
-        <label class="form-label">New Password</label>
-        <input class="form-input" type="password" id="newPw" placeholder="At least 6 characters" autocomplete="new-password">
+        <label class="form-label" data-i18n="empDash.newPw">New Password</label>
+        <input class="form-input" type="password" id="newPw" data-i18n-placeholder="empReg.passwordHint" placeholder="At least 6 characters" autocomplete="new-password">
       </div>
       <div class="form-group">
-        <label class="form-label">Confirm New Password</label>
+        <label class="form-label" data-i18n="empDash.confirmNewPw">Confirm New Password</label>
         <input class="form-input" type="password" id="confirmPw" placeholder="••••••" autocomplete="new-password">
       </div>
       <div class="modal__actions">
-        <button class="btn btn--outline" onclick="App.hideModal('accountModal')">Cancel</button>
-        <button class="btn btn--primary" onclick="changePassword()">Change Password</button>
+        <button class="btn btn--outline" onclick="App.hideModal('accountModal')" data-i18n="btn.cancel">Cancel</button>
+        <button class="btn btn--primary" onclick="changePassword()" data-i18n="empDash.changePwBtn">Change Password</button>
       </div>
     </div>
   </div>
@@ -197,13 +197,13 @@
       I18N.init('langToggle');
 
       document.getElementById('welcomeMsg').textContent =
-        `Welcome back, ${currentUser.company_name}!`;
+        `${I18N.t('empDash.welcome')} ${currentUser.company_name}!`;
       document.getElementById('accountModalInfo').innerHTML =
         `<strong>${App.escapeHtml(currentUser.company_name)}</strong><br>${App.escapeHtml(currentUser.email)}`;
       document.getElementById('accountInfoBody').innerHTML =
         `<div class="info-row"><span class="info-row__icon">🏢</span><span class="info-row__val" style="font-weight:600;">${App.escapeHtml(currentUser.company_name)}</span></div>
          <div class="info-row"><span class="info-row__icon">✉️</span><span class="info-row__val">${App.escapeHtml(currentUser.email)}</span></div>
-         <button class="btn btn--outline btn--sm" style="margin-top:var(--space-3); width:100%;" onclick="App.showModal('accountModal')">🔑 Change Password</button>`;
+         <button class="btn btn--outline btn--sm" style="margin-top:var(--space-3); width:100%;" onclick="App.showModal('accountModal')">${I18N.t('empDash.changePwAccount')}</button>`;
 
       await Promise.all([loadAnnouncements(), loadEventInfo(), loadSubmissions()]);
 
@@ -238,11 +238,11 @@
       try {
         const s = await API.get('/api/cms/settings');
         const rows = [
-          s.event_date    && ['📅', 'Date',     s.event_date],
-          s.event_venue   && ['📍', 'Venue',    s.event_venue],
-          s.registration_deadline && ['⏰', 'Deadline', s.registration_deadline],
-          s.contact_email && ['✉️', 'Email',    s.contact_email],
-          s.contact_phone && ['📞', 'Phone',    s.contact_phone],
+          s.event_date    && ['📅', I18N.t('empDash.eventDate'),     s.event_date],
+          s.event_venue   && ['📍', I18N.t('empDash.eventVenue'),    s.event_venue],
+          s.registration_deadline && ['⏰', I18N.t('empDash.eventDeadline'), s.registration_deadline],
+          s.contact_email && ['✉️', I18N.t('empDash.eventEmail'),    s.contact_email],
+          s.contact_phone && ['📞', I18N.t('empDash.eventPhone'),    s.contact_phone],
         ].filter(Boolean);
 
         document.getElementById('eventInfoBody').innerHTML = rows.length
@@ -254,7 +254,7 @@
                   <div class="info-row__val">${App.escapeHtml(val)}</div>
                 </div>
               </div>`).join('')
-          : `<div class="text-muted text-sm">Event details coming soon.</div>`;
+          : `<div class="text-muted text-sm">${I18N.t('empDash.eventComingSoon')}</div>`;
       } catch { /* non-critical */ }
     }
 
@@ -269,11 +269,11 @@
           area.innerHTML = `
             <div class="empty-state">
               <div class="empty-state__icon">📋</div>
-              <div class="empty-state__title">No Submission Yet</div>
+              <div class="empty-state__title">${I18N.t('empDash.noSubs')}</div>
               <div class="empty-state__text" style="max-width:380px; margin:0 auto;">
-                Submit your registration to participate in the NQU Job Fair. Fill in your company details, job positions, and booth preferences.
+                ${I18N.t('empDash.noSubsTextFull')}
               </div>
-              <a href="/employer/submit.html" class="btn btn--primary" style="margin-top:var(--space-4);">+ Create Submission</a>
+              <a href="/employer/submit.html" class="btn btn--primary" style="margin-top:var(--space-4);">${I18N.t('empDash.createSub')}</a>
             </div>`;
           return;
         }
@@ -283,9 +283,9 @@
         area.innerHTML = `
           <div class="empty-state">
             <div class="empty-state__icon">⚠️</div>
-            <div class="empty-state__title">Error loading submission</div>
+            <div class="empty-state__title">${I18N.t('empDash.errorLoad')}</div>
             <div class="empty-state__text">${App.escapeHtml(err.message)}</div>
-            <button class="btn btn--outline" style="margin-top:var(--space-3);" onclick="loadSubmissions()">Retry</button>
+            <button class="btn btn--outline" style="margin-top:var(--space-3);" onclick="loadSubmissions()">${I18N.t('empDash.retry')}</button>
           </div>`;
       }
     }
@@ -297,9 +297,9 @@
 
       // Progress steps
       const steps = [
-        { label: 'Submitted', done: true,       active: isPending },
-        { label: 'Reviewing', done: isApproved || isRejected, active: isApproved || isRejected, rejected: isRejected && !isApproved },
-        { label: isRejected ? 'Rejected' : 'Approved', done: isApproved, active: isApproved || isRejected, rejected: isRejected }
+        { label: I18N.t('empDash.stepSubmitted'), done: true,       active: isPending },
+        { label: I18N.t('empDash.stepReviewing'), done: isApproved || isRejected, active: isApproved || isRejected, rejected: isRejected && !isApproved },
+        { label: isRejected ? I18N.t('empDash.stepRejected') : I18N.t('empDash.stepApproved'), done: isApproved, active: isApproved || isRejected, rejected: isRejected }
       ];
 
       const progressBar = `
@@ -320,7 +320,7 @@
         <div class="booth-banner">
           <span style="font-size:2rem;">🎪</span>
           <div>
-            <div style="font-size:0.75rem; text-transform:uppercase; color:#92400e; letter-spacing:0.5px;">Assigned Booth</div>
+            <div style="font-size:0.75rem; text-transform:uppercase; color:#92400e; letter-spacing:0.5px;">${I18N.t('empDash.assignedBooth')}</div>
             <div class="booth-banner__num">${App.escapeHtml(s.booth_number)}</div>
           </div>
         </div>` : '';
@@ -328,27 +328,27 @@
       // Rejection banner
       const rejectBanner = isRejected ? `
         <div class="reject-banner">
-          <div class="reject-banner__title">✕ Submission Not Selected</div>
+          <div class="reject-banner__title">${I18N.t('empDash.rejectTitle')}</div>
           ${s.admin_notes ? `<div class="text-sm" style="margin-top:4px;">${App.escapeHtml(s.admin_notes)}</div>` : ''}
-          <div class="text-sm text-muted" style="margin-top:8px;">Please contact the event organizer if you have questions about re-applying.</div>
+          <div class="text-sm text-muted" style="margin-top:8px;">${I18N.t('empDash.rejectContact')}</div>
         </div>` : '';
 
       // Admin note (non-rejection)
       const adminNote = !isRejected && s.admin_notes ? `
         <div style="background:var(--color-bg-alt); border-radius:var(--radius-sm); padding:10px 14px; margin-bottom:var(--space-4); font-size:0.875rem;">
-          📝 <strong>Admin Note:</strong> ${App.escapeHtml(s.admin_notes)}
+          📝 <strong>${I18N.t('empDash.adminNoteLabel')}</strong> ${App.escapeHtml(s.admin_notes)}
         </div>` : '';
 
       // Key fields
       const fields = [
-        ['Company', s.company_name],
-        ['Category', s.activity_category || '—'],
-        ['Industry', s.industry || '—'],
-        ['Contact', s.contact_person || '—'],
-        ['Email', s.contact_email || '—'],
-        ['Attendees', s.attendee_count != null ? s.attendee_count : '—'],
-        ['Booth Name', s.booth_signboard_name || '—'],
-        ['Tax ID', s.tax_id || '—'],
+        [I18N.t('submit.companyName'), s.company_name],
+        [I18N.t('submit.activityCategory'), s.activity_category || '—'],
+        [I18N.t('submit.industry'), s.industry || '—'],
+        [I18N.t('empDash.fieldContact'), s.contact_person || '—'],
+        [I18N.t('empDash.eventEmail'), s.contact_email || '—'],
+        [I18N.t('submit.attendeeCount'), s.attendee_count != null ? s.attendee_count : '—'],
+        [I18N.t('submit.boothSignName'), s.booth_signboard_name || '—'],
+        [I18N.t('submit.taxId'), s.tax_id || '—'],
       ].filter(([, v]) => v && v !== '—').slice(0, 6);
 
       const fieldsHtml = `
@@ -361,15 +361,15 @@
         </div>`;
 
       // Submitted date
-      const submittedOn = `<div class="text-xs text-muted" style="margin-bottom:var(--space-4);">Submitted ${App.timeAgo(s.submitted_at)} · ${App.formatDate(s.submitted_at)}</div>`;
+      const submittedOn = `<div class="text-xs text-muted" style="margin-bottom:var(--space-4);">${I18N.t('empDash.submittedOn')} ${App.timeAgo(s.submitted_at)} · ${App.formatDate(s.submitted_at)}</div>`;
 
       // Actions
       const actions = `
         <div class="sub-card__actions">
-          <button class="btn btn--outline btn--sm" onclick="viewDetail(${s.id})">👁 View All Details</button>
-          ${isPending ? `<a href="/employer/submit.html?edit=${s.id}" class="btn btn--outline btn--sm">✏️ Edit</a>` : ''}
-          ${isPending ? `<button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="deleteSubmission(${s.id})">🗑 Delete</button>` : ''}
-          ${isApproved ? `<button class="btn btn--outline btn--sm" onclick="printConfirmation(${s.id})">🖨️ Print Confirmation</button>` : ''}
+          <button class="btn btn--outline btn--sm" onclick="viewDetail(${s.id})">👁 ${I18N.t('empDash.viewDetails')}</button>
+          ${isPending ? `<a href="/employer/submit.html?edit=${s.id}" class="btn btn--outline btn--sm">✏️ ${I18N.t('empDash.edit')}</a>` : ''}
+          ${isPending ? `<button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="deleteSubmission(${s.id})">🗑 ${I18N.t('empDash.delete')}</button>` : ''}
+          ${isApproved ? `<button class="btn btn--outline btn--sm" onclick="printConfirmation(${s.id})">🖨️ ${I18N.t('empDash.printConfirm')}</button>` : ''}
         </div>`;
 
       return `
@@ -413,71 +413,71 @@
           ${s.logo_path ? `<div style="text-align:center; margin-bottom:var(--space-4);"><img src="${s.logo_path}" style="max-height:80px; max-width:200px; object-fit:contain; border-radius:var(--radius-md); border:1px solid var(--color-border);"></div>` : ''}
 
           <div class="detail-section">
-            <div class="detail-section__title">Company Information</div>
+            <div class="detail-section__title">${I18N.t('empDash.detailCompany')}</div>
             <div class="detail-grid">
-              ${field('Company Name', s.company_name)}
-              ${field('Booth Signboard Name', s.booth_signboard_name)}
-              ${field('CEO / Responsible Person', s.ceo_name)}
-              ${field('Tax ID', s.tax_id)}
-              ${field('Industry', s.industry)}
-              ${field('Main Products / Services', s.main_products)}
-              ${field('Establishment Date', s.establishment_date)}
-              ${field('Group Type', s.group_type)}
+              ${field(I18N.t('submit.companyName'), s.company_name)}
+              ${field(I18N.t('submit.boothSignName'), s.booth_signboard_name)}
+              ${field(I18N.t('empDash.detailCeo'), s.ceo_name)}
+              ${field(I18N.t('submit.taxId'), s.tax_id)}
+              ${field(I18N.t('submit.industry'), s.industry)}
+              ${field(I18N.t('empDash.mainProducts'), s.main_products)}
+              ${field(I18N.t('empDash.estDate'), s.establishment_date)}
+              ${field(I18N.t('empDash.groupType'), s.group_type)}
             </div>
           </div>
 
           <div class="detail-section">
-            <div class="detail-section__title">Contact</div>
+            <div class="detail-section__title">${I18N.t('empDash.detailContact')}</div>
             <div class="detail-grid">
-              ${field('Contact Person', s.contact_person)}
-              ${field('Email', s.contact_email)}
-              ${field('Phone', s.contact_phone)}
-              ${field('Mailing Address', s.mailing_address)}
+              ${field(I18N.t('empDash.detailContactPerson'), s.contact_person)}
+              ${field(I18N.t('empDash.eventEmail'), s.contact_email)}
+              ${field(I18N.t('empDash.phone'), s.contact_phone)}
+              ${field(I18N.t('submit.mailingAddress'), s.mailing_address)}
             </div>
           </div>
 
           <div class="detail-section">
-            <div class="detail-section__title">Registration Details</div>
+            <div class="detail-section__title">${I18N.t('empDash.detailRegDetails')}</div>
             <div class="detail-grid">
-              ${field('Activity Category', s.activity_category)}
-              ${field('Previous Participant', yesno(s.is_previous_participant))}
-              ${field('Internship Cooperation', s.internship_cooperation)}
-              ${field('Target Departments', s.target_departments)}
+              ${field(I18N.t('submit.activityCategory'), s.activity_category)}
+              ${field(I18N.t('submit.prevPartic'), yesno(s.is_previous_participant))}
+              ${field(I18N.t('submit.internship'), s.internship_cooperation)}
+              ${field(I18N.t('submit.targetDepts'), s.target_departments)}
             </div>
           </div>
 
           <div class="detail-section">
-            <div class="detail-section__title">Recruitment Info</div>
-            ${field('Company Introduction', s.company_intro)}
-            ${field('Job Positions', s.job_positions)}
-            ${field('Requirements', s.requirements)}
-            ${field('Benefits', s.benefits)}
+            <div class="detail-section__title">${I18N.t('empDash.detailRecruitment')}</div>
+            ${field(I18N.t('empDash.companyIntro'), s.company_intro)}
+            ${field(I18N.t('submit.jobPositions'), s.job_positions)}
+            ${field(I18N.t('empDash.requirements'), s.requirements)}
+            ${field(I18N.t('empDash.benefits'), s.benefits)}
           </div>
 
           <div class="detail-section">
-            <div class="detail-section__title">Event Day Logistics</div>
+            <div class="detail-section__title">${I18N.t('empDash.detailLogistics')}</div>
             <div class="detail-grid">
-              ${field('Lead Attendee', s.attendee_main)}
-              ${field('Total Attendees', s.attendee_count)}
-              ${field('Lunch (Regular)', s.lunch_box_non_veg)}
-              ${field('Lunch (Vegetarian)', s.lunch_box_veg)}
-              ${field('Parking Spaces', s.parking_spaces)}
-              ${field('Needs Presentation Room', yesno(s.has_presentation_need))}
-              ${field('Needs Shuttle', yesno(s.has_shuttle_need))}
-              ${s.shuttle_details ? field('Shuttle Details', s.shuttle_details) : ''}
-              ${field('Raffle Prizes', s.raffle_prizes)}
-              ${field('Other Requirements', s.other_requirements)}
+              ${field(I18N.t('empDash.leadAttendee'), s.attendee_main)}
+              ${field(I18N.t('submit.attendeeCount'), s.attendee_count)}
+              ${field(I18N.t('submit.lunchNonVeg'), s.lunch_box_non_veg)}
+              ${field(I18N.t('submit.lunchVeg'), s.lunch_box_veg)}
+              ${field(I18N.t('submit.parking'), s.parking_spaces)}
+              ${field(I18N.t('empDash.presentationRoom'), yesno(s.has_presentation_need))}
+              ${field(I18N.t('empDash.shuttle'), yesno(s.has_shuttle_need))}
+              ${s.shuttle_details ? field(I18N.t('empDash.shuttleDetails'), s.shuttle_details) : ''}
+              ${field(I18N.t('submit.rafflePrizes'), s.raffle_prizes)}
+              ${field(I18N.t('submit.otherReq'), s.other_requirements)}
             </div>
           </div>
 
           <div class="detail-section">
-            <div class="detail-section__title">Status</div>
+            <div class="detail-section__title">${I18N.t('adm.status')}</div>
             <div class="detail-grid">
-              ${field('Status', s.status?.toUpperCase())}
-              ${field('Booth Number', s.booth_number)}
-              ${field('Admin Notes', s.admin_notes)}
-              ${field('Submitted', App.formatDate(s.submitted_at))}
-              ${s.reviewed_at ? field('Reviewed', App.formatDate(s.reviewed_at)) : ''}
+              ${field(I18N.t('adm.status'), s.status?.toUpperCase())}
+              ${field(I18N.t('empDash.boothNumber'), s.booth_number)}
+              ${field(I18N.t('empDash.adminNote'), s.admin_notes)}
+              ${field(I18N.t('empDash.submittedOn'), App.formatDate(s.submitted_at))}
+              ${s.reviewed_at ? field(I18N.t('empDash.reviewedOn'), App.formatDate(s.reviewed_at)) : ''}
             </div>
           </div>`;
       } catch (err) {
@@ -492,8 +492,9 @@
         s = await API.get(`/api/submissions/${id}`);
       } catch (err) { App.toast(err.message, 'error'); return; }
 
+      const isZh = I18N.currentLang === 'zh';
       const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
-        <title>Booth Confirmation — NQU Job Fair</title>
+        <title>${I18N.t('empDash.printTitle')}</title>
         <style>
           body { font-family: Arial, sans-serif; font-size: 12px; color: #111; padding: 32px; max-width: 680px; margin: 0 auto; }
           h1 { font-size: 22px; margin-bottom: 4px; }
@@ -505,34 +506,34 @@
           .footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid #ccc; font-size: 11px; color: #888; }
           @media print { body { padding: 0; } }
         </style></head><body>
-        <h1>NQU Job Fair — Booth Confirmation</h1>
-        <p style="color:#555; margin-bottom:20px;">This document confirms your registration for the National Quemoy University Job Fair.</p>
-        ${s.booth_number ? `<div class="booth-box"><div style="font-size:11px;color:#92400e;text-transform:uppercase;letter-spacing:1px;">Your Booth Number</div><div class="num">${s.booth_number}</div></div>` : ''}
-        <h2>Company Information</h2>
+        <h1>${I18N.t('empDash.printTitle')}</h1>
+        <p style="color:#555; margin-bottom:20px;">${I18N.t('empDash.printSubtitle')}</p>
+        ${s.booth_number ? `<div class="booth-box"><div style="font-size:11px;color:#92400e;text-transform:uppercase;letter-spacing:1px;">${I18N.t('empDash.printBoothLabel')}</div><div class="num">${s.booth_number}</div></div>` : ''}
+        <h2>${I18N.t('empDash.detailCompany')}</h2>
         <div class="grid">
-          <div class="field"><strong>Company Name</strong>${s.company_name || '—'}</div>
-          <div class="field"><strong>Booth Signboard</strong>${s.booth_signboard_name || '—'}</div>
-          <div class="field"><strong>Contact Person</strong>${s.contact_person || '—'}</div>
-          <div class="field"><strong>Email</strong>${s.contact_email || '—'}</div>
-          <div class="field"><strong>Phone</strong>${s.contact_phone || '—'}</div>
-          <div class="field"><strong>Industry</strong>${s.industry || '—'}</div>
-          <div class="field"><strong>Tax ID</strong>${s.tax_id || '—'}</div>
-          <div class="field"><strong>Activity Category</strong>${s.activity_category || '—'}</div>
+          <div class="field"><strong>${I18N.t('submit.companyName')}</strong>${s.company_name || '—'}</div>
+          <div class="field"><strong>${I18N.t('submit.boothSignName')}</strong>${s.booth_signboard_name || '—'}</div>
+          <div class="field"><strong>${I18N.t('empDash.detailContactPerson')}</strong>${s.contact_person || '—'}</div>
+          <div class="field"><strong>${I18N.t('empDash.eventEmail')}</strong>${s.contact_email || '—'}</div>
+          <div class="field"><strong>${I18N.t('empDash.phone')}</strong>${s.contact_phone || '—'}</div>
+          <div class="field"><strong>${I18N.t('submit.industry')}</strong>${s.industry || '—'}</div>
+          <div class="field"><strong>${I18N.t('submit.taxId')}</strong>${s.tax_id || '—'}</div>
+          <div class="field"><strong>${I18N.t('submit.activityCategory')}</strong>${s.activity_category || '—'}</div>
         </div>
-        <h2>Event Day Logistics</h2>
+        <h2>${I18N.t('empDash.detailLogistics')}</h2>
         <div class="grid">
-          <div class="field"><strong>Lead Attendee</strong>${s.attendee_main || '—'}</div>
-          <div class="field"><strong>Attendee Count</strong>${s.attendee_count ?? '—'}</div>
-          <div class="field"><strong>Regular Lunches</strong>${s.lunch_box_non_veg ?? 0}</div>
-          <div class="field"><strong>Vegetarian Lunches</strong>${s.lunch_box_veg ?? 0}</div>
-          <div class="field"><strong>Parking Spaces</strong>${s.parking_spaces ?? 0}</div>
-          <div class="field"><strong>Presentation Room</strong>${s.has_presentation_need || '—'}</div>
-          <div class="field"><strong>Shuttle Service</strong>${s.has_shuttle_need || '—'}</div>
-          <div class="field"><strong>Status</strong>APPROVED ✓</div>
+          <div class="field"><strong>${I18N.t('empDash.leadAttendee')}</strong>${s.attendee_main || '—'}</div>
+          <div class="field"><strong>${I18N.t('submit.attendeeCount')}</strong>${s.attendee_count ?? '—'}</div>
+          <div class="field"><strong>${I18N.t('submit.lunchNonVeg')}</strong>${s.lunch_box_non_veg ?? 0}</div>
+          <div class="field"><strong>${I18N.t('submit.lunchVeg')}</strong>${s.lunch_box_veg ?? 0}</div>
+          <div class="field"><strong>${I18N.t('submit.parking')}</strong>${s.parking_spaces ?? 0}</div>
+          <div class="field"><strong>${I18N.t('empDash.presentationRoom')}</strong>${s.has_presentation_need || '—'}</div>
+          <div class="field"><strong>${I18N.t('empDash.shuttle')}</strong>${s.has_shuttle_need || '—'}</div>
+          <div class="field"><strong>${I18N.t('adm.status')}</strong>${I18N.t('empDash.printApproved')}</div>
         </div>
-        ${s.admin_notes ? `<h2>Notes from Organizer</h2><p>${s.admin_notes}</p>` : ''}
+        ${s.admin_notes ? `<h2>${I18N.t('empDash.printNotes')}</h2><p>${s.admin_notes}</p>` : ''}
         <div class="footer">
-          Printed on ${new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'})} ·
+          ${isZh ? `列印日期：${new Date().toLocaleDateString('zh-TW', {year:'numeric',month:'long',day:'numeric'})}` : `Printed on ${new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'})}`} ·
           NQU Job Fair System · National Quemoy University
         </div>
       </body></html>`;
@@ -545,10 +546,10 @@
 
     // ── DELETE ────────────────────────────────────────────────
     async function deleteSubmission(id) {
-      if (!App.confirm('Delete this submission? This cannot be undone.')) return;
+      if (!App.confirm(I18N.t('adm.confirmDelSub'))) return;
       try {
         await API.delete(`/api/submissions/${id}`);
-        App.toast('Submission deleted', 'success');
+        App.toast(I18N.t('msg.subDeleted'), 'success');
         document.getElementById('newSubBtn').style.display = '';
         loadSubmissions();
       } catch (err) { App.toast(err.message, 'error'); }
@@ -560,22 +561,35 @@
       const next    = document.getElementById('newPw').value;
       const confirm = document.getElementById('confirmPw').value;
 
-      if (!current || !next) { App.toast('All fields are required', 'error'); return; }
-      if (next.length < 6) { App.toast('New password must be at least 6 characters', 'error'); return; }
-      if (next !== confirm) { App.toast('Passwords do not match', 'error'); return; }
+      if (!current || !next) { App.toast(I18N.t('empDash.allFieldsRequired'), 'error'); return; }
+      if (next.length < 6) { App.toast(I18N.t('err.pwTooShort'), 'error'); return; }
+      if (next !== confirm) { App.toast(I18N.t('empReg.mismatch'), 'error'); return; }
 
       try {
         await API.patch('/api/auth/employer/change-password', {
           current_password: current,
           new_password: next
         });
-        App.toast('Password changed successfully', 'success');
+        App.toast(I18N.t('empDash.pwChanged'), 'success');
         App.hideModal('accountModal');
         document.getElementById('currentPw').value = '';
         document.getElementById('newPw').value = '';
         document.getElementById('confirmPw').value = '';
       } catch (err) { App.toast(err.message, 'error'); }
     }
+
+    // Re-render JS-generated content when language switches
+    document.addEventListener('langchange', () => {
+      if (!currentUser) return;
+      document.getElementById('welcomeMsg').textContent =
+        `${I18N.t('empDash.welcome')} ${currentUser.company_name}!`;
+      document.getElementById('accountInfoBody').innerHTML =
+        `<div class="info-row"><span class="info-row__icon">🏢</span><span class="info-row__val" style="font-weight:600;">${App.escapeHtml(currentUser.company_name)}</span></div>
+         <div class="info-row"><span class="info-row__icon">✉️</span><span class="info-row__val">${App.escapeHtml(currentUser.email)}</span></div>
+         <button class="btn btn--outline btn--sm" style="margin-top:var(--space-3); width:100%;" onclick="App.showModal('accountModal')">${I18N.t('empDash.changePwAccount')}</button>`;
+      loadEventInfo();
+      loadSubmissions();
+    });
 
     init();
   </script>

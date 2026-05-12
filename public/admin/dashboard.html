@@ -261,29 +261,29 @@
         </div>
 
         <div class="card mt-8" style="max-width:600px; background:var(--color-bg-alt); padding:var(--space-6); border-radius:var(--radius-lg); border:1px solid var(--color-border);">
-          <h3 style="font-size:1rem; font-weight:600; margin-bottom:var(--space-4);">Change Admin Password</h3>
+          <h3 style="font-size:1rem; font-weight:600; margin-bottom:var(--space-4);" data-i18n="adm.changePw">Change Admin Password</h3>
           <div class="form-group">
-            <label class="form-label">Current Password</label>
+            <label class="form-label" data-i18n="adm.currentPw">Current Password</label>
             <input class="form-input" type="password" id="adminCurrentPw" autocomplete="current-password">
           </div>
           <div class="form-group mt-4">
-            <label class="form-label">New Password</label>
+            <label class="form-label" data-i18n="adm.newPwLabel">New Password</label>
             <input class="form-input" type="password" id="adminNewPw" autocomplete="new-password" minlength="6">
           </div>
           <div class="form-group mt-4">
-            <label class="form-label">Confirm New Password</label>
+            <label class="form-label" data-i18n="adm.confirmNewPw">Confirm New Password</label>
             <input class="form-input" type="password" id="adminConfirmPw" autocomplete="new-password" minlength="6">
           </div>
           <div id="adminPwError" class="form-error mb-4" style="display:none;"></div>
-          <button class="btn btn--primary mt-4" onclick="changeAdminPassword()">Update Password</button>
+          <button class="btn btn--primary mt-4" onclick="changeAdminPassword()" data-i18n="adm.updatePw">Update Password</button>
         </div>
 
         <div class="card mt-8" style="max-width:900px; background:var(--color-bg-alt); padding:var(--space-6); border-radius:var(--radius-lg); border:1px solid var(--color-border);">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-4);">
-            <h3 style="font-size:1rem; font-weight:600; margin:0;">Admin Accounts</h3>
-            <button class="btn btn--primary btn--sm" onclick="openNewAdminModal()">+ Add Admin</button>
+            <h3 style="font-size:1rem; font-weight:600; margin:0;" data-i18n="adm.adminAccounts">Admin Accounts</h3>
+            <button class="btn btn--primary btn--sm" onclick="openNewAdminModal()" data-i18n="adm.addAdmin">+ Add Admin</button>
           </div>
-          <div id="adminAccountsList" class="text-sm text-muted">Loading...</div>
+          <div id="adminAccountsList" class="text-sm text-muted" data-i18n="adm.loading">Loading...</div>
         </div>
 
         <div class="dashboard__header mt-10">
@@ -342,21 +342,21 @@
   <div class="modal-overlay" id="newAdminModal">
     <div class="modal" style="max-width:400px;">
       <div class="modal__header">
-        <h2 class="modal__title">Add Admin Account</h2>
+        <h2 class="modal__title" data-i18n="adm.addAdminTitle">Add Admin Account</h2>
         <button class="modal__close" onclick="App.hideModal('newAdminModal')">✕</button>
       </div>
       <div class="form-group">
-        <label class="form-label">Username</label>
+        <label class="form-label" data-i18n="adm.adminUsername">Username</label>
         <input class="form-input" type="text" id="newAdminUsername" autocomplete="off">
       </div>
       <div class="form-group mt-4">
-        <label class="form-label">Password</label>
+        <label class="form-label" data-i18n="adm.adminPassword">Password</label>
         <input class="form-input" type="password" id="newAdminPassword" autocomplete="new-password" minlength="6">
       </div>
       <div id="newAdminError" class="form-error mb-4" style="display:none;"></div>
       <div class="modal__actions">
-        <button class="btn btn--outline" onclick="App.hideModal('newAdminModal')">Cancel</button>
-        <button class="btn btn--primary" onclick="createAdmin()">Create</button>
+        <button class="btn btn--outline" onclick="App.hideModal('newAdminModal')" data-i18n="adm.cancel">Cancel</button>
+        <button class="btn btn--primary" onclick="createAdmin()" data-i18n="adm.createAdmin">Create</button>
       </div>
     </div>
   </div>
