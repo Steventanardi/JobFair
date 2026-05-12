@@ -12,6 +12,7 @@ const I18N = {
     'nav.latest': { en: 'Latest Info', zh: '最新資訊' },
     'nav.employer': { en: 'Employer', zh: '企業登入' },
     'nav.admin': { en: 'Admin', zh: '管理員' },
+    'nav.login': { en: 'Login', zh: '登入' },
     'nav.home': { en: 'Home', zh: '首頁' },
     'nav.dashboard': { en: 'Dashboard', zh: '控制台' },
     'nav.logout': { en: 'Logout', zh: '登出' },
