@@ -60,6 +60,54 @@ const I18N = {
 
     // ── Landing Page ──────────────────────────────────────
     'landing.loginBtn': { en: 'Participate → Login', zh: '我要參與活動 → 登入' },
+    'landing.badge':    { en: '2026 Career Fair', zh: '2026 就業博覽會' },
+    'landing.title1':   { en: 'National Quemoy University', zh: '國立金門大學' },
+    'landing.title2':   { en: 'Graduate Career Fair', zh: '畢業生就業博覽會' },
+    'landing.title3':   { en: 'Industry-Academia Cooperation & Business Matching Forum', zh: '暨產學合作、企業媒合說明會' },
+    'landing.heroSub':  { en: 'May 5, 2026 (Mon) · NQU Gymnasium', zh: '民國 115 年 5 月 5 日（一）· 國立金門大學 體育館' },
+
+    'landing.infoTitle': { en: 'Event Information', zh: '活動資訊' },
+
+    'landing.date.label':     { en: 'Date', zh: '活動日期' },
+    'landing.date.value':     { en: 'May 5, 2026 (Mon)', zh: '115年5月5日（一）' },
+    'landing.venue.label':    { en: 'Venue', zh: '活動地點' },
+    'landing.venue.value':    { en: 'National Quemoy University', zh: '國立金門大學' },
+    'landing.venue.sub':      { en: 'Gymnasium', zh: '體育館' },
+    'landing.deadline.label': { en: 'Registration Deadline', zh: '報名截止' },
+    'landing.deadline.value': { en: 'April 30, 2026 (Wed)', zh: '115/4/30（三）' },
+    'landing.contact.label':  { en: 'Contact', zh: '聯絡方式' },
+    'landing.contact.sub':    { en: 'ext. 3741', zh: '分機 3741' },
+    'landing.email.label':    { en: 'Email', zh: '電子信箱' },
+    'landing.fee.label':      { en: 'Fee', zh: '報名費用' },
+    'landing.fee.value':      { en: 'Free', zh: '免費參加' },
+    'landing.fee.sub':        { en: 'Free of charge', zh: '免費' },
+
+    'landing.scheduleTitle':  { en: 'Event Schedule', zh: '活動時程' },
+    'landing.scheduleDate':   { en: 'May 5, 2026 (Monday)', zh: '115年5月5日（一）' },
+    'landing.t0930':  { en: 'Setup begins', zh: '開始佈置攤位' },
+    'landing.t0940':  { en: 'Employers enter venue', zh: '廠商人員入場' },
+    'landing.t1000':  { en: 'Opening ceremony', zh: '開幕典禮' },
+    'landing.t1020':  { en: 'Career fair open to students', zh: '博覽會正式開放（學生入場）' },
+    'landing.t1350':  { en: 'Event ends / Teardown', zh: '活動結束、撤攤' },
+
+    'landing.rulesTitle': { en: 'Important Notes', zh: '注意事項' },
+    'landing.rule1.title': { en: 'Booth Allocation', zh: '攤位規模' },
+    'landing.rule1.desc':  { en: '50–100 employees: 1 booth; over 100: up to 2 booths', zh: '員工人數 50–100 人：1 個攤位；超過 100 人：可申請 2 個攤位' },
+    'landing.rule2.title': { en: 'Backdrop', zh: '攤位背板' },
+    'landing.rule2.desc':  { en: 'Please bring your own company backdrop (250 cm × 250 cm)', zh: '請自備公司背板（尺寸：250cm × 250cm）' },
+    'landing.rule3.title': { en: 'Staff', zh: '出席人員' },
+    'landing.rule3.desc':  { en: 'Wear company uniform or identification badge and bring promotional materials', zh: '請穿著公司制服或配戴識別證，攜帶相關文宣資料' },
+    'landing.rule4.title': { en: 'Roll-up Banner', zh: 'X 型展架' },
+    'landing.rule4.desc':  { en: 'Maximum 1 roll-up / X-frame banner per booth', zh: '每攤位最多可擺放 1 個 X 型展架（易拉展）' },
+    'landing.rule5.title': { en: 'LINE Group', zh: 'LINE 報名群組' },
+    'landing.rule5.desc':  { en: 'Official LINE: "NQU Human Resources and Career Development Center". You will be invited after registration.', zh: '活動官方 LINE：「國立金門大學人力資源暨職涯發展中心」，報名後將邀請加入說明群組' },
+    'landing.rule6.title': { en: 'Job Vacancy Form', zh: '職缺資料表' },
+    'landing.rule6.desc':  { en: 'After registering, download and complete the Job Vacancy Form and email it back by the deadline', zh: '完成報名後，請另行填寫職缺資料表並以 Email 寄回主辦單位，逾期視同放棄' },
+
+    'landing.ctaTitle': { en: 'Register to Participate', zh: '立即報名參加' },
+    'landing.ctaDesc':  { en: 'Login with your 8-digit Unified Business Number — no password required.', zh: '使用公司統一編號（8 碼）即可快速登入，無需密碼。' },
+
+    'landing.footerLine': { en: 'Human Resources & Career Development Center · (082)-313300 ext. 3741', zh: '人力資源暨職涯發展中心 · (082)-313300 分機 3741' },
 
     // ── Employer Login ────────────────────────────────────
     'empLogin.title': { en: 'Employer Login', zh: '企業登入' },
