@@ -45,9 +45,13 @@ router.post('/employer/login', authLimiter, async (req, res) => {
     if (rows.length > 0) {
       employer = rows[0];
     } else {
+      // Provide placeholder email/password_hash in case NOT NULL constraints
+      // are still present on older DB deployments where the migration hasn't applied.
       const result = await db.query(
-        'INSERT INTO employers (unified_business_no, company_name) VALUES ($1, $2) RETURNING id, unified_business_no, company_name',
-        [ubn, ubn]
+        `INSERT INTO employers (unified_business_no, company_name, email, password_hash)
+         VALUES ($1, $2, $3, $4)
+         RETURNING id, unified_business_no, company_name`,
+        [ubn, ubn, `ubn_${ubn}@noreply.invalid`, '']
       );
       employer = result.rows[0];
     }
@@ -65,8 +69,9 @@ router.post('/employer/login', authLimiter, async (req, res) => {
 
     res.json({ message: 'Login successful', user });
   } catch (err) {
-    console.error('Employer login error:', err.message);
-    res.status(500).json({ error: 'Server error' });
+    console.error('Employer login error:', err.message, err.code);
+    const msg = process.env.NODE_ENV !== 'production' ? err.message : 'Server error';
+    res.status(500).json({ error: msg });
   }
 });
 
