@@ -175,22 +175,12 @@
         <button class="modal__close" onclick="App.hideModal('accountModal')">✕</button>
       </div>
       <div id="accountModalInfo" class="text-sm text-muted mb-4" style="padding:0 0 var(--space-3); border-bottom:1px solid var(--color-border); margin-bottom:var(--space-4);"></div>
-      <p class="text-sm" style="font-weight:600; margin-bottom:var(--space-3);" data-i18n="empDash.changePw">Change Password</p>
-      <div class="form-group">
-        <label class="form-label" data-i18n="empDash.currentPw">Current Password</label>
-        <input class="form-input" type="password" id="currentPw" placeholder="••••••" autocomplete="current-password">
-      </div>
-      <div class="form-group">
-        <label class="form-label" data-i18n="empDash.newPw">New Password</label>
-        <input class="form-input" type="password" id="newPw" data-i18n-placeholder="empReg.passwordHint" placeholder="At least 6 characters" autocomplete="new-password">
-      </div>
-      <div class="form-group">
-        <label class="form-label" data-i18n="empDash.confirmNewPw">Confirm New Password</label>
-        <input class="form-input" type="password" id="confirmPw" placeholder="••••••" autocomplete="new-password">
-      </div>
+      <p class="text-sm text-muted" style="margin-bottom:var(--space-3);">
+        以統一編號登入，無需密碼。如需協助請聯絡主辦單位。<br>
+        <span style="opacity:0.7;">Login is passwordless — use your 統一編號 each time.</span>
+      </p>
       <div class="modal__actions">
-        <button class="btn btn--outline" onclick="App.hideModal('accountModal')" data-i18n="btn.cancel">Cancel</button>
-        <button class="btn btn--primary" onclick="changePassword()" data-i18n="empDash.changePwBtn">Change Password</button>
+        <button class="btn btn--primary" onclick="App.hideModal('accountModal')" data-i18n="btn.close">Close</button>
       </div>
     </div>
   </div>
@@ -210,11 +200,11 @@
       document.getElementById('welcomeMsg').textContent =
         `${I18N.t('empDash.welcome')} ${currentUser.company_name}!`;
       document.getElementById('accountModalInfo').innerHTML =
-        `<strong>${App.escapeHtml(currentUser.company_name)}</strong><br>${App.escapeHtml(currentUser.email)}`;
+        `<strong>${App.escapeHtml(currentUser.company_name)}</strong><br><span style="font-family:monospace;">${App.escapeHtml(currentUser.unified_business_no || '')}</span>`;
       document.getElementById('accountInfoBody').innerHTML =
         `<div class="info-row"><span class="info-row__icon">🏢</span><span class="info-row__val" style="font-weight:600;">${App.escapeHtml(currentUser.company_name)}</span></div>
-         <div class="info-row"><span class="info-row__icon">✉️</span><span class="info-row__val">${App.escapeHtml(currentUser.email)}</span></div>
-         <button class="btn btn--outline btn--sm" style="margin-top:var(--space-3); width:100%;" onclick="App.showModal('accountModal')">${I18N.t('empDash.changePwAccount')}</button>`;
+         <div class="info-row"><span class="info-row__icon">🔢</span><span class="info-row__val">${App.escapeHtml(currentUser.unified_business_no || '')}</span></div>
+         <button class="btn btn--outline btn--sm" style="margin-top:var(--space-3); width:100%;" onclick="App.showModal('accountModal')">⚙ ${I18N.t('empDash.accountSettings')}</button>`;
 
       await Promise.all([loadAnnouncements(), loadEventInfo(), loadSubmissions()]);
 
@@ -580,29 +570,6 @@
       } catch (err) { App.toast(err.message, 'error'); }
     }
 
-    // ── CHANGE PASSWORD ───────────────────────────────────────
-    async function changePassword() {
-      const current = document.getElementById('currentPw').value;
-      const next    = document.getElementById('newPw').value;
-      const confirm = document.getElementById('confirmPw').value;
-
-      if (!current || !next) { App.toast(I18N.t('empDash.allFieldsRequired'), 'error'); return; }
-      if (next.length < 6) { App.toast(I18N.t('err.pwTooShort'), 'error'); return; }
-      if (next !== confirm) { App.toast(I18N.t('empReg.mismatch'), 'error'); return; }
-
-      try {
-        await API.patch('/api/auth/employer/change-password', {
-          current_password: current,
-          new_password: next
-        });
-        App.toast(I18N.t('empDash.pwChanged'), 'success');
-        App.hideModal('accountModal');
-        document.getElementById('currentPw').value = '';
-        document.getElementById('newPw').value = '';
-        document.getElementById('confirmPw').value = '';
-      } catch (err) { App.toast(err.message, 'error'); }
-    }
-
     // Re-render JS-generated content when language switches
     document.addEventListener('langchange', () => {
       if (!currentUser) return;
@@ -610,8 +577,8 @@
         `${I18N.t('empDash.welcome')} ${currentUser.company_name}!`;
       document.getElementById('accountInfoBody').innerHTML =
         `<div class="info-row"><span class="info-row__icon">🏢</span><span class="info-row__val" style="font-weight:600;">${App.escapeHtml(currentUser.company_name)}</span></div>
-         <div class="info-row"><span class="info-row__icon">✉️</span><span class="info-row__val">${App.escapeHtml(currentUser.email)}</span></div>
-         <button class="btn btn--outline btn--sm" style="margin-top:var(--space-3); width:100%;" onclick="App.showModal('accountModal')">${I18N.t('empDash.changePwAccount')}</button>`;
+         <div class="info-row"><span class="info-row__icon">🔢</span><span class="info-row__val">${App.escapeHtml(currentUser.unified_business_no || '')}</span></div>
+         <button class="btn btn--outline btn--sm" style="margin-top:var(--space-3); width:100%;" onclick="App.showModal('accountModal')">⚙ ${I18N.t('empDash.accountSettings')}</button>`;
       loadEventInfo();
       loadSubmissions();
     });

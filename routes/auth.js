@@ -5,7 +5,7 @@ const db = require('../db');
 
 const router = express.Router();
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const UBN_RE = /^\d{8}$/;
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -27,73 +27,34 @@ function saveSession(req) {
   });
 }
 
-// POST /api/auth/employer/register
-router.post('/employer/register', authLimiter, async (req, res) => {
-  const email = (req.body.email || '').trim().toLowerCase();
-  const password = req.body.password || '';
-  const company_name = (req.body.company_name || '').trim();
-
-  if (!email || !password || !company_name) {
-    return res.status(400).json({ error: 'All fields are required' });
-  }
-  if (!EMAIL_RE.test(email)) {
-    return res.status(400).json({ error: 'Invalid email format' });
-  }
-  if (company_name.length > 200) {
-    return res.status(400).json({ error: 'Company name must be 200 characters or fewer' });
-  }
-  if (password.length < 6) {
-    return res.status(400).json({ error: 'Password must be at least 6 characters' });
-  }
-
-  try {
-    const { rows: existing } = await db.query('SELECT id FROM employers WHERE email = $1', [email]);
-    if (existing.length > 0) {
-      return res.status(409).json({ error: 'Email already registered' });
-    }
-
-    const hash = await bcrypt.hash(password, 10);
-    const result = await db.query(
-      'INSERT INTO employers (email, password_hash, company_name) VALUES ($1, $2, $3) RETURNING id',
-      [email, hash, company_name]
-    );
-
-    const user = { id: result.rows[0].id, email, company_name, role: 'employer' };
-
-    await regenerateSession(req);
-    req.session.user = user;
-    await saveSession(req);
-
-    res.json({ message: 'Registration successful', user });
-  } catch (err) {
-    console.error('Employer register error:', err);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// POST /api/auth/employer/login
+// POST /api/auth/employer/login — passwordless, find-or-create by 統編號
 router.post('/employer/login', authLimiter, async (req, res) => {
-  const email = (req.body.email || '').trim().toLowerCase();
-  const password = req.body.password || '';
+  const ubn = (req.body.unified_business_no || '').trim();
 
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Email and password are required' });
+  if (!UBN_RE.test(ubn)) {
+    return res.status(400).json({ error: '統一編號必須為 8 位數字 / Unified Business Number must be exactly 8 digits' });
   }
 
   try {
-    const { rows } = await db.query(
-      'SELECT id, email, password_hash, company_name FROM employers WHERE email = $1',
-      [email]
+    let { rows } = await db.query(
+      'SELECT id, unified_business_no, company_name FROM employers WHERE unified_business_no = $1',
+      [ubn]
     );
-    const employer = rows[0];
 
-    if (!employer || !(await bcrypt.compare(password, employer.password_hash))) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+    let employer;
+    if (rows.length > 0) {
+      employer = rows[0];
+    } else {
+      const result = await db.query(
+        'INSERT INTO employers (unified_business_no, company_name) VALUES ($1, $2) RETURNING id, unified_business_no, company_name',
+        [ubn, ubn]
+      );
+      employer = result.rows[0];
     }
 
     const user = {
       id: employer.id,
-      email: employer.email,
+      unified_business_no: employer.unified_business_no,
       company_name: employer.company_name,
       role: 'employer'
     };
@@ -138,32 +99,6 @@ router.post('/admin/login', authLimiter, async (req, res) => {
     res.json({ message: 'Login successful', user });
   } catch (err) {
     console.error('Admin login error:', err);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// PATCH /api/auth/employer/change-password
-router.patch('/employer/change-password', authLimiter, async (req, res) => {
-  if (!req.session.user || req.session.user.role !== 'employer') {
-    return res.status(401).json({ error: 'Not authenticated' });
-  }
-  const { current_password, new_password } = req.body;
-  if (!current_password || !new_password) {
-    return res.status(400).json({ error: 'Both fields are required' });
-  }
-  if (new_password.length < 6) {
-    return res.status(400).json({ error: 'Password must be at least 6 characters' });
-  }
-  try {
-    const { rows } = await db.query('SELECT password_hash FROM employers WHERE id = $1', [req.session.user.id]);
-    if (!rows.length || !(await bcrypt.compare(current_password, rows[0].password_hash))) {
-      return res.status(401).json({ error: 'Current password is incorrect' });
-    }
-    const hash = await bcrypt.hash(new_password, 10);
-    await db.query('UPDATE employers SET password_hash = $1 WHERE id = $2', [hash, req.session.user.id]);
-    res.json({ message: 'Password changed successfully' });
-  } catch (err) {
-    console.error('Change password error:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });

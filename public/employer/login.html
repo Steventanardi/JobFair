@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <meta name="description" content="Employer login for NQU Job Fair System">
-  <title>Employer Login — NQU Job Fair</title>
+  <meta name="description" content="企業登入 — NQU 就業博覽會">
+  <title>企業登入 — NQU Job Fair</title>
   <link rel="stylesheet" href="/css/style.css">
   <script>if(localStorage.getItem('nqu-dark')==='1')document.documentElement.setAttribute('data-theme','dark')</script>
 </head>
@@ -20,41 +20,48 @@
         <div style="margin-top:var(--space-3);" id="langToggle"></div>
       </div>
 
-      <h1 class="auth-card__title" data-i18n="empLogin.title">Employer Login</h1>
-      <p class="auth-card__subtitle" data-i18n="empLogin.subtitle">Sign in to manage your submission</p>
+      <h1 class="auth-card__title" data-i18n="empLogin.title">企業登入</h1>
+      <p class="auth-card__subtitle" data-i18n="empLogin.subtitle">請輸入公司統一編號以登入或自動完成註冊</p>
 
       <form id="loginForm" autocomplete="on">
         <div class="form-group">
-          <label class="form-label" for="email" data-i18n="empLogin.email">Email</label>
-          <input class="form-input" type="email" id="email" name="email" placeholder="company@example.com" required autocomplete="email">
+          <label class="form-label" for="unified_business_no" data-i18n="empLogin.ubn">
+            公司統一編號 (Unified Business Number)
+          </label>
+          <input
+            class="form-input"
+            type="text"
+            id="unified_business_no"
+            name="unified_business_no"
+            placeholder="請輸入統一編號，例如：12345678"
+            maxlength="8"
+            pattern="\d{8}"
+            inputmode="numeric"
+            required
+            autocomplete="off"
+            style="font-size:1.25rem; letter-spacing:0.15em; text-align:center;"
+          >
         </div>
 
-        <div class="form-group">
-          <label class="form-label" for="password" data-i18n="empLogin.password">Password</label>
-          <input class="form-input" type="password" id="password" name="password" placeholder="••••••" required autocomplete="current-password">
-        </div>
+        <p class="text-sm" style="color:var(--color-text-muted); margin-top:var(--space-2); margin-bottom:var(--space-4); text-align:center;" data-i18n="empLogin.ubnNote">
+          無需密碼。若為新公司請直接輸入統一編號完成註冊。
+        </p>
 
         <div id="errorMsg" class="form-error mb-4" style="display:none;"></div>
 
         <button type="submit" class="btn btn--primary btn--full btn--lg" id="submitBtn" data-i18n="empLogin.submit">
-          Sign In
+          登入 / 進入系統
         </button>
       </form>
 
-      <div class="auth-card__footer">
-        <span data-i18n="empLogin.noAccount">Don't have an account?</span><br>
-        <a href="/employer/register.html" style="font-weight:600;" data-i18n="empLogin.registerLink">Register here</a>
-      </div>
-
-      <div style="text-align:center; margin-top:var(--space-3); padding-top:var(--space-3); border-top:1px solid var(--color-border);">
-        <p class="text-sm" style="color:var(--color-text-muted);">
-          <span data-i18n="empLogin.forgot">Forgot your password?</span><br>
-          <span class="text-xs" data-i18n="empLogin.forgotTip">Contact the admin to reset it.</span>
+      <div style="text-align:center; margin-top:var(--space-4); padding-top:var(--space-3); border-top:1px solid var(--color-border);">
+        <p class="text-xs" style="color:var(--color-text-muted);">
+          <a href="/" style="font-weight:600;" data-i18n="empLogin.backHome">← 返回活動頁面</a>
         </p>
       </div>
 
-      <div style="text-align:center; margin-top:var(--space-4); padding-top:var(--space-3); border-top:1px solid var(--color-border);">
-        <p class="text-xs" style="color:var(--text-muted);">Are you an admin?
+      <div style="text-align:center; margin-top:var(--space-3); padding-top:var(--space-3); border-top:1px solid var(--color-border);">
+        <p class="text-xs" style="color:var(--color-text-muted);">Are you an admin?
           <a href="/admin/login.html" style="font-weight:600;">Admin login →</a>
         </p>
       </div>
@@ -71,18 +78,29 @@
     const form = document.getElementById('loginForm');
     const errorMsg = document.getElementById('errorMsg');
     const submitBtn = document.getElementById('submitBtn');
+    const ubnInput = document.getElementById('unified_business_no');
+
+    // Allow only digits
+    ubnInput.addEventListener('input', () => {
+      ubnInput.value = ubnInput.value.replace(/\D/g, '').slice(0, 8);
+    });
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       errorMsg.style.display = 'none';
+
+      const ubn = ubnInput.value.trim();
+      if (!/^\d{8}$/.test(ubn)) {
+        errorMsg.textContent = I18N.t('empLogin.ubnError');
+        errorMsg.style.display = 'block';
+        return;
+      }
+
       submitBtn.disabled = true;
       submitBtn.textContent = I18N.t('empLogin.submitting');
 
       try {
-        await API.post('/api/auth/employer/login', {
-          email: document.getElementById('email').value,
-          password: document.getElementById('password').value
-        });
+        await API.post('/api/auth/employer/login', { unified_business_no: ubn });
         App.toast(I18N.t('msg.loginSuccess'), 'success');
         setTimeout(() => window.location.href = '/employer/dashboard.html', 500);
       } catch (err) {

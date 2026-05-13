@@ -295,6 +295,17 @@ const initDB = async () => {
       // ignore
     }
 
+    // Migration: passwordless employer auth via 統編號
+    try {
+      await db.rawQuery(`ALTER TABLE employers ADD COLUMN IF NOT EXISTS unified_business_no VARCHAR(8) UNIQUE`);
+    } catch (e) { /* ignore — column already exists */ }
+    try {
+      await db.rawQuery(`ALTER TABLE employers ALTER COLUMN email DROP NOT NULL`);
+    } catch (e) { /* ignore */ }
+    try {
+      await db.rawQuery(`ALTER TABLE employers ALTER COLUMN password_hash DROP NOT NULL`);
+    } catch (e) { /* ignore */ }
+
     // Seed default admin if not exists
     const { rows: admins } = await db.rawQuery('SELECT id FROM admins WHERE username = $1', ['admin']);
     if (admins.length === 0) {

@@ -1,13 +1,51 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="National Quemoy University Job Fair — Connect with top employers and discover career opportunities.">
+  <meta name="description" content="2026 國立金門大學畢業生就業博覽會暨產學合作、企業媒合說明會">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <title>NQU Job Fair</title>
+  <title>2026 NQU 就業博覽會</title>
   <link rel="stylesheet" href="/css/style.css">
   <script>if(localStorage.getItem('nqu-dark')==='1')document.documentElement.setAttribute('data-theme','dark')</script>
+  <style>
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: var(--space-4);
+      margin-top: var(--space-6);
+    }
+    .info-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      text-align: center;
+    }
+    .info-card__icon { font-size: 2rem; margin-bottom: var(--space-2); }
+    .info-card__label { font-size: 0.75rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-1); }
+    .info-card__value { font-weight: 700; font-size: 1rem; color: var(--color-text); }
+    .info-card__sub { font-size: 0.8rem; color: var(--color-text-muted); margin-top: var(--space-1); }
+
+    .timeline { list-style: none; padding: 0; margin: var(--space-5) 0 0; position: relative; }
+    .timeline::before { content: ''; position: absolute; left: 1.75rem; top: 0; bottom: 0; width: 2px; background: var(--color-border); }
+    .timeline__item { display: flex; gap: var(--space-4); margin-bottom: var(--space-4); position: relative; }
+    .timeline__dot { flex-shrink: 0; width: 3.5rem; height: 3.5rem; border-radius: 50%; background: var(--color-surface); border: 2px solid var(--color-gold); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; color: var(--color-gold); text-align: center; line-height: 1.2; z-index: 1; }
+    .timeline__content { padding-top: 0.6rem; }
+    .timeline__time { font-weight: 700; color: var(--color-gold); }
+    .timeline__desc { color: var(--color-text-muted); font-size: 0.9rem; }
+
+    .rules-list { list-style: none; padding: 0; }
+    .rules-list li { padding: var(--space-3) 0; border-bottom: 1px solid var(--color-border); display: flex; gap: var(--space-3); align-items: flex-start; }
+    .rules-list li:last-child { border-bottom: none; }
+    .rules-list__icon { font-size: 1.25rem; flex-shrink: 0; margin-top: 1px; }
+
+    .cta-section { background: var(--color-primary); padding: var(--space-12) 0; text-align: center; }
+    .cta-section h2 { color: #fff; font-size: 1.75rem; margin-bottom: var(--space-3); }
+    .cta-section p { color: rgba(255,255,255,0.85); margin-bottom: var(--space-6); }
+    .btn--white { background: #fff; color: var(--color-primary); font-weight: 700; }
+    .btn--white:hover { background: rgba(255,255,255,0.9); }
+  </style>
 </head>
 <body>
   <div class="page-wrapper">
@@ -19,8 +57,7 @@
           <span>NQU</span> <span class="nav__brand-accent" data-i18n="nav.brand">Job Fair</span>
         </a>
         <ul class="nav__links" id="navLinks">
-          <li><a href="#announcements" class="nav__link" data-i18n="nav.latest">Latest News</a></li>
-          <li><a href="/employer/login.html" class="nav__link" data-i18n="nav.login">Login</a></li>
+          <li><a href="/employer/login.html" class="btn btn--primary btn--sm" data-i18n="nav.login">企業登入</a></li>
           <li id="langToggle"></li>
         </ul>
         <button class="nav__hamburger" aria-label="Toggle menu" aria-expanded="false">
@@ -35,68 +72,182 @@
     <!-- Hero -->
     <section class="hero">
       <div class="container hero__content">
-        <div class="hero__badge fade-in" data-i18n="hero.badge">NQU Career Fair</div>
-        <h1 class="hero__title fade-in-up">
-          <span data-i18n="hero.title1">National Quemoy University</span><br>
-          <span class="gold" data-i18n="hero.title2">Job Fair</span>
+        <div class="hero__badge fade-in">2026 就業博覽會</div>
+        <h1 class="hero__title fade-in-up" style="font-size:clamp(1.4rem,4vw,2.4rem); line-height:1.35;">
+          國立金門大學<br>
+          <span class="gold">畢業生就業博覽會</span><br>
+          <span style="font-size:0.65em; opacity:0.85;">暨產學合作、企業媒合說明會</span>
         </h1>
-        <p class="hero__subtitle fade-in-up stagger-1" data-i18n="hero.subtitle">
-          Connecting top employers with exceptional NQU talent.
+        <p class="hero__subtitle fade-in-up stagger-1">
+          民國 115 年 5 月 5 日（一）&nbsp;·&nbsp; 國立金門大學 體育館
         </p>
         <div class="hero__actions fade-in-up stagger-2">
-          <a href="/employer/register.html" class="btn btn--primary btn--lg" data-i18n="hero.registerBtn">
-            Employer Registration
-          </a>
-          <a href="#announcements" class="btn btn--secondary btn--lg" data-i18n="hero.learnMore">
-            Learn More
+          <a href="/employer/login.html" class="btn btn--primary btn--lg" data-i18n="landing.loginBtn">
+            我要參與活動 → 登入
           </a>
         </div>
       </div>
     </section>
 
-    <!-- Latest Information -->
-    <section class="section" id="announcements" style="background: var(--color-surface-alt);">
+    <!-- Key Info Cards -->
+    <section class="section" style="background: var(--color-surface-alt);">
       <div class="container">
         <div class="section__header">
-          <h2 class="section__title" data-i18n="ann.title">Latest Information</h2>
+          <h2 class="section__title">活動資訊</h2>
           <div class="section__divider"></div>
-          <p class="section__subtitle" data-i18n="ann.subtitle">Stay updated with the latest information about the job fair.</p>
         </div>
-
-        <!-- Announcements -->
-        <div class="announcement-list" id="announcementList">
-          <div class="empty-state">
-            <div class="spinner" style="margin: 0 auto;"></div>
-            <p class="text-muted mt-4" data-i18n="ann.loading">Loading announcements...</p>
+        <div class="info-grid">
+          <div class="info-card">
+            <div class="info-card__icon">📅</div>
+            <div class="info-card__label">活動日期 / Date</div>
+            <div class="info-card__value">115年5月5日（一）</div>
+            <div class="info-card__sub">09:40 – 14:00</div>
+          </div>
+          <div class="info-card">
+            <div class="info-card__icon">📍</div>
+            <div class="info-card__label">活動地點 / Venue</div>
+            <div class="info-card__value">國立金門大學</div>
+            <div class="info-card__sub">體育館</div>
+          </div>
+          <div class="info-card">
+            <div class="info-card__icon">⏰</div>
+            <div class="info-card__label">報名截止 / Deadline</div>
+            <div class="info-card__value">115/4/30（三）</div>
+            <div class="info-card__sub">10:00 – 17:00</div>
+          </div>
+          <div class="info-card">
+            <div class="info-card__icon">📞</div>
+            <div class="info-card__label">聯絡方式 / Contact</div>
+            <div class="info-card__value">(082)-313300</div>
+            <div class="info-card__sub">分機 3741</div>
+          </div>
+          <div class="info-card">
+            <div class="info-card__icon">✉️</div>
+            <div class="info-card__label">電子信箱 / Email</div>
+            <div class="info-card__value" style="font-size:0.85rem;">fir373387@nqu.edu.tw</div>
+            <div class="info-card__sub">&nbsp;</div>
+          </div>
+          <div class="info-card">
+            <div class="info-card__icon">💰</div>
+            <div class="info-card__label">報名費用 / Fee</div>
+            <div class="info-card__value" style="color:var(--color-success, #22c55e);">免費參加</div>
+            <div class="info-card__sub">Free of charge</div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- How It Works -->
+    <!-- Activity Schedule -->
     <section class="section">
-      <div class="container">
+      <div class="container" style="max-width:720px;">
         <div class="section__header">
-          <h2 class="section__title" data-i18n="how.title">How It Works</h2>
+          <h2 class="section__title">活動時程</h2>
+          <div class="section__divider"></div>
+          <p class="section__subtitle">115年5月5日（一）</p>
+        </div>
+        <ul class="timeline">
+          <li class="timeline__item">
+            <div class="timeline__dot">09:30</div>
+            <div class="timeline__content">
+              <div class="timeline__time">09:30</div>
+              <div class="timeline__desc">開始佈置攤位</div>
+            </div>
+          </li>
+          <li class="timeline__item">
+            <div class="timeline__dot">09:40</div>
+            <div class="timeline__content">
+              <div class="timeline__time">09:40</div>
+              <div class="timeline__desc">廠商人員入場</div>
+            </div>
+          </li>
+          <li class="timeline__item">
+            <div class="timeline__dot">10:00</div>
+            <div class="timeline__content">
+              <div class="timeline__time">10:00 – 10:20</div>
+              <div class="timeline__desc">開幕典禮</div>
+            </div>
+          </li>
+          <li class="timeline__item">
+            <div class="timeline__dot">10:20</div>
+            <div class="timeline__content">
+              <div class="timeline__time">10:20 – 13:50</div>
+              <div class="timeline__desc">博覽會正式開放（學生入場）</div>
+            </div>
+          </li>
+          <li class="timeline__item">
+            <div class="timeline__dot">13:50</div>
+            <div class="timeline__content">
+              <div class="timeline__time">13:50 – 14:00</div>
+              <div class="timeline__desc">活動結束、撤攤</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Rules & Notes -->
+    <section class="section" style="background: var(--color-surface-alt);">
+      <div class="container" style="max-width:720px;">
+        <div class="section__header">
+          <h2 class="section__title">注意事項</h2>
           <div class="section__divider"></div>
         </div>
-        <div class="stats-grid" style="max-width:900px; margin: 0 auto;">
-          <div class="card card--lift" style="text-align:center; padding: 2rem;">
-            <div style="font-size:2.5rem; margin-bottom:0.75rem; color:var(--color-gold);">01</div>
-            <div style="font-weight:700; margin-bottom:0.5rem;" data-i18n="how.step1">Register</div>
-            <div class="text-muted text-sm" data-i18n="how.step1desc">Create your employer account on our platform.</div>
-          </div>
-          <div class="card card--lift" style="text-align:center; padding: 2rem;">
-            <div style="font-size:2.5rem; margin-bottom:0.75rem; color:var(--color-gold);">02</div>
-            <div style="font-weight:700; margin-bottom:0.5rem;" data-i18n="how.step2">Submit</div>
-            <div class="text-muted text-sm" data-i18n="how.step2desc">Fill in company details, upload logo & list job openings.</div>
-          </div>
-          <div class="card card--lift" style="text-align:center; padding: 2rem;">
-            <div style="font-size:2.5rem; margin-bottom:0.75rem; color:var(--color-gold);">03</div>
-            <div style="font-weight:700; margin-bottom:0.5rem;" data-i18n="how.step3">Approval</div>
-            <div class="text-muted text-sm" data-i18n="how.step3desc">Our admin team reviews and approves your submission.</div>
-          </div>
-        </div>
+        <ul class="rules-list">
+          <li>
+            <span class="rules-list__icon">🏢</span>
+            <div>
+              <strong>攤位規模</strong><br>
+              <span class="text-muted text-sm">員工人數 50–100 人：1 個攤位；超過 100 人：可申請 2 個攤位</span>
+            </div>
+          </li>
+          <li>
+            <span class="rules-list__icon">🪧</span>
+            <div>
+              <strong>攤位背板</strong><br>
+              <span class="text-muted text-sm">請自備公司背板（尺寸：250cm × 250cm）</span>
+            </div>
+          </li>
+          <li>
+            <span class="rules-list__icon">👔</span>
+            <div>
+              <strong>出席人員</strong><br>
+              <span class="text-muted text-sm">請穿著公司制服或配戴識別證，攜帶相關文宣資料</span>
+            </div>
+          </li>
+          <li>
+            <span class="rules-list__icon">🪄</span>
+            <div>
+              <strong>X 型展架</strong><br>
+              <span class="text-muted text-sm">每攤位最多可擺放 1 個 X 型展架（易拉展）</span>
+            </div>
+          </li>
+          <li>
+            <span class="rules-list__icon">💬</span>
+            <div>
+              <strong>LINE 報名群組</strong><br>
+              <span class="text-muted text-sm">活動官方 LINE：「國立金門大學人力資源暨職涯發展中心」<br>
+              報名後將邀請加入說明群組</span>
+            </div>
+          </li>
+          <li>
+            <span class="rules-list__icon">📄</span>
+            <div>
+              <strong>職缺資料表</strong><br>
+              <span class="text-muted text-sm">完成報名後，請另行填寫職缺資料表並以 Email 寄回主辦單位，逾期視同放棄</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section">
+      <div class="container">
+        <h2>立即報名參加</h2>
+        <p>使用公司統一編號（8 碼）即可快速登入，無需密碼。</p>
+        <a href="/employer/login.html" class="btn btn--white btn--lg" data-i18n="landing.loginBtn">
+          我要參與活動 → 登入
+        </a>
       </div>
     </section>
 
@@ -105,6 +256,9 @@
       <div class="container">
         <div class="footer__brand">NQU <span class="gold" data-i18n="nav.brand">Job Fair</span></div>
         <p data-i18n="footer.uni">National Quemoy University</p>
+        <p style="margin-top:0.25rem; font-size:0.8rem; color:var(--color-text-muted);">
+          人力資源暨職涯發展中心 &nbsp;·&nbsp; (082)-313300 分機 3741
+        </p>
         <p id="footerCopy" style="margin-top:0.5rem; font-size:0.75rem; opacity:0.5;"></p>
       </div>
     </footer>
@@ -115,179 +269,45 @@
   <script src="/js/app.js"></script>
   <script src="/js/i18n.js"></script>
   <script>
-    async function loadAnnouncements() {
-      const container = document.getElementById('announcementList');
-      try {
-        const announcements = await API.get('/api/announcements');
-        
-        if (announcements.length === 0) {
-          container.innerHTML = `
-            <div class="empty-state">
-              <div class="empty-state__svg">
-                <svg viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg" width="88" height="88">
-                  <path d="M20 54 L20 36 L52 24 L52 66 L20 54 Z" stroke="currentColor" stroke-width="3" stroke-linejoin="round" fill="none"/>
-                  <line x1="52" y1="32" x2="66" y2="28" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-                  <line x1="52" y1="44" x2="70" y2="44" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-                  <line x1="52" y1="56" x2="66" y2="60" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-                  <line x1="20" y1="54" x2="20" y2="70" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-                  <line x1="14" y1="70" x2="26" y2="70" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-                </svg>
-              </div>
-              <div class="empty-state__title" data-i18n="ann.empty">No Announcements Yet</div>
-              <div class="empty-state__text" data-i18n="ann.emptyText">Check back later for updates.</div>
-            </div>`;
-          I18N.applyAll();
-          return;
-        }
-
-        container.innerHTML = announcements.map((a, i) => `
-          <div class="announcement-card ${a.is_pinned ? 'announcement-card--pinned' : ''} fade-in-up stagger-${Math.min(i+1, 5)}">
-            <div class="announcement-card__header">
-              <div>
-                <h3 class="announcement-card__title">${App.escapeHtml(a.title)}</h3>
-                ${a.is_pinned ? `<span class="badge badge--pinned">📌 <span data-i18n="ann.pinned">Pinned</span></span>` : ''}
-              </div>
-              <span class="announcement-card__date">${App.formatDate(a.created_at)}</span>
-            </div>
-            <div class="announcement-card__content">${App.escapeHtml(a.content)}</div>
-          </div>
-        `).join('');
-        I18N.applyAll();
-      } catch (err) {
-        container.innerHTML = `
-          <div class="empty-state">
-            <div class="empty-state__svg">
-              <svg viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg" width="88" height="88">
-                <path d="M44 12 L78 72 H10 Z" stroke="currentColor" stroke-width="3" stroke-linejoin="round" fill="none"/>
-                <line x1="44" y1="38" x2="44" y2="56" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-                <circle cx="44" cy="64" r="2.5" fill="currentColor"/>
-              </svg>
-            </div>
-            <div class="empty-state__title">Error</div>
-            <div class="empty-state__text">${App.escapeHtml(err.message)}</div>
-          </div>`;
-      }
-    }
-
-    async function updateNav() {
-      const user = await API.checkAuth();
-      if (user) {
-        const navLinks = document.getElementById('navLinks');
-        if (user.role === 'employer') {
-          navLinks.innerHTML = `
-            <li><a href="#announcements" class="nav__link" data-i18n="nav.latest">Latest News</a></li>
-            <li><a href="/employer/dashboard.html" class="nav__link" data-i18n="nav.dashboard">Dashboard</a></li>
-            <li><a href="#" class="nav__link" onclick="App.logout(); return false;" data-i18n="nav.logout">Logout</a></li>
-            <li id="langToggle"></li>
-          `;
-        } else if (user.role === 'admin') {
-          navLinks.innerHTML = `
-            <li><a href="#announcements" class="nav__link" data-i18n="nav.latest">Latest News</a></li>
-            <li><a href="/admin/dashboard.html" class="nav__link" data-i18n="nav.adminPanel">Admin Panel</a></li>
-            <li><a href="#" class="nav__link" onclick="App.logout(); return false;" data-i18n="nav.logout">Logout</a></li>
-            <li id="langToggle"></li>
-          `;
-        }
-        I18N.init('langToggle');
-      }
-    }
-
-    async function checkSettings() {
-      try {
-        const settings = await API.get('/api/settings');
-        const regBtn = document.querySelector('a[href="/employer/register.html"]');
-
-        if (settings.registration_status === 'closed') {
-          if (regBtn) {
-            regBtn.textContent = 'Registration Closed';
-            regBtn.href = '#';
-            regBtn.classList.add('btn--disabled');
-            regBtn.style.opacity = '0.5';
-            regBtn.style.pointerEvents = 'none';
-          }
-        }
-
-        if (settings.registration_deadline) {
-          const deadlineDate = new Date(settings.registration_deadline);
-          const now = new Date();
-          if (now < deadlineDate) {
-            const deadlineInfo = document.createElement('div');
-            deadlineInfo.className = 'mt-4 text-sm text-gold';
-            deadlineInfo.textContent = `⏳ Registration Deadline: ${deadlineDate.toLocaleDateString()}`;
-            document.querySelector('.hero__actions').appendChild(deadlineInfo);
-          }
-        }
-      } catch (err) { console.error(err); }
-    }
-
-    async function loadCMSContent() {
-      try {
-        const cms = await API.get('/api/cms/settings');
-
-        // Update hero badge if event_date is set in CMS
-        if (cms.event_date) {
-          const badge = document.querySelector('.hero__badge');
-          if (badge) badge.textContent = cms.event_date;
-        }
-
-        // Show event date / venue strip below hero buttons
-        const heroActions = document.querySelector('.hero__actions');
-        if (heroActions && (cms.event_date || cms.event_venue)) {
-          const strip = document.createElement('div');
-          strip.className = 'mt-4 text-sm';
-          strip.style.color = 'rgba(255,255,255,0.75)';
-          const parts = [];
-          if (cms.event_date)  parts.push(`📅 ${App.escapeHtml(cms.event_date)}`);
-          if (cms.event_venue) parts.push(`📍 ${App.escapeHtml(cms.event_venue)}`);
-          strip.innerHTML = parts.join('&nbsp;&nbsp;·&nbsp;&nbsp;');
-          heroActions.appendChild(strip);
-        }
-
-        // Update site name in nav brand if set
-        if (cms.site_name) {
-          document.querySelectorAll('[data-i18n="nav.brand"]').forEach(el => {
-            el.textContent = cms.site_name;
-          });
-        }
-
-        // Countdown timer — only when event_date is a parseable date (not free-text like "Spring 2025")
-        if (cms.event_date) {
-          const target = new Date(cms.event_date);
-          if (!isNaN(target.getTime()) && target > new Date()) {
-            const timerEl = document.createElement('div');
-            timerEl.id = 'heroCountdown';
-            timerEl.style.cssText = 'margin-top:1.5rem; display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;';
-            document.querySelector('.hero__content').appendChild(timerEl);
-
-            function renderCountdown() {
-              const diff = target - new Date();
-              if (diff <= 0) { timerEl.remove(); return; }
-              const d = Math.floor(diff / 86400000);
-              const h = Math.floor((diff % 86400000) / 3600000);
-              const m = Math.floor((diff % 3600000) / 60000);
-              const s = Math.floor((diff % 60000) / 1000);
-              const unit = (n, label) =>
-                `<div style="background:rgba(255,255,255,0.15);border-radius:8px;padding:8px 14px;min-width:56px;text-align:center;">
-                   <div style="font-size:1.5rem;font-weight:700;line-height:1;">${n}</div>
-                   <div style="font-size:0.65rem;opacity:0.8;margin-top:2px;text-transform:uppercase;">${label}</div>
-                 </div>`;
-              timerEl.innerHTML = unit(d,'Days') + unit(h,'Hrs') + unit(m,'Min') + unit(s,'Sec');
-            }
-            renderCountdown();
-            setInterval(renderCountdown, 1000);
-          }
-        }
-      } catch (err) {
-        // CMS not critical — page works with hardcoded defaults
-      }
-    }
-
     document.getElementById('footerCopy').textContent = `© ${new Date().getFullYear()} NQU Career Center. All rights reserved.`;
     I18N.init('langToggle');
-    loadAnnouncements();
-    updateNav();
-    checkSettings();
-    loadCMSContent();
+
+    // If already logged in, update nav
+    API.checkAuth().then(user => {
+      if (!user) return;
+      const navLinks = document.getElementById('navLinks');
+      if (user.role === 'employer') {
+        navLinks.innerHTML = `
+          <li><a href="/employer/dashboard.html" class="nav__link" data-i18n="nav.dashboard">Dashboard</a></li>
+          <li><a href="#" class="nav__link" onclick="App.logout(); return false;" data-i18n="nav.logout">Logout</a></li>
+          <li id="langToggle"></li>
+        `;
+      } else if (user.role === 'admin') {
+        navLinks.innerHTML = `
+          <li><a href="/admin/dashboard.html" class="nav__link" data-i18n="nav.adminPanel">Admin Panel</a></li>
+          <li><a href="#" class="nav__link" onclick="App.logout(); return false;" data-i18n="nav.logout">Logout</a></li>
+          <li id="langToggle"></li>
+        `;
+      }
+      I18N.init('langToggle');
+    });
+
+    // Hamburger menu
+    const hamburger = document.querySelector('.nav__hamburger');
+    const navOverlay = document.querySelector('.nav__overlay');
+    if (hamburger) {
+      hamburger.addEventListener('click', () => {
+        const expanded = hamburger.getAttribute('aria-expanded') === 'true';
+        hamburger.setAttribute('aria-expanded', String(!expanded));
+        document.querySelector('.nav__links').classList.toggle('nav__links--open');
+        navOverlay.classList.toggle('nav__overlay--visible');
+      });
+      navOverlay.addEventListener('click', () => {
+        hamburger.setAttribute('aria-expanded', 'false');
+        document.querySelector('.nav__links').classList.remove('nav__links--open');
+        navOverlay.classList.remove('nav__overlay--visible');
+      });
+    }
   </script>
 </body>
 </html>

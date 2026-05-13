@@ -94,7 +94,9 @@
       <div class="activity-overview" style="margin-top:var(--space-6); background:var(--color-bg-alt); padding:var(--space-4); border-radius:var(--radius-lg); border:1px solid var(--color-border);">
         <h3 style="font-size:1rem; margin-bottom:1rem; display:flex; align-items:center; gap:8px;">🕒 <span data-i18n="adm.recentActivity">Recent Activity</span></h3>
         <div id="quickLogsBody" class="text-xs">
-          <div class="text-muted" data-i18n="adm.loading">Loading...</div>
+          <div class="loading-skeleton" style="height:12px;width:82%;margin-bottom:10px;"></div>
+          <div class="loading-skeleton" style="height:12px;width:68%;margin-bottom:10px;"></div>
+          <div class="loading-skeleton" style="height:12px;width:75%;"></div>
         </div>
       </div>
 
@@ -109,6 +111,7 @@
               <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="bulkReview('rejected')" data-i18n="adm.bulkReject">Reject Selected</button>
             </div>
             <button class="btn btn--outline" onclick="openBulkBoothModal()">🎪 Bulk Booths</button>
+            <button class="btn btn--outline" onclick="printBoothRoster()" data-i18n="adm.printRoster">🖨 Print Roster</button>
             <div class="export-dropdown" style="position:relative;">
               <button class="btn btn--primary" onclick="toggleExportMenu(event)">📥 Export ▾</button>
               <div id="exportMenu" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);box-shadow:0 4px 16px rgba(0,0,0,0.15);min-width:140px;z-index:100;overflow:hidden;">
@@ -153,7 +156,9 @@
               </tr>
             </thead>
             <tbody id="submissionsBody">
-              <tr><td colspan="8" class="text-center text-muted" style="padding:3rem;" data-i18n="adm.loading">Loading...</td></tr>
+              <tr><td><div class="loading-skeleton" style="height:13px;width:16px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:90%;"></div></td><td><div class="loading-skeleton" style="height:13px;width:70%;"></div></td><td><div class="loading-skeleton" style="height:13px;width:80%;"></div></td><td><div class="loading-skeleton" style="height:18px;width:60px;border-radius:20px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:40px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:70px;"></div></td><td></td></tr>
+              <tr><td><div class="loading-skeleton" style="height:13px;width:16px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:75%;"></div></td><td><div class="loading-skeleton" style="height:13px;width:55%;"></div></td><td><div class="loading-skeleton" style="height:13px;width:65%;"></div></td><td><div class="loading-skeleton" style="height:18px;width:60px;border-radius:20px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:40px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:70px;"></div></td><td></td></tr>
+              <tr><td><div class="loading-skeleton" style="height:13px;width:16px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:85%;"></div></td><td><div class="loading-skeleton" style="height:13px;width:65%;"></div></td><td><div class="loading-skeleton" style="height:13px;width:75%;"></div></td><td><div class="loading-skeleton" style="height:18px;width:60px;border-radius:20px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:40px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:70px;"></div></td><td></td></tr>
             </tbody>
           </table>
         </div>
@@ -185,7 +190,9 @@
               </tr>
             </thead>
             <tbody id="employersBody">
-              <tr><td colspan="6" class="text-center text-muted" style="padding:3rem;" data-i18n="adm.loading">Loading...</td></tr>
+              <tr><td><div class="loading-skeleton" style="height:13px;width:90px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:140px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:80px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:70px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:90px;"></div></td><td><div class="loading-skeleton" style="height:22px;width:80px;border-radius:4px;"></div></td></tr>
+              <tr><td><div class="loading-skeleton" style="height:13px;width:110px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:160px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:70px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:80px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:100px;"></div></td><td><div class="loading-skeleton" style="height:22px;width:80px;border-radius:4px;"></div></td></tr>
+              <tr><td><div class="loading-skeleton" style="height:13px;width:95px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:130px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:85px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:75px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:95px;"></div></td><td><div class="loading-skeleton" style="height:22px;width:80px;border-radius:4px;"></div></td></tr>
             </tbody>
           </table>
         </div>
@@ -210,7 +217,9 @@
               </tr>
             </thead>
             <tbody id="announcementsBody">
-              <tr><td colspan="5" class="text-center text-muted" style="padding:3rem;" data-i18n="adm.loading">Loading...</td></tr>
+              <tr><td><div class="loading-skeleton" style="height:13px;width:150px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:40px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:60px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:90px;"></div></td><td><div class="loading-skeleton" style="height:22px;width:100px;border-radius:4px;"></div></td></tr>
+              <tr><td><div class="loading-skeleton" style="height:13px;width:180px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:40px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:50px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:90px;"></div></td><td><div class="loading-skeleton" style="height:22px;width:100px;border-radius:4px;"></div></td></tr>
+              <tr><td><div class="loading-skeleton" style="height:13px;width:130px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:40px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:65px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:90px;"></div></td><td><div class="loading-skeleton" style="height:22px;width:100px;border-radius:4px;"></div></td></tr>
             </tbody>
           </table>
         </div>
@@ -313,7 +322,11 @@
                 <th data-i18n="adm.logTime">Time</th>
               </tr>
             </thead>
-            <tbody id="logsBody"></tbody>
+            <tbody id="logsBody">
+              <tr><td><div class="loading-skeleton" style="height:13px;width:80px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:100px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:90px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:120px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:90px;"></div></td></tr>
+              <tr><td><div class="loading-skeleton" style="height:13px;width:70px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:110px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:80px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:140px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:90px;"></div></td></tr>
+              <tr><td><div class="loading-skeleton" style="height:13px;width:85px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:95px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:100px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:110px;"></div></td><td><div class="loading-skeleton" style="height:13px;width:90px;"></div></td></tr>
+            </tbody>
           </table>
         </div>
       </div>

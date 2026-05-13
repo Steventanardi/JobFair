@@ -58,16 +58,18 @@ const I18N = {
     'footer.uni': { en: 'National Quemoy University', zh: '國立金門大學' },
     'footer.copy': { en: '© NQU Career Center. All rights reserved.', zh: '© 金大就業輔導中心 版權所有' },
 
+    // ── Landing Page ──────────────────────────────────────
+    'landing.loginBtn': { en: 'Participate → Login', zh: '我要參與活動 → 登入' },
+
     // ── Employer Login ────────────────────────────────────
     'empLogin.title': { en: 'Employer Login', zh: '企業登入' },
-    'empLogin.subtitle': { en: 'Sign in to manage your submission', zh: '登入以管理您的報名資料' },
-    'empLogin.email': { en: 'Email', zh: '電子信箱' },
-    'empLogin.password': { en: 'Password', zh: '密碼' },
-    'empLogin.submit': { en: 'Sign In', zh: '登入' },
+    'empLogin.subtitle': { en: 'Enter your Unified Business Number to sign in or register', zh: '請輸入公司統一編號以登入或自動完成註冊' },
+    'empLogin.ubn': { en: 'Unified Business No. (統一編號)', zh: '公司統一編號 (Unified Business Number)' },
+    'empLogin.ubnNote': { en: 'No password needed. New companies are registered automatically.', zh: '無需密碼。若為新公司請直接輸入統一編號完成註冊。' },
+    'empLogin.ubnError': { en: 'Please enter a valid 8-digit Unified Business Number.', zh: '請輸入正確的 8 位數統一編號。' },
+    'empLogin.submit': { en: 'Sign In / Enter', zh: '登入 / 進入系統' },
     'empLogin.submitting': { en: 'Signing in...', zh: '登入中...' },
-    'empLogin.noAccount': { en: "Don't have an account?", zh: '還沒有帳號？' },
-    'empLogin.registerLink': { en: 'Register here', zh: '點此註冊' },
-    'empLogin.backHome': { en: '← Back to Home', zh: '← 返回首頁' },
+    'empLogin.backHome': { en: '← Back to Event Page', zh: '← 返回活動頁面' },
 
     // ── Employer Register ─────────────────────────────────
     'empReg.title': { en: 'Create Account', zh: '企業註冊' },
@@ -255,6 +257,7 @@ const I18N = {
     'btn.update': { en: 'Update Registration', zh: '更新報名資料' },
     'btn.submitting': { en: 'Submitting...', zh: '提交中...' },
     'btn.cancel': { en: 'Cancel', zh: '取消' },
+    'btn.close': { en: 'Close', zh: '關閉' },
 
     // ── Error messages ────────────────────────────────────
     'err.selectCategory': { en: 'Please select a registration category first.', zh: '請先選擇報名類別。' },
@@ -422,6 +425,37 @@ const I18N = {
     'adm.adminUsername': { en: 'Username', zh: '帳號' },
     'adm.adminPassword': { en: 'Password', zh: '密碼' },
     'adm.createAdmin': { en: 'Create', zh: '建立' },
+
+    // ── Admin dashboard — extra strings ──────────────────────────
+    'adm.groupType':        { en: 'Group Type',                                       zh: '機構類型' },
+    'adm.estDate':          { en: 'Established',                                      zh: '成立日期' },
+    'adm.attendeeContact':  { en: 'Attendee / Contact',                               zh: '出席負責人' },
+    'adm.statusLabel':      { en: 'Status & Booth',                                   zh: '狀態與攤位' },
+    'adm.pwRequired':       { en: 'All fields are required.',                         zh: '請填寫所有欄位。' },
+    'adm.pwMismatch':       { en: 'New passwords do not match.',                      zh: '新密碼不一致。' },
+    'adm.pwTooShortAdmin':  { en: 'Password must be at least 6 characters.',          zh: '密碼至少需要 6 個字元。' },
+    'adm.pwUpdated':        { en: 'Password updated. Please log in again.',           zh: '密碼已更新，請重新登入。' },
+    'adm.noChanges':        { en: 'No changes to save',                               zh: '無需儲存' },
+    'adm.boothsUpdated':    { en: '{n} booth(s) updated',                             zh: '已更新 {n} 個攤位' },
+    'adm.noApprovedSubs':   { en: 'No approved submissions.',                         zh: '無已通過的報名。' },
+    'adm.bulkBoothTitle':   { en: 'Bulk Booth Assignment',                            zh: '批次攤位分配' },
+    'adm.bulkBoothDesc':    { en: 'Edit booth numbers for approved submissions. Leave blank to clear.', zh: '為已通過報名填寫攤位編號，留空則清除。' },
+    'adm.bulkBoothLoading': { en: 'Loading approved submissions...',                  zh: '載入已通過報名中...' },
+    'adm.bulkBoothCompany': { en: 'Company',                                          zh: '公司' },
+    'adm.bulkBoothCurrent': { en: 'Current Booth',                                   zh: '現有攤位' },
+    'adm.bulkBoothNew':     { en: 'New Booth',                                        zh: '新攤位' },
+    'adm.saveAll':          { en: 'Save All',                                         zh: '全部儲存' },
+    'adm.adminCreated':     { en: 'Admin account created',                            zh: '管理員帳號已建立' },
+    'adm.confirmDelAdmin':  { en: 'Delete this admin account? This cannot be undone.', zh: '確認刪除此管理員帳號？此操作無法復原。' },
+    'adm.adminDeleted':     { en: 'Admin deleted',                                    zh: '管理員已刪除' },
+    'adm.exportPrep':       { en: 'Preparing export...',                              zh: '準備匯出...' },
+    'adm.exportFailed':     { en: 'Failed to load data',                              zh: '資料載入失敗' },
+    'adm.printRoster':      { en: '🖨 Print Roster',                                  zh: '🖨 列印名冊' },
+    'adm.prevPage':         { en: '← Prev',                                           zh: '← 上頁' },
+    'adm.nextPage':         { en: 'Next →',                                           zh: '下頁 →' },
+    'adm.pageInfo':         { en: 'Page {p} of {t}',                                  zh: '第 {p} / {t} 頁' },
+    'adm.analyticsFail':    { en: 'Analytics failed to load.',                        zh: '數據載入失敗。' },
+    'adm.noMatchLogs':      { en: 'No matching logs',                                 zh: '無符合記錄' },
 
     // ── Submit form — field labels used in admin detail modal ────
     'submit.optional':             { en: '(optional)',             zh: '（選填）' },
